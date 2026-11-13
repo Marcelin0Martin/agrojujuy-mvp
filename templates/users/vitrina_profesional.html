@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Perfil Profesional - Ing. {{ profesional.usuario.get_full_name|default:profesional.usuario.username }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 720px; margin: 1.5rem auto;">
+    <div style="margin-bottom: 1rem;">
+        <a href="{% url 'buscador_profesionales' %}" style="font-size: 0.9rem;">&larr; Volver al Buscador</a>
+    </div>
+
+    <div class="card" style="border-top: 5px solid var(--color-primary);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+            <div>
+                <span class="badge badge-success" style="margin-bottom: 0.5rem;">Validado CIAPA Jujuy</span>
+                <h1 style="font-size: 1.8rem; font-weight: 800; color: var(--color-primary);">
+                    Ing. {{ profesional.usuario.get_full_name|default:profesional.usuario.username }}
+                </h1>
+                <p style="font-size: 1rem; font-weight: 700; color: var(--color-tertiary);">
+                    Matrícula Provincial: {{ profesional.matricula_provincial }}
+                </p>
+            </div>
+
+            <a href="{% url 'solicitar_asistencia' profesional.id %}" class="btn btn-primary">
+                📩 Solicitar Asistencia Técnica
+            </a>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; background: #F6F8F6; padding: 1rem; border-radius: 6px; margin: 1.5rem 0;">
+            <div>
+                <strong style="color: var(--color-primary); display: block; font-size: 0.85rem;">Especialidad:</strong>
+                <span style="font-size: 1rem; font-weight: 600;">🌿 {{ profesional.especialidad }}</span>
+            </div>
+            <div>
+                <strong style="color: var(--color-primary); display: block; font-size: 0.85rem;">Zonas de Cobertura:</strong>
+                <span style="font-size: 1rem; font-weight: 600;">📍 {{ profesional.zonas_cobertura }}</span>
+            </div>
+            <div>
+                <strong style="color: var(--color-primary); display: block; font-size: 0.85rem;">Contacto Telefónico:</strong>
+                <span style="font-size: 1rem; font-weight: 600;">📞 {{ profesional.telefono|default:"No informado" }}</span>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--color-primary); margin-bottom: 0.5rem;">
+                Trayectoria y Enfoque Agronómico
+            </h2>
+            <p style="font-size: 0.95rem; color: var(--color-text-muted); line-height: 1.6;">
+                {{ profesional.biografia|default:"El profesional aún no ha completado su reseña curricular."|linebreaks }}
+            </p>
+        </div>
+
+        <div style="border-top: 1px solid var(--color-neutral-light); padding-top: 1rem; display: flex; justify-content: flex-end;">
+            <a href="{% url 'solicitar_asistencia' profesional.id %}" class="btn btn-secondary">
+                Abrir Consulta Técnica Directa
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

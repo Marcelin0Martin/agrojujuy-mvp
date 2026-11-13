@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AgroJujuy - Plataforma Agrícola Institucional{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <!-- Header Global -->
+    <header class="global-header">
+        <div class="header-inner">
+            <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                <a href="{% url 'inicio' %}" class="brand-title">
+                    <span style="font-size: 1.5rem;">🌱</span> AgroJujuy
+                    <span class="brand-badge">MVP</span>
+                </a>
+
+                <!-- Selector de estado temporal para Auditoría del Administrador -->
+                {% if is_admin_user %}
+                <div class="role-switcher-banner">
+                    <span>🔬 <strong>Auditoría Visual Admin:</strong></span>
+                    <form method="POST" action="{% url 'cambiar_rol_temporal' %}" style="display: inline-flex; align-items: center; gap: 0.35rem;">
+                        {% csrf_token %}
+                        <select name="rol" onchange="this.form.submit()" title="Cambiar rol temporal para auditoría y visualización de bugs">
+                            <option value="ADMIN" {% if effective_role == 'ADMIN' and not simulated_role %}selected{% endif %}>Rol: Administrador (Real)</option>
+                            <option value="PRODUCER" {% if effective_role == 'PRODUCER' %}selected{% endif %}>Simular: Productor</option>
+                            <option value="PROFESSIONAL" {% if effective_role == 'PROFESSIONAL' %}selected{% endif %}>Simular: Profesional Agrario</option>
+                            {% if simulated_role %}
+                            <option value="RESET">Restablecer a Admin</option>
+                            {% endif %}
+                        </select>
+                    </form>
+                    {% if simulated_role %}
+                    <span class="badge badge-warning" style="font-size: 0.65rem;">Modo Simulado Activo</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Navegación según Rol Efectivo -->
+            <nav class="nav-links">
+                {% if user.is_authenticated %}
+                    {% if effective_role == 'PRODUCER' %}
+                        <a href="{% url 'buscador_profesionales' %}">🔍 Buscar Ingeniero</a>
+                        <a href="{% url 'bandeja_productor' %}">📋 Mis Solicitudes</a>
+                        <a href="{% url 'foro_comunidad' %}">💬 Foro Agrario</a>
+                        <a href="{% url 'perfil_productor' %}">👤 Mi Finca</a>
+                    {% elif effective_role == 'PROFESSIONAL' %}
+                        <a href="{% url 'bandeja_profesional' %}">📥 Bandeja de Trabajos</a>
+                        <a href="{% url 'foro_comunidad' %}">💬 Foro Agrario</a>
+                        <a href="{% url 'perfil_profesional' %}">👤 Mi Perfil CIAPA</a>
+                    {% elif effective_role == 'ADMIN' %}
+                        <a href="/admin/">⚙️ Panel Admin CIAPA</a>
+                        <a href="{% url 'buscador_profesionales' %}">🔍 Buscador</a>
+                        <a href="{% url 'foro_comunidad' %}">💬 Foro</a>
+                    {% endif %}
+
+                    <form method="POST" action="{% url 'logout' %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="nav-btn-logout">Salir ({{ user.username }})</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'login' %}">Iniciar Sesión</a>
+                    <a href="{% url 'registro_productor' %}" class="btn btn-tertiary btn-sm">Registro Productor</a>
+                    <a href="{% url 'registro_profesional' %}" class="btn btn-secondary btn-sm">Registro Ingeniero</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="container" style="flex: 1; padding-top: 1.5rem; padding-bottom: 2rem;">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer Institucional -->
+    <footer>
+        <div class="container" style="display: flex; flex-direction: column; gap: 0.5rem; align-items: center;">
+            <p><strong>AgroJujuy MVP</strong> — Sistema de Información Agraria y Asistencia Técnica Provincial</p>
+            <p style="opacity: 0.8; font-size: 0.8rem;">
+                Validación de Matrículas con respaldo institucional CIAPA Jujuy &bull; Accesibilidad WCAG 2.1 AA Mobile-First &bull; Jujuy, Argentina.
+            </p>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}Bandeja de Solicitudes - Productor - AgroJujuy{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 1.5rem auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+        <div>
+            <h1 style="font-size: 1.8rem; font-weight: 800; color: var(--color-primary);">
+                Bandeja de Solicitudes Enviadas
+            </h1>
+            <p style="color: var(--color-text-muted); font-size: 0.95rem;">
+                Historial acotado a tus últimas 5 consultas de asistencia técnica agronómica.
+            </p>
+        </div>
+        <a href="{% url 'buscador_profesionales' %}" class="btn btn-primary btn-sm">
+            🔍 Nueva Consulta a Ingeniero
+        </a>
+    </div>
+
+    {% if tickets %}
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            {% for ticket in tickets %}
+                <div class="card" style="border-left: 5px solid {% if ticket.estado == 'Aceptado' %}var(--color-secondary){% else %}var(--color-tertiary){% endif %}; margin-bottom: 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <div>
+                            <span style="font-size: 0.8rem; font-weight: 700; color: var(--color-text-muted);">Ticket #{{ ticket.id }} &bull; {{ ticket.fecha_creacion|date:"d/m/Y H:i" }}</span>
+                            <h2 style="font-size: 1.2rem; font-weight: 700; color: var(--color-primary); margin: 0.2rem 0;">
+                                {{ ticket.titulo }}
+                            </h2>
+                        </div>
+                        <span class="badge {% if ticket.estado == 'Aceptado' %}badge-success{% elif ticket.estado == 'Pendiente' %}badge-warning{% else %}badge-neutral{% endif %}">
+                            {{ ticket.estado }}
+                        </span>
+                    </div>
+
+                    <p style="font-size: 0.9rem; color: var(--color-text-main); margin-bottom: 0.75rem;">
+                        <strong>Profesional Asignado:</strong> Ing. {{ ticket.profesional.usuario.get_full_name|default:ticket.profesional.usuario.username }} (Mat. {{ ticket.profesional.matricula_provincial }})
+                    </p>
+
+                    <p style="font-size: 0.85rem; color: var(--color-text-muted); line-height: 1.4; margin-bottom: 1rem;">
+                        {{ ticket.descripcion|truncatewords:25 }}
+                    </p>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--color-neutral-light); padding-top: 0.75rem;">
+                        <span style="font-size: 0.85rem; color: var(--color-text-muted);">
+                            💬 {{ ticket.mensajes.count }} mensaje(s) en hilo técnico
+                        </span>
+                        <a href="{% url 'chat_ticket' ticket.id %}" class="btn btn-outline btn-sm">
+                            Abrir Chat Directo (1 a 1) &rarr;
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card" style="text-align: center; padding: 3rem 1rem;">
+            <p style="font-size: 1.2rem; font-weight: 700; color: var(--color-primary); margin-bottom: 0.5rem;">
+                No tienes solicitudes de asistencia técnica activas.
+            </p>
+            <p style="color: var(--color-text-muted); margin-bottom: 1.5rem;">
+                Utiliza el buscador inteligente para encontrar un ingeniero habilitado para tu zona y plantear tu consulta.
+            </p>
+            <a href="{% url 'buscador_profesionales' %}" class="btn btn-primary">
+                Ir al Buscador de Profesionales
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

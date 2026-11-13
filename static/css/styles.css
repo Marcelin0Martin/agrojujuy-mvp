@@ -1,0 +1,443 @@
+/* AgroJujuy Stylesheet - WCAG 2.1 AA Compliant - Mobile First */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --color-primary: #173F32;
+  --color-primary-dark: #0f2b22;
+  --color-secondary: #10B981;
+  --color-tertiary: #C88A4B;
+  --color-neutral: #6B7570;
+  --color-neutral-dark: #2A332F;
+  --color-neutral-light: #E5E9E6;
+  --color-background: #F6F8F6;
+  --color-card-bg: #FFFFFF;
+  --color-text-main: #173F32;
+  --color-text-muted: #4B5563;
+  --color-danger: #DC2626;
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--color-background);
+  color: var(--color-text-main);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Accessible High Contrast Outdoors Links & Text */
+a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 600;
+}
+
+a:hover, a:focus {
+  color: var(--color-tertiary);
+}
+
+/* Prohibido #10B981 para texto sobre fondo blanco según SDD.
+   El color secundario #10B981 se utiliza exclusivamente en fondos de botones oscuros, pills con texto blanco o bordes. */
+.text-secondary {
+  color: #065F46 !important; /* Variante oscura con contraste AAA para texto */
+}
+
+/* Global Container */
+.container {
+  width: 100%;
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+/* Header Global */
+.global-header {
+  background-color: var(--color-primary);
+  color: #FFFFFF;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-inner {
+  max-width: 1024px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .header-inner {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.brand-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  text-decoration: none;
+  letter-spacing: -0.02em;
+}
+
+.brand-badge {
+  background-color: var(--color-tertiary);
+  color: #FFFFFF;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  text-transform: uppercase;
+}
+
+/* Role Selector Temporal (Auditoría Admin) */
+.role-switcher-banner {
+  background-color: #2D4A3E;
+  border: 1px solid var(--color-tertiary);
+  border-radius: 6px;
+  padding: 0.4rem 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: #FFFFFF;
+}
+
+.role-switcher-banner select {
+  background-color: #173F32;
+  color: #FFFFFF;
+  border: 1px solid var(--color-tertiary);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.nav-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.nav-links a {
+  color: #FFFFFF;
+  text-decoration: none;
+  font-size: 0.9rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.nav-links a:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #FFFFFF;
+}
+
+.nav-btn-logout {
+  background-color: transparent;
+  color: #FFFFFF;
+  border: 1px solid rgba(255,255,255,0.4);
+  padding: 0.35rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+/* Card & Sections */
+.card {
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-neutral-light);
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.card-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  border: none;
+  gap: 0.5rem;
+  min-height: 44px; /* Accessible touch target */
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: #FFFFFF !important;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary-dark);
+}
+
+.btn-secondary {
+  background-color: var(--color-secondary);
+  color: #FFFFFF !important;
+}
+
+.btn-secondary:hover {
+  background-color: #059669;
+}
+
+.btn-tertiary {
+  background-color: var(--color-tertiary);
+  color: #FFFFFF !important;
+}
+
+.btn-tertiary:hover {
+  background-color: #A36F38;
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 2px solid var(--color-primary);
+  color: var(--color-primary);
+}
+
+.btn-sm {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+  min-height: 36px;
+}
+
+/* Form inputs with outdoor contrast */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  display: block;
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 0.35rem;
+  color: var(--color-primary);
+}
+
+.form-control, input[type="text"], input[type="email"], input[type="password"], select, textarea {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border: 2px solid #CBD5E1;
+  border-radius: 6px;
+  background-color: #FFFFFF;
+  color: var(--color-neutral-dark);
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.form-control:focus, input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(23, 63, 50, 0.2);
+}
+
+/* Badges */
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.badge-success {
+  background-color: var(--color-secondary);
+  color: #FFFFFF;
+}
+
+.badge-warning {
+  background-color: var(--color-tertiary);
+  color: #FFFFFF;
+}
+
+.badge-neutral {
+  background-color: var(--color-neutral);
+  color: #FFFFFF;
+}
+
+.badge-danger {
+  background-color: var(--color-danger);
+  color: #FFFFFF;
+}
+
+/* Grid Buscador de Profesionales (Mobile First) */
+.profesionales-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+@media (min-width: 640px) {
+  .profesionales-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 960px) {
+  .profesionales-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.profesional-card {
+  border-left: 5px solid var(--color-primary);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Banners Publicitarios Estáticos (Mockup de Agroinsumos) */
+.banner-publicidad {
+  background: linear-gradient(135deg, #173F32 0%, #2A5A4A 100%);
+  color: #FFFFFF;
+  border: 2px dashed var(--color-tertiary);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+  text-align: center;
+}
+
+@media (min-width: 640px) {
+  .banner-publicidad {
+    flex-direction: row;
+    justify-content: space-between;
+    text-align: left;
+  }
+}
+
+.banner-publicidad-tag {
+  background-color: var(--color-tertiary);
+  color: #FFFFFF;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+/* Chat Hilo 1 a 1 */
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 480px;
+  border: 1px solid var(--color-neutral-light);
+  border-radius: 8px;
+  background: #FFFFFF;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.chat-bubble {
+  max-width: 80%;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.chat-bubble-emisor {
+  align-self: flex-end;
+  background-color: var(--color-primary);
+  color: #FFFFFF;
+  border-bottom-right-radius: 2px;
+}
+
+.chat-bubble-receptor {
+  align-self: flex-start;
+  background-color: #EBF1ED;
+  color: var(--color-text-main);
+  border-bottom-left-radius: 2px;
+}
+
+.chat-bubble-meta {
+  font-size: 0.7rem;
+  opacity: 0.8;
+  margin-top: 0.35rem;
+  display: block;
+}
+
+/* Mensajes / Alertas Django */
+.alert {
+  padding: 0.85rem 1.25rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.alert-success {
+  background-color: #D1FAE5;
+  border: 1px solid #10B981;
+  color: #065F46;
+}
+
+.alert-error, .alert-danger {
+  background-color: #FEE2E2;
+  border: 1px solid #EF4444;
+  color: #991B1B;
+}
+
+.alert-info {
+  background-color: #FEF3C7;
+  border: 1px solid #C88A4B;
+  color: #92400E;
+}
+
+/* Footer */
+footer {
+  margin-top: auto;
+  background-color: #173F32;
+  color: #E5E9E6;
+  padding: 1.5rem 1rem;
+  font-size: 0.85rem;
+  text-align: center;
+}

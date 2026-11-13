@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Bandeja de Trabajos - Profesional CIAPA - AgroJujuy{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 1.5rem auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+        <div>
+            <h1 style="font-size: 1.8rem; font-weight: 800; color: var(--color-primary);">
+                Bandeja de Trabajos y Solicitudes Recibidas
+            </h1>
+            <p style="color: var(--color-text-muted); font-size: 0.95rem;">
+                Historial de las últimas 5 solicitudes agronómicas enviadas por productores de Jujuy.
+            </p>
+        </div>
+        <span class="badge badge-success" style="font-size: 0.8rem;">
+            Ingeniero Habilitado CIAPA
+        </span>
+    </div>
+
+    {% if tickets %}
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            {% for ticket in tickets %}
+                <div class="card" style="border-left: 5px solid {% if ticket.estado == 'Aceptado' %}var(--color-secondary){% else %}var(--color-tertiary){% endif %}; margin-bottom: 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <div>
+                            <span style="font-size: 0.8rem; font-weight: 700; color: var(--color-text-muted);">Ticket #{{ ticket.id }} &bull; {{ ticket.fecha_creacion|date:"d/m/Y H:i" }}</span>
+                            <h2 style="font-size: 1.2rem; font-weight: 700; color: var(--color-primary); margin: 0.2rem 0;">
+                                {{ ticket.titulo }}
+                            </h2>
+                        </div>
+                        <span class="badge {% if ticket.estado == 'Aceptado' %}badge-success{% elif ticket.estado == 'Pendiente' %}badge-warning{% else %}badge-neutral{% endif %}">
+                            {{ ticket.estado }}
+                        </span>
+                    </div>
+
+                    <div style="background: #F6F8F6; padding: 0.75rem; border-radius: 6px; margin: 0.5rem 0 0.75rem 0;">
+                        <p style="font-size: 0.9rem; margin-bottom: 0.25rem;">
+                            <strong>Productor:</strong> {{ ticket.productor.usuario.get_full_name|default:ticket.productor.usuario.username }} &bull; 
+                            📍 <strong>Región:</strong> {{ ticket.productor.region }} &bull; 
+                            🌿 <strong>Rubro:</strong> {{ ticket.productor.rubro_productivo }}
+                        </p>
+                        <p style="font-size: 0.85rem; color: var(--color-text-muted); margin: 0;">
+                            <strong>Contacto:</strong> {{ ticket.productor.telefono }} | {{ ticket.productor.direccion_finca|default:"Sin dirección especificada" }}
+                        </p>
+                    </div>
+
+                    <p style="font-size: 0.9rem; color: var(--color-text-main); line-height: 1.4; margin-bottom: 1rem;">
+                        {{ ticket.descripcion }}
+                    </p>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--color-neutral-light); padding-top: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+                        <span style="font-size: 0.85rem; color: var(--color-text-muted);">
+                            💬 {{ ticket.mensajes.count }} mensaje(s) en hilo técnico
+                        </span>
+                        
+                        <div style="display: flex; gap: 0.5rem;">
+                            {% if ticket.estado == 'Pendiente' %}
+                                <form method="POST" action="{% url 'aceptar_ticket' ticket.id %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-secondary btn-sm">
+                                        ✔ Aceptar Trabajo
+                                    </button>
+                                </form>
+                            {% endif %}
+                            <a href="{% url 'chat_ticket' ticket.id %}" class="btn btn-primary btn-sm">
+                                Responder en Chat Directo &rarr;
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card" style="text-align: center; padding: 3rem 1rem;">
+            <p style="font-size: 1.2rem; font-weight: 700; color: var(--color-primary); margin-bottom: 0.5rem;">
+                No tienes solicitudes de trabajo pendientes en este momento.
+            </p>
+            <p style="color: var(--color-text-muted);">
+                Asegúrate de mantener actualizadas tus zonas de cobertura y especialidades en tu perfil profesional.
+            </p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

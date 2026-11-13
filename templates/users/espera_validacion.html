@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Perfil en Revisión - AgroJujuy{% endblock %}
+
+{% block content %}
+<div style="max-width: 580px; margin: 3rem auto; text-align: center;">
+    <div class="card" style="border-top: 6px solid var(--color-tertiary); padding: 2.5rem 1.5rem;">
+        <div style="font-size: 3.5rem; margin-bottom: 1rem;">⏳</div>
+        
+        <h1 style="font-size: 1.6rem; font-weight: 800; color: var(--color-primary); margin-bottom: 1rem;">
+            Perfil en revisión. El tiempo de validación institucional es de 24 a 48 horas.
+        </h1>
+
+        <p style="font-size: 1rem; color: var(--color-text-muted); line-height: 1.6; margin-bottom: 1.5rem;">
+            Estimado/a <strong>Ing. {{ profesional.usuario.get_full_name|default:request.user.username }}</strong>, su registro con Matrícula Provincial <strong>{{ profesional.matricula_provincial }}</strong> ha sido recibido por el equipo de administración institucional de CIAPA.
+        </p>
+
+        <div class="alert alert-info" style="text-align: left; margin-bottom: 2rem;">
+            <p style="margin: 0;">
+                🔒 <strong>Acceso restringido temporalmente:</strong> Por protocolo de seguridad y calidad técnica para los productores agrícolas, su vitrina digital y canal de atención directa se habilitarán una vez contrastados sus datos de matrícula.
+            </p>
+        </div>
+
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <a href="{% url 'inicio' %}" class="btn btn-outline btn-sm">Volver al Inicio</a>
+            <form method="POST" action="{% url 'logout' %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary btn-sm">Cerrar Sesión</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

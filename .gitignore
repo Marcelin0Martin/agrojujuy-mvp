@@ -1,0 +1,38 @@
+# Entornos virtuales
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+
+# Byte-compiled / optimizados / caché de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Bases de datos locales SQLite
+*.sqlite3
+db.sqlite3
+agrojujuy_db.sqlite3
+
+# Variables de entorno y secretos
+.env
+.env.*
+!.env.example
+
+# Archivos estáticos recolectados y media
+staticfiles/
+media/
+
+# Archivos del sistema operativo y editores
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# Logs
+*.log

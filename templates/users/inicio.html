@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %}Inicio - AgroJujuy{% endblock %}
+
+{% block content %}
+<div style="text-align: center; max-width: 720px; margin: 2rem auto;">
+    <span class="badge badge-warning" style="margin-bottom: 1rem; font-size: 0.85rem;">Conectando el Agro Jujeño</span>
+    <h1 style="font-size: 2.2rem; font-weight: 800; color: var(--color-primary); line-height: 1.2; margin-bottom: 1rem;">
+        Red Integral de Asistencia Agronómica y Productores de Jujuy
+    </h1>
+    <p style="font-size: 1.1rem; color: var(--color-text-muted); margin-bottom: 2rem;">
+        Plataforma oficial para la articulación directa entre productores agrícolas de las 4 regiones (Puna, Quebrada, Valles y Yungas) e ingenieros agrónomos habilitados con matrícula institucional CIAPA.
+    </p>
+
+    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2.5rem;">
+        <a href="{% url 'registro_productor' %}" class="btn btn-tertiary">
+            🚜 Soy Productor Agrícola
+        </a>
+        <a href="{% url 'registro_profesional' %}" class="btn btn-primary">
+            🎓 Soy Ingeniero Agrónomo (CIAPA)
+        </a>
+        <a href="{% url 'login' %}" class="btn btn-outline">
+            🔑 Ingresar a mi Cuenta
+        </a>
+    </div>
+
+    <div class="card" style="text-align: left; background: #FFFFFF; border-left: 6px solid var(--color-tertiary);">
+        <h2 style="font-size: 1.1rem; font-weight: 700; color: var(--color-primary); margin-bottom: 0.5rem;">Garantía de Validación Institucional CIAPA</h2>
+        <p style="font-size: 0.95rem; color: var(--color-text-muted);">
+            Cada profesional registrado en la plataforma atraviesa una auditoría estricta de matrícula provincial antes de habilitar su contacto directo con productores, garantizando seriedad técnica y seguridad en campo.
+        </p>
+    </div>
+</div>
+{% endblock %}
