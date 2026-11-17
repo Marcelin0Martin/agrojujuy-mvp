@@ -65,6 +65,18 @@ class RepositorioTicket(ABC):
     def actualizar_estado(self, ticket_id: int, nuevo_estado: str) -> None:
         ...
 
+    @abstractmethod
+    def tomar_solicitud_abierta(self, ticket_id: int, profesional_id: int) -> bool:
+        ...
+
+    @abstractmethod
+    def finalizar_trabajo(self, ticket_id: int, descripcion_finalizacion: str) -> None:
+        ...
+
+    @abstractmethod
+    def confirmar_recepcion_productor(self, ticket_id: int) -> None:
+        ...
+
 
 class RepositorioChat(ABC):
     @abstractmethod

@@ -4,7 +4,7 @@ from django.utils import timezone
 from .models import CustomUser, Productor, Profesional, ConfiguracionSeguridad
 
 
-@admin.action(description="✅ Habilitar Profesionales seleccionados (Aprobación CIAPA)")
+@admin.action(description="✅ Habilitar Profesionales seleccionados (Aprobación CIAPAJ)")
 def habilitar_profesionales(modeladmin, request, queryset):
     actualizados = queryset.update(estado_validacion='Habilitado', fecha_validacion=timezone.now())
     modeladmin.message_user(
@@ -27,6 +27,7 @@ class ProfesionalAdmin(admin.ModelAdmin):
         'matricula_provincial',
         'get_nombre_completo',
         'especialidad',
+        'especialidad_propuesta',
         'zonas_cobertura',
         'telefono',
         'badge_estado',
@@ -39,17 +40,19 @@ class ProfesionalAdmin(admin.ModelAdmin):
         'usuario__first_name',
         'usuario__last_name',
         'usuario__email',
-        'usuario__username'
+        'usuario__username',
+        'especialidad',
+        'especialidad_propuesta',
     )
     actions = [habilitar_profesionales, suspender_profesionales]
     readonly_fields = ('fecha_solicitud', 'fecha_validacion')
 
     fieldsets = (
-        ('Datos Institucionales CIAPA', {
+        ('Datos Institucionales CIAPAJ', {
             'fields': ('usuario', 'matricula_provincial', 'estado_validacion', 'fecha_solicitud', 'fecha_validacion')
         }),
         ('Información Técnica y Cobertura', {
-            'fields': ('especialidad', 'zonas_cobertura', 'telefono', 'biografia')
+            'fields': ('especialidad', 'especialidad_propuesta', 'zonas_cobertura', 'telefono', 'biografia')
         }),
     )
 
@@ -59,27 +62,38 @@ class ProfesionalAdmin(admin.ModelAdmin):
 
     def badge_estado(self, obj):
         if obj.estado_validacion == 'Habilitado':
-            return format_html('<span style="background-color:#10B981; color:#ffffff; padding:4px 8px; border-radius:4px; font-weight:bold;">Habilitado</span>')
+            color = '#10B981'
+            texto = 'Habilitado'
         elif obj.estado_validacion == 'Pendiente':
-            return format_html('<span style="background-color:#C88A4B; color:#ffffff; padding:4px 8px; border-radius:4px; font-weight:bold;">Pendiente de Revisión</span>')
+            color = '#C88A4B'
+            texto = 'Pendiente de Revisión'
         else:
-            return format_html('<span style="background-color:#EF4444; color:#ffffff; padding:4px 8px; border-radius:4px; font-weight:bold;">Suspendido/Rechazado</span>')
+            color = '#EF4444'
+            texto = 'Suspendido/Rechazado'
+
+        return format_html(
+            '<span style="background-color:{}; color:#ffffff; padding:4px 8px; border-radius:6px; font-weight:bold;">{}</span>',
+            color,
+            texto
+        )
     badge_estado.short_description = "Estado de Validación"
 
     def acciones_rapidas(self, obj):
         if obj.estado_validacion == 'Pendiente':
             return format_html(
-                '<a class="button" style="background-color:#173F32; color:white; padding:3px 6px; border-radius:3px; text-decoration:none;" href="/admin/users/profesional/{}/change/">Revisar & Validar</a>',
-                obj.pk
+                '<a class="button" style="background-color:{}; color:white; padding:4px 8px; border-radius:6px; text-decoration:none;" href="/admin/users/profesional/{}/change/">{}</a>',
+                '#173F32',
+                obj.pk,
+                'Revisar & Validar'
             )
         return "-"
     acciones_rapidas.short_description = "Acción"
 
 
 class ProductorAdmin(admin.ModelAdmin):
-    list_display = ('get_nombre_completo', 'region', 'rubro_productivo', 'telefono', 'fecha_registro')
+    list_display = ('get_nombre_completo', 'dni', 'renspa', 'region', 'rubro_productivo', 'telefono', 'fecha_registro')
     list_filter = ('region',)
-    search_fields = ('usuario__first_name', 'usuario__last_name', 'usuario__email', 'rubro_productivo')
+    search_fields = ('usuario__first_name', 'usuario__last_name', 'usuario__email', 'dni', 'renspa', 'rubro_productivo')
 
     def get_nombre_completo(self, obj):
         return f"{obj.usuario.first_name} {obj.usuario.last_name}"

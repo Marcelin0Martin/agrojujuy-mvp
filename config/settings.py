@@ -26,12 +26,13 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
+    'config.middleware.IsolatedSessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'config.middleware.OWASPSecurityHeadersMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -55,7 +56,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
-# Por defecto SQLite para MVP ágil con soporte para PostgreSQL mediante variables de entorno
 DB_ENGINE = os.environ.get('DB_ENGINE', 'sqlite')
 
 if DB_ENGINE == 'postgresql':
@@ -80,8 +80,18 @@ else:
 # Modelo de Usuario Personalizado según SDD
 AUTH_USER_MODEL = 'users.CustomUser'
 
-# Password validation según SDD:
-# "mínimo 8 caracteres, alfanumérica, sin coincidencia con datos personales"
+# Configuración de Aislamiento de Sesiones (/admin/ separado de la web principal)
+SESSION_COOKIE_NAME = 'agrojujuy_web_sessionid'
+SESSION_COOKIE_PATH = '/'
+ADMIN_SESSION_COOKIE_NAME = 'agrojujuy_admin_sessionid'
+ADMIN_SESSION_COOKIE_PATH = '/admin/'
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
+X_FRAME_OPTIONS = 'DENY'
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# Password validation según SDD
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',

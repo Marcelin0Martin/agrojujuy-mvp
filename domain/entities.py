@@ -20,6 +20,8 @@ class ProductorEntity:
     usuario_id: int
     region: str  # 'Puna', 'Valles', 'Yungas', 'Quebrada'
     rubro_productivo: str
+    dni: str = ""
+    renspa: str = ""
     telefono: str = ""
     direccion_finca: str = ""
 
@@ -31,6 +33,9 @@ class ProfesionalEntity:
     matricula_provincial: str
     especialidad: str
     zonas_cobertura: List[str] = field(default_factory=list)
+    especialidades_lista: List[str] = field(default_factory=list)
+    especialidad_propuesta: str = ""
+    nombre_completo: str = ""
     telefono: str = ""
     biografia: str = ""
     estado_validacion: str = "Pendiente"  # 'Pendiente', 'Habilitado', 'Suspendido'
@@ -41,11 +46,17 @@ class ProfesionalEntity:
 class TicketEntity:
     id: int
     productor_id: int
-    profesional_id: int
+    profesional_id: Optional[int]
     titulo: str
     descripcion: str
-    estado: str = "Pendiente"  # 'Pendiente', 'Aceptado', 'Cerrado'
+    modalidad: str = "DIRIGIDA"  # 'DIRIGIDA', 'ABIERTA'
+    especialidad_requerida: str = ""
+    estado: str = "Pendiente"  # 'Pendiente', 'Aceptado', 'Finalizado', 'Cerrado'
     fecha_creacion: Optional[datetime] = None
+    descripcion_finalizacion: str = ""
+    fecha_finalizacion: Optional[datetime] = None
+    confirmado_por_productor: bool = False
+    fecha_confirmacion: Optional[datetime] = None
 
 
 @dataclass

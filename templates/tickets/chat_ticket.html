@@ -1,91 +1,151 @@
 {% extends 'base.html' %}
 
-{% block title %}Chat Técnico 1 a 1 - Ticket #{{ ticket.id }} - AgroJujuy{% endblock %}
+{% block title %}Chat Técnico 1 a 1 — Ticket #{{ ticket.id }} — AgroJujuy{% endblock %}
 
 {% block content %}
-<div style="max-width: 800px; margin: 1.5rem auto;">
+<div style="max-width: 840px; margin: 1rem auto;">
     <!-- Encabezado del Ticket -->
-    <div class="card" style="margin-bottom: 1rem; border-left: 5px solid {% if ticket.estado == 'Aceptado' %}var(--color-secondary){% else %}var(--color-tertiary){% endif %};">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.5rem;">
+    <div class="card rounded-2xl shadow-sm p-6" style="margin-bottom: 1.25rem; border-left: 5px solid {% if ticket.estado == 'Aceptado' or ticket.estado == 'Finalizado' %}var(--color-secondary){% else %}var(--color-tertiary){% endif %};">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.75rem;">
             <div>
                 <span style="font-size: 0.8rem; font-weight: 700; color: var(--color-text-muted);">
-                    Canal Directo de Asistencia &bull; Ticket #{{ ticket.id }}
+                    Canal Directo de Asistencia &bull; Ticket #{{ ticket.id }} ({{ ticket.modalidad }})
                 </span>
-                <h1 style="font-size: 1.4rem; font-weight: 800; color: var(--color-primary); margin: 0.25rem 0;">
+                <h1 style="font-size: 1.45rem; font-weight: 800; color: var(--color-primary); margin: 0.25rem 0;">
                     {{ ticket.titulo }}
                 </h1>
-                <p style="font-size: 0.85rem; color: var(--color-text-muted); margin: 0;">
-                    <strong>Productor:</strong> {{ ticket.productor.usuario.get_full_name|default:ticket.productor.usuario.username }} ({{ ticket.productor.region }} - {{ ticket.productor.rubro_productivo }}) |
-                    <strong>Ingeniero:</strong> Ing. {{ ticket.profesional.usuario.get_full_name|default:ticket.profesional.usuario.username }} (CIAPA: {{ ticket.profesional.matricula_provincial }})
+                <p style="font-size: 0.88rem; color: var(--color-text-muted); margin: 0;">
+                    <strong>Productor:</strong> {{ ticket.productor.usuario.get_full_name|default:ticket.productor.usuario.username }} ({{ ticket.productor.region }} — {{ ticket.productor.rubro_productivo }}) |
+                    <strong>Ingeniero:</strong>
+                    {% if ticket.profesional %}
+                        Ing. {{ ticket.profesional.usuario.get_full_name|default:ticket.profesional.usuario.username }} (CIAPAJ: {{ ticket.profesional.matricula_provincial }})
+                    {% else %}
+                        <em>Pendiente de asignación (Solicitud Abierta)</em>
+                    {% endif %}
                 </p>
             </div>
 
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <span class="badge {% if ticket.estado == 'Aceptado' %}badge-success{% elif ticket.estado == 'Pendiente' %}badge-warning{% else %}badge-neutral{% endif %}">
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                <span class="badge {% if ticket.estado == 'Aceptado' or ticket.estado == 'Finalizado' %}badge-success{% elif ticket.estado == 'Pendiente' %}badge-warning{% else %}badge-neutral{% endif %}">
                     {{ ticket.estado }}
                 </span>
-                {% if es_profesional and ticket.estado == 'Pendiente' %}
+                {% if ticket.confirmado_por_productor %}
+                    <span class="badge badge-soft">✔ Recepción Confirmada</span>
+                {% endif %}
+                {% if ticket.estado == 'Pendiente' and not es_productor %}
                     <form method="POST" action="{% url 'aceptar_ticket' ticket.id %}" style="display: inline;">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-secondary btn-sm">✔ Aceptar Solicitud</button>
+                        <button type="submit" class="btn btn-secondary btn-sm">✔ Aceptar / Tomar Solicitud</button>
                     </form>
                 {% endif %}
             </div>
         </div>
 
-        <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--color-neutral-light); font-size: 0.9rem; color: var(--color-text-main);">
+        <div style="margin-top: 0.85rem; padding-top: 0.85rem; border-top: 1px solid var(--color-neutral-light); font-size: 0.92rem; color: var(--color-text-main);">
             <strong>Problema inicial planteado:</strong> {{ ticket.descripcion }}
         </div>
+
+        {% if ticket.estado == 'Finalizado' %}
+            <div style="margin-top: 1rem; background: #ECFDF5; border: 1.5px solid #10B981; border-radius: var(--radius-xl); padding: 1rem;">
+                <strong style="color: #065F46; font-size: 0.92rem; display: block; margin-bottom: 0.25rem;">
+                    🏁 Trabajo Finalizado por el Ingeniero ({{ ticket.fecha_finalizacion|date:"d/m/Y H:i" }}):
+                </strong>
+                <p style="color: #065F46; font-size: 0.92rem; margin: 0 0 0.75rem 0;">
+                    {{ ticket.descripcion_finalizacion }}
+                </p>
+
+                {% if ticket.confirmado_por_productor %}
+                    <span class="badge badge-success">
+                        ✔ Recepción confirmada por el productor el {{ ticket.fecha_confirmacion|date:"d/m/Y H:i" }}
+                    </span>
+                {% elif es_productor %}
+                    <form method="POST" action="{% url 'confirmar_recepcion' ticket.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-secondary btn-sm">
+                            ✔ Confirmar Recepción Conforme del Trabajo
+                        </button>
+                    </form>
+                {% else %}
+                    <span style="font-size: 0.85rem; color: #065F46; font-weight: 600;">
+                        ⏳ Esperando confirmación de recepción por parte del productor.
+                    </span>
+                {% endif %}
+            </div>
+        {% endif %}
     </div>
 
+    <!-- Panel para que el Ingeniero marque el trabajo como Finalizado -->
+    {% if es_profesional and ticket.estado == 'Aceptado' %}
+        <div class="card rounded-2xl shadow-sm p-6" style="margin-bottom: 1.25rem; background: #FFFFFF; border-top: 4px solid var(--color-secondary);">
+            <h2 style="font-size: 1.1rem; font-weight: 700; color: var(--color-primary); margin-bottom: 0.5rem;">
+                🏁 Marcar Trabajo Técnico como Finalizado
+            </h2>
+            <p style="font-size: 0.88rem; color: var(--color-text-muted); margin-bottom: 1rem;">
+                Una vez concluida la asistencia técnica, registra el informe de cierre. Se guardará automáticamente la fecha y hora de finalización para que el productor confirme la recepción.
+            </p>
+            <form method="POST" action="{% url 'finalizar_ticket' ticket.id %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label class="form-label" for="{{ finalizar_form.descripcion_finalizacion.id_for_label }}">
+                        Informe / Descripción de Finalización <span class="required-indicator" aria-hidden="true">*</span>
+                    </label>
+                    {{ finalizar_form.descripcion_finalizacion }}
+                </div>
+                <button type="submit" class="btn btn-secondary btn-sm">
+                    ✔ Registrar Cierre y Marcar como Finalizado
+                </button>
+            </form>
+        </div>
+    {% endif %}
+
     <!-- Contenedor del Chat 1 a 1 -->
-    <div class="chat-container">
-        <div class="chat-messages" id="chatMessages">
+    <section class="chat-container" aria-label="Mensajes del hilo de conversación técnica">
+        <div class="chat-messages" id="chatMessages" role="log" aria-live="polite">
             {% for msg in mensajes %}
                 <div class="chat-bubble {% if msg.emisor == request.user %}chat-bubble-emisor{% else %}chat-bubble-receptor{% endif %}">
-                    <strong style="font-size: 0.75rem; display: block; opacity: 0.85; margin-bottom: 0.2rem;">
+                    <strong style="font-size: 0.75rem; display: block; opacity: 0.88; margin-bottom: 0.25rem;">
                         {% if msg.emisor == request.user %}
                             Tú ({{ msg.emisor.first_name|default:msg.emisor.username }})
                         {% else %}
                             {{ msg.emisor.first_name|default:msg.emisor.username }}
-                            {% if msg.emisor.role == 'PROFESSIONAL' %}(Ing. Agrónomo CIAPA){% endif %}
+                            {% if msg.emisor.role == 'PROFESSIONAL' %}(Ing. Agrónomo CIAPAJ){% endif %}
                         {% endif %}
                     </strong>
                     {{ msg.contenido|linebreaksbr }}
                     <span class="chat-bubble-meta">
-                        {{ msg.fecha_envio|date:"H:i - d/m/Y" }}
+                        {{ msg.fecha_envio|date:"H:i — d/m/Y" }}
                     </span>
                 </div>
             {% empty %}
                 <div style="text-align: center; color: var(--color-text-muted); margin: auto;">
-                    💬 El canal está abierto. Envía un mensaje para comenzar la conversación técnica directa.
+                    💬 El canal está abierto. Envía un mensaje para iniciar la conversación técnica directa.
                 </div>
             {% endfor %}
         </div>
 
         <!-- Formulario de Envío de Mensaje -->
-        <form method="POST" action="{% url 'chat_ticket' ticket.id %}" style="display: flex; gap: 0.5rem; padding: 0.75rem; border-top: 1px solid var(--color-neutral-light); background: #F6F8F6;">
+        <form method="POST" action="{% url 'chat_ticket' ticket.id %}" style="display: flex; gap: 0.65rem; padding: 0.9rem; border-top: 1px solid var(--color-neutral-light); background: var(--color-background);">
             {% csrf_token %}
-            <input type="text" name="contenido" placeholder="Escribe un mensaje técnico o recomendación..." required class="form-control" autocomplete="off" style="flex: 1;">
-            <button type="submit" class="btn btn-primary" style="min-width: 100px;">
+            <label for="id_contenido_chat" class="visually-hidden">Escribe un mensaje técnico</label>
+            <input type="text" name="contenido" id="id_contenido_chat" placeholder="Escribe un mensaje técnico o recomendación..." required class="form-control" autocomplete="off" style="flex: 1;">
+            <button type="submit" class="btn btn-primary" style="min-width: 110px;">
                 Enviar
             </button>
         </form>
-    </div>
+    </section>
 
-    <div style="margin-top: 1rem; display: flex; justify-content: space-between;">
+    <div style="margin-top: 1.25rem; display: flex; justify-content: space-between;">
         {% if es_productor %}
             <a href="{% url 'bandeja_productor' %}" style="font-size: 0.9rem;">&larr; Volver a Mis Solicitudes</a>
         {% elif es_profesional %}
             <a href="{% url 'bandeja_profesional' %}" style="font-size: 0.9rem;">&larr; Volver a Bandeja de Trabajos</a>
         {% else %}
-            <a href="{% url 'inicio' %}" style="font-size: 0.9rem;">&larr; Volver al Panel</a>
+            <a href="{% url 'inicio' %}" style="font-size: 0.9rem;">&larr; Volver al Inicio</a>
         {% endif %}
     </div>
 </div>
 
 <script>
-    // Auto-scroll al final del chat
     const chatContainer = document.getElementById('chatMessages');
     if (chatContainer) {
         chatContainer.scrollTop = chatContainer.scrollHeight;

@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}Publicar Solicitud Abierta — AgroJujuy{% endblock %}
+
+{% block content %}
+<div style="max-width: 680px; margin: 1rem auto;">
+    <div style="margin-bottom: 1rem;">
+        <a href="{% url 'buscador_profesionales' %}" style="font-size: 0.9rem;">&larr; Volver al Buscador</a>
+    </div>
+
+    <div class="card rounded-2xl shadow-md p-6" style="border-top: 5px solid var(--color-secondary);">
+        <div class="card-title">
+            <h1 style="font-size: 1.45rem; font-weight: 800; color: var(--color-primary); margin: 0;">
+                <span aria-hidden="true">📢</span> Publicar Solicitud Abierta de Asistencia
+            </h1>
+            <span class="badge badge-success">Modalidad Abierta</span>
+        </div>
+
+        <p style="font-size: 0.95rem; color: var(--color-text-muted); margin-bottom: 1.5rem;">
+            Describe tu problema agronómico sin necesidad de elegir a un ingeniero específico. Tu solicitud aparecerá en la bandeja de todos los profesionales habilitados por CIAPAJ y quedará asignada y bloqueada en cuanto el primer ingeniero disponible la tome.
+        </p>
+
+        <form method="POST" novalidate>
+            {% csrf_token %}
+
+            {% if form.errors %}
+                <div class="alert alert-error" role="alert">
+                    Por favor revisa los errores indicados abajo.
+                </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label class="form-label" for="{{ form.titulo.id_for_label }}">
+                    Motivo / Consulta Principal <span class="required-indicator" aria-hidden="true">*</span>
+                </label>
+                {{ form.titulo }}
+                {% if form.titulo.errors %}
+                    <p id="error_titulo" class="field-error" role="alert">⛔ {{ form.titulo.errors|join:", " }}</p>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="{{ form.especialidad_requerida.id_for_label }}">
+                    Especialidad Técnica Sugerida (Opcional)
+                </label>
+                {{ form.especialidad_requerida }}
+                {% if form.especialidad_requerida.errors %}
+                    <p id="error_especialidad_requerida" class="field-error" role="alert">⛔ {{ form.especialidad_requerida.errors|join:", " }}</p>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="{{ form.descripcion.id_for_label }}">
+                    Detalle del Problema Agronómico <span class="required-indicator" aria-hidden="true">*</span>
+                </label>
+                {{ form.descripcion }}
+                <span class="field-help">Incluye síntomas, cultivo afectado, tiempo de evolución y observaciones en finca.</span>
+                {% if form.descripcion.errors %}
+                    <p id="error_descripcion" class="field-error" role="alert">⛔ {{ form.descripcion.errors|join:", " }}</p>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-secondary w-full mt-4">
+                Publicar Solicitud Abierta a la Red CIAPAJ
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

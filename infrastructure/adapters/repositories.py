@@ -1,4 +1,7 @@
 from typing import List, Optional
+from django.db import transaction
+from django.db.models import Q
+from django.utils import timezone
 from domain.ports import (
     RepositorioUsuario, RepositorioProductor, RepositorioProfesional,
     RepositorioTicket, RepositorioChat, RepositorioComunidad
@@ -54,6 +57,8 @@ class DjangoProductorRepository(RepositorioProductor):
                 usuario_id=p.usuario_id,
                 region=p.region,
                 rubro_productivo=p.rubro_productivo,
+                dni=p.dni,
+                renspa=p.renspa,
                 telefono=p.telefono,
                 direccion_finca=p.direccion_finca
             )
@@ -67,6 +72,8 @@ class DjangoProductorRepository(RepositorioProductor):
                 'usuario_id': productor.usuario_id,
                 'region': productor.region,
                 'rubro_productivo': productor.rubro_productivo,
+                'dni': productor.dni,
+                'renspa': productor.renspa,
                 'telefono': productor.telefono,
                 'direccion_finca': productor.direccion_finca,
             }
@@ -76,37 +83,34 @@ class DjangoProductorRepository(RepositorioProductor):
 
 
 class DjangoProfesionalRepository(RepositorioProfesional):
+    def _to_entity(self, p: Profesional) -> ProfesionalEntity:
+        nombre = p.usuario.get_full_name() or p.usuario.username
+        return ProfesionalEntity(
+            id=p.id,
+            usuario_id=p.usuario_id,
+            matricula_provincial=p.matricula_provincial,
+            especialidad=p.especialidad,
+            zonas_cobertura=p.get_zonas_list(),
+            especialidades_lista=p.get_especialidades_list(),
+            especialidad_propuesta=p.especialidad_propuesta,
+            nombre_completo=nombre,
+            telefono=p.telefono,
+            biografia=p.biografia,
+            estado_validacion=p.estado_validacion,
+            fecha_solicitud=p.fecha_solicitud
+        )
+
     def buscar_por_id(self, profesional_id: int) -> Optional[ProfesionalEntity]:
         try:
-            p = Profesional.objects.get(id=profesional_id)
-            return ProfesionalEntity(
-                id=p.id,
-                usuario_id=p.usuario_id,
-                matricula_provincial=p.matricula_provincial,
-                especialidad=p.especialidad,
-                zonas_cobertura=p.get_zonas_list(),
-                telefono=p.telefono,
-                biografia=p.biografia,
-                estado_validacion=p.estado_validacion,
-                fecha_solicitud=p.fecha_solicitud
-            )
+            p = Profesional.objects.select_related('usuario').get(id=profesional_id)
+            return self._to_entity(p)
         except Profesional.DoesNotExist:
             return None
 
     def buscar_por_usuario_id(self, usuario_id: int) -> Optional[ProfesionalEntity]:
         try:
-            p = Profesional.objects.get(usuario_id=usuario_id)
-            return ProfesionalEntity(
-                id=p.id,
-                usuario_id=p.usuario_id,
-                matricula_provincial=p.matricula_provincial,
-                especialidad=p.especialidad,
-                zonas_cobertura=p.get_zonas_list(),
-                telefono=p.telefono,
-                biografia=p.biografia,
-                estado_validacion=p.estado_validacion,
-                fecha_solicitud=p.fecha_solicitud
-            )
+            p = Profesional.objects.select_related('usuario').get(usuario_id=usuario_id)
+            return self._to_entity(p)
         except Profesional.DoesNotExist:
             return None
 
@@ -114,27 +118,21 @@ class DjangoProfesionalRepository(RepositorioProfesional):
         """
         Regla de negocio: Si un profesional está 'Pendiente' o 'Suspendido',
         desaparece automáticamente del buscador.
+        Soporta múltiples especialidades y zonas.
         """
-        qs = Profesional.objects.filter(estado_validacion='Habilitado')
+        qs = Profesional.objects.select_related('usuario').filter(estado_validacion='Habilitado')
         if region:
             qs = qs.filter(zonas_cobertura__icontains=region)
         if especialidad:
-            qs = qs.filter(especialidad=especialidad)
+            qs = qs.filter(
+                Q(especialidad__icontains=especialidad) |
+                Q(especialidad_propuesta__icontains=especialidad)
+            )
 
         resultado = []
         for p in qs:
             if profesional_es_visible_para_productores(p.estado_validacion):
-                resultado.append(ProfesionalEntity(
-                    id=p.id,
-                    usuario_id=p.usuario_id,
-                    matricula_provincial=p.matricula_provincial,
-                    especialidad=p.especialidad,
-                    zonas_cobertura=p.get_zonas_list(),
-                    telefono=p.telefono,
-                    biografia=p.biografia,
-                    estado_validacion=p.estado_validacion,
-                    fecha_solicitud=p.fecha_solicitud
-                ))
+                resultado.append(self._to_entity(p))
         return resultado
 
     def cambiar_estado(self, profesional_id: int, nuevo_estado: str) -> None:
@@ -142,63 +140,78 @@ class DjangoProfesionalRepository(RepositorioProfesional):
 
 
 class DjangoTicketRepository(RepositorioTicket):
+    def _to_entity(self, t: TicketAsistencia) -> TicketEntity:
+        return TicketEntity(
+            id=t.id,
+            productor_id=t.productor_id,
+            profesional_id=t.profesional_id,
+            titulo=t.titulo,
+            descripcion=t.descripcion,
+            modalidad=t.modalidad,
+            especialidad_requerida=t.especialidad_requerida,
+            estado=t.estado,
+            fecha_creacion=t.fecha_creacion,
+            descripcion_finalizacion=t.descripcion_finalizacion,
+            fecha_finalizacion=t.fecha_finalizacion,
+            confirmado_por_productor=t.confirmado_por_productor,
+            fecha_confirmacion=t.fecha_confirmacion,
+        )
+
     def crear(self, ticket: TicketEntity) -> TicketEntity:
         t = TicketAsistencia.objects.create(
             productor_id=ticket.productor_id,
             profesional_id=ticket.profesional_id,
             titulo=ticket.titulo,
             descripcion=ticket.descripcion,
+            modalidad=ticket.modalidad,
+            especialidad_requerida=ticket.especialidad_requerida,
             estado=ticket.estado
         )
-        ticket.id = t.id
-        ticket.fecha_creacion = t.fecha_creacion
-        return ticket
+        return self._to_entity(t)
 
     def buscar_por_id(self, ticket_id: int) -> Optional[TicketEntity]:
         try:
             t = TicketAsistencia.objects.get(id=ticket_id)
-            return TicketEntity(
-                id=t.id,
-                productor_id=t.productor_id,
-                profesional_id=t.profesional_id,
-                titulo=t.titulo,
-                descripcion=t.descripcion,
-                estado=t.estado,
-                fecha_creacion=t.fecha_creacion
-            )
+            return self._to_entity(t)
         except TicketAsistencia.DoesNotExist:
             return None
 
     def listar_ultimos_por_productor(self, productor_id: int, limite: int = 5) -> List[TicketEntity]:
         qs = TicketAsistencia.objects.filter(productor_id=productor_id).order_by('-fecha_creacion')[:limite]
-        return [
-            TicketEntity(
-                id=t.id,
-                productor_id=t.productor_id,
-                profesional_id=t.profesional_id,
-                titulo=t.titulo,
-                descripcion=t.descripcion,
-                estado=t.estado,
-                fecha_creacion=t.fecha_creacion
-            ) for t in qs
-        ]
+        return [self._to_entity(t) for t in qs]
 
     def listar_ultimos_por_profesional(self, profesional_id: int, limite: int = 5) -> List[TicketEntity]:
         qs = TicketAsistencia.objects.filter(profesional_id=profesional_id).order_by('-fecha_creacion')[:limite]
-        return [
-            TicketEntity(
-                id=t.id,
-                productor_id=t.productor_id,
-                profesional_id=t.profesional_id,
-                titulo=t.titulo,
-                descripcion=t.descripcion,
-                estado=t.estado,
-                fecha_creacion=t.fecha_creacion
-            ) for t in qs
-        ]
+        return [self._to_entity(t) for t in qs]
 
     def actualizar_estado(self, ticket_id: int, nuevo_estado: str) -> None:
         TicketAsistencia.objects.filter(id=ticket_id).update(estado=nuevo_estado)
+
+    def tomar_solicitud_abierta(self, ticket_id: int, profesional_id: int) -> bool:
+        with transaction.atomic():
+            try:
+                t = TicketAsistencia.objects.select_for_update().get(id=ticket_id)
+                if t.estado != 'Pendiente' or (t.profesional_id is not None and t.profesional_id != profesional_id):
+                    return False
+                t.profesional_id = profesional_id
+                t.estado = 'Aceptado'
+                t.save(update_fields=['profesional_id', 'estado', 'fecha_actualizacion'])
+                return True
+            except TicketAsistencia.DoesNotExist:
+                return False
+
+    def finalizar_trabajo(self, ticket_id: int, descripcion_finalizacion: str) -> None:
+        TicketAsistencia.objects.filter(id=ticket_id).update(
+            estado='Finalizado',
+            descripcion_finalizacion=descripcion_finalizacion,
+            fecha_finalizacion=timezone.now()
+        )
+
+    def confirmar_recepcion_productor(self, ticket_id: int) -> None:
+        TicketAsistencia.objects.filter(id=ticket_id).update(
+            confirmado_por_productor=True,
+            fecha_confirmacion=timezone.now()
+        )
 
 
 class DjangoChatRepository(RepositorioChat):

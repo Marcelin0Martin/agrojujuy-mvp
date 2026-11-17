@@ -1,46 +1,63 @@
 {% extends 'base.html' %}
 
-{% block title %}Buscador Inteligente de Profesionales - AgroJujuy{% endblock %}
+{% block title %}Buscador Inteligente de Profesionales — AgroJujuy{% endblock %}
 
 {% block content %}
 <div>
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
         <div>
-            <h1 style="font-size: 1.8rem; font-weight: 800; color: var(--color-primary);">
+            <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--color-primary); letter-spacing: -0.02em;">
                 Buscador Inteligente de Profesionales Agrarios
             </h1>
             <p style="color: var(--color-text-muted); font-size: 0.95rem;">
-                Encuentra ingenieros y especialistas habilitados por CIAPA para asesoría técnica en campo.
+                Selecciona una zona geográfica o especialidad para filtrar automáticamente a los ingenieros habilitados por CIAPAJ.
             </p>
         </div>
-        {% if user_productor %}
-        <a href="{% url 'bandeja_productor' %}" class="btn btn-tertiary btn-sm">
-            📋 Mis Solicitudes Enviadas
-        </a>
-        {% endif %}
+
+        <div style="display: flex; gap: 0.65rem; flex-wrap: wrap;">
+            <a href="{% url 'solicitar_asistencia_abierta' %}" class="btn btn-secondary btn-sm">
+                <span aria-hidden="true">📢</span> Publicar Solicitud Abierta
+            </a>
+            {% if user.is_authenticated and effective_role == 'PRODUCER' %}
+                <a href="{% url 'bandeja_productor' %}" class="btn btn-tertiary btn-sm">
+                    <span aria-hidden="true">📋</span> Mis Solicitudes
+                </a>
+            {% endif %}
+        </div>
     </div>
 
-    <!-- Filtros obligatorios por Zona Geográfica y Especialidad -->
-    <div class="card" style="background: #FFFFFF; border-top: 4px solid var(--color-primary);">
-        <h2 style="font-size: 1.05rem; font-weight: 700; color: var(--color-primary); margin-bottom: 1rem;">
-            🎯 Filtros de Búsqueda Territorial y Técnica
-        </h2>
-        
-        <form method="GET" action="{% url 'buscador_profesionales' %}" style="display: grid; grid-template-columns: 1fr; gap: 1rem;">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
-                <div class="form-group" style="margin: 0;">
-                    <label class="form-label" for="id_region">📍 Zona Geográfica (Obligatorio en campo):</label>
-                    <select name="region" id="id_region" class="form-control">
-                        <option value="">-- Todas las Regiones de Jujuy --</option>
+    <!-- Panel de Filtros Automáticos (Sin necesidad de presionar botón Buscar) -->
+    <section class="card rounded-2xl shadow-md p-6" aria-label="Filtros territoriales y de especialidad" style="border-top: 5px solid var(--color-primary);">
+        <form id="buscador-form" method="GET" action="{% url 'buscador_profesionales' %}">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                <div>
+                    <label class="form-label" for="id_region">
+                        <span aria-hidden="true">📍</span> 1. Selecciona Zona Geográfica:
+                    </label>
+                    <select name="region" id="id_region" class="form-control" onchange="document.getElementById('buscador-form').submit();">
+                        <option value="">-- Seleccionar Región de Jujuy --</option>
                         {% for r in regiones %}
                             <option value="{{ r }}" {% if filtro_region == r %}selected{% endif %}>{{ r }}</option>
                         {% endfor %}
                     </select>
+
+                    <!-- Píldoras de clic rápido por Región -->
+                    <div class="filter-pills" role="group" aria-label="Filtro rápido por región">
+                        {% for r in regiones %}
+                            <a href="?region={{ r|urlencode }}{% if filtro_especialidad %}&amp;especialidad={{ filtro_especialidad|urlencode }}{% endif %}"
+                               class="filter-pill {% if filtro_region == r %}filter-pill-active{% endif %}"
+                               {% if filtro_region == r %}aria-current="true"{% endif %}>
+                                {{ r }}
+                            </a>
+                        {% endfor %}
+                    </div>
                 </div>
 
-                <div class="form-group" style="margin: 0;">
-                    <label class="form-label" for="id_especialidad">🔬 Especialidad Agronómica:</label>
-                    <select name="especialidad" id="id_especialidad" class="form-control">
+                <div>
+                    <label class="form-label" for="id_especialidad">
+                        <span aria-hidden="true">🔬</span> 2. Selecciona Especialidad Agronómica:
+                    </label>
+                    <select name="especialidad" id="id_especialidad" class="form-control" onchange="document.getElementById('buscador-form').submit();">
                         <option value="">-- Todas las Especialidades --</option>
                         {% for e in especialidades %}
                             <option value="{{ e }}" {% if filtro_especialidad == e %}selected{% endif %}>{{ e }}</option>
@@ -49,89 +66,140 @@
                 </div>
             </div>
 
-            <div style="display: flex; gap: 0.75rem; justify-content: flex-end; align-items: center; margin-top: 0.5rem;">
-                {% if filtro_region or filtro_especialidad %}
-                    <a href="{% url 'buscador_profesionales' %}" class="btn btn-outline btn-sm">Limpiar Filtros</a>
-                {% endif %}
-                <button type="submit" class="btn btn-primary btn-sm">
-                    🔍 Filtrar Profesionales
-                </button>
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--color-neutral-light);">
+                <span style="font-size: 0.85rem; color: var(--color-text-muted);">
+                    💡 Los resultados se actualizan automáticamente al elegir una región o especialidad.
+                </span>
+                <div style="display: flex; gap: 0.5rem;">
+                    {% if filtro_activo %}
+                        <a href="{% url 'buscador_profesionales' %}" class="btn btn-outline btn-sm">Limpiar Selección</a>
+                    {% else %}
+                        <a href="?mostrar=todos" class="btn btn-outline btn-sm">Ver Directorio Completo</a>
+                    {% endif %}
+                    <noscript>
+                        <button type="submit" class="btn btn-primary btn-sm">Aplicar Filtros</button>
+                    </noscript>
+                </div>
             </div>
         </form>
-    </div>
+    </section>
 
     <!-- Módulo Comercial / Banner Publicitario Estático (Mockup Agroinsumos) -->
-    <div class="banner-publicidad">
+    <aside class="banner-publicidad" aria-label="Espacio publicitario de agroinsumos">
         <div>
             <span class="banner-publicidad-tag">ESPACIO PUBLICITARIO DE AGROINSUMOS</span>
-            <h3 style="font-size: 1.1rem; font-weight: 800; margin-top: 0.35rem;">Fertilizantes Orgánicos y Bioinsumos Valles & Quebrada</h3>
-            <p style="font-size: 0.85rem; opacity: 0.9;">Soluciones certificadas para nutrición de suelos y control biológico sin residuos químicos.</p>
-        </div>
-        <span class="badge" style="background-color: var(--color-tertiary); color: #FFFFFF;">Anuncio Oficial</span>
-    </div>
-
-    <!-- Cuadrícula de Profesionales Habilitados -->
-    <div style="margin-top: 1.5rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-            <h2 style="font-size: 1.2rem; font-weight: 700; color: var(--color-primary);">
-                Profesionales Disponibles ({{ profesionales|length }})
+            <h2 style="font-size: 1.1rem; font-weight: 800; margin-top: 0.35rem; color: #FFFFFF;">
+                Fertilizantes Orgánicos y Bioinsumos Valles &amp; Quebrada
             </h2>
-            <span class="badge badge-success" style="font-size: 0.7rem;">Solo Auditados CIAPA</span>
+            <p style="font-size: 0.88rem; opacity: 0.92;">
+                Soluciones certificadas para nutrición de suelos y control biológico sin residuos químicos.
+            </p>
         </div>
+        <span class="badge badge-warning">Anuncio Oficial</span>
+    </aside>
 
-        {% if profesionales %}
-            <div class="profesionales-grid">
-                {% for prof in profesionales %}
-                    <div class="card profesional-card">
-                        <div>
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
-                                <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--color-primary);">
-                                    Ing. Agrónomo
-                                </h3>
-                                <span class="badge badge-success" style="font-size: 0.65rem;">Habilitado</span>
-                            </div>
-                            
-                            <p style="font-size: 0.85rem; font-weight: 700; color: var(--color-tertiary); margin-bottom: 0.5rem;">
-                                Matrícula: {{ prof.matricula_provincial }}
-                            </p>
-
-                            <p style="font-size: 0.95rem; font-weight: 600; color: var(--color-primary); margin-bottom: 0.35rem;">
-                                🌿 {{ prof.especialidad }}
-                            </p>
-
-                            <p style="font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 0.75rem;">
-                                📍 Cobertura: <strong>{{ prof.zonas_cobertura|join:", " }}</strong>
-                            </p>
-
-                            {% if prof.biografia %}
-                                <p style="font-size: 0.85rem; color: var(--color-text-muted); line-height: 1.4; margin-bottom: 1rem;">
-                                    {{ prof.biografia|truncatewords:18 }}
-                                </p>
-                            {% endif %}
-                        </div>
-
-                        <div style="display: flex; gap: 0.5rem; margin-top: 1rem; border-top: 1px solid var(--color-neutral-light); padding-top: 0.75rem;">
-                            <a href="{% url 'vitrina_profesional' prof.id %}" class="btn btn-outline btn-sm" style="flex: 1;">
-                                Ver Perfil
-                            </a>
-                            <a href="{% url 'solicitar_asistencia' prof.id %}" class="btn btn-primary btn-sm" style="flex: 1.2;">
-                                Solicitar Ayuda
-                            </a>
-                        </div>
-                    </div>
-                {% endfor %}
+    <!-- Resultados del Buscador -->
+    <section aria-live="polite" style="margin-top: 1.5rem;">
+        {% if not filtro_activo %}
+            <div class="card rounded-2xl shadow-sm p-8" style="text-align: center; background: #FFFFFF;">
+                <div aria-hidden="true" style="font-size: 2.75rem; margin-bottom: 0.75rem;">🧭</div>
+                <h2 style="font-size: 1.3rem; font-weight: 700; color: var(--color-primary); margin-bottom: 0.5rem;">
+                    Elige tu Zona Geográfica o Especialidad para comenzar
+                </h2>
+                <p style="color: var(--color-text-muted); max-width: 560px; margin: 0 auto 1.25rem auto; font-size: 0.95rem;">
+                    Para ofrecerte una experiencia limpia y enfocada, selecciona arriba tu región productiva (<strong>Puna, Valles, Yungas o Quebrada</strong>) o el área técnica requerida.
+                </p>
+                <div style="display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap;">
+                    <a href="?mostrar=todos" class="btn btn-outline btn-sm">Explorar Todos los Perfiles Habilitados</a>
+                    <a href="{% url 'solicitar_asistencia_abierta' %}" class="btn btn-secondary btn-sm">📢 O publicar una Solicitud Abierta</a>
+                </div>
             </div>
         {% else %}
-            <div class="card" style="text-align: center; padding: 3rem 1rem;">
-                <p style="font-size: 1.2rem; font-weight: 700; color: var(--color-primary); margin-bottom: 0.5rem;">
-                    No se encontraron profesionales habilitados con los filtros seleccionados.
-                </p>
-                <p style="color: var(--color-text-muted); margin-bottom: 1.5rem;">
-                    Prueba cambiando la zona geográfica o seleccionando otra especialidad técnica.
-                </p>
-                <a href="{% url 'buscador_profesionales' %}" class="btn btn-outline btn-sm">Restablecer Búsqueda</a>
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;">
+                <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--color-primary);">
+                    Profesionales Habilitados Encontrados ({{ total_resultados }})
+                </h2>
+                <span class="badge badge-success">Solo Auditados CIAPAJ</span>
             </div>
+
+            {% if profesionales %}
+                <div class="profesionales-grid">
+                    {% for prof in profesionales %}
+                        <article class="card card-interactive profesional-card rounded-2xl shadow-sm p-6" style="margin-bottom: 0;">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                    <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--color-primary);">
+                                        Ing. {{ prof.nombre_completo }}
+                                    </h3>
+                                    <span class="badge badge-success" style="font-size: 0.68rem;">Habilitado</span>
+                                </div>
+
+                                <p style="font-size: 0.85rem; font-weight: 700; color: var(--color-tertiary-dark); margin-bottom: 0.5rem;">
+                                    Matrícula CIAPAJ: {{ prof.matricula_provincial }}
+                                </p>
+
+                                <p style="font-size: 0.95rem; font-weight: 600; color: var(--color-primary); margin-bottom: 0.4rem;">
+                                    <span aria-hidden="true">🌿</span> {{ prof.especialidad }}
+                                </p>
+
+                                <p style="font-size: 0.88rem; color: var(--color-text-muted); margin-bottom: 0.75rem;">
+                                    <span aria-hidden="true">📍</span> Cobertura: <strong>{{ prof.zonas_cobertura|join:", " }}</strong>
+                                </p>
+
+                                {% if prof.biografia %}
+                                    <p style="font-size: 0.88rem; color: var(--color-text-muted); line-height: 1.45; margin-bottom: 1rem;">
+                                        {{ prof.biografia|truncatewords:20 }}
+                                    </p>
+                                {% endif %}
+                            </div>
+
+                            <div style="display: flex; gap: 0.65rem; margin-top: 1rem; border-top: 1px solid var(--color-neutral-light); padding-top: 1rem;">
+                                <a href="{% url 'vitrina_profesional' prof.id %}" class="btn btn-outline btn-sm" style="flex: 1;">
+                                    Ver Vitrina
+                                </a>
+                                <a href="{% url 'solicitar_asistencia' prof.id %}" class="btn btn-primary btn-sm" style="flex: 1.2;">
+                                    Solicitud Dirigida
+                                </a>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+
+                <!-- Controles de Paginación (10 perfiles por página) -->
+                {% if page_obj and page_obj.paginator.num_pages > 1 %}
+                    <nav class="pagination-nav" aria-label="Paginación de profesionales">
+                        {% if page_obj.has_previous %}
+                            <a href="?region={{ filtro_region|urlencode }}&amp;especialidad={{ filtro_especialidad|urlencode }}{% if request.GET.mostrar %}&amp;mostrar={{ request.GET.mostrar|urlencode }}{% endif %}&amp;page={{ page_obj.previous_page_number }}" class="btn btn-outline btn-sm">
+                                &larr; Anterior
+                            </a>
+                        {% endif %}
+
+                        <span class="badge badge-soft" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
+                            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                        </span>
+
+                        {% if page_obj.has_next %}
+                            <a href="?region={{ filtro_region|urlencode }}&amp;especialidad={{ filtro_especialidad|urlencode }}{% if request.GET.mostrar %}&amp;mostrar={{ request.GET.mostrar|urlencode }}{% endif %}&amp;page={{ page_obj.next_page_number }}" class="btn btn-outline btn-sm">
+                                Siguiente &rarr;
+                            </a>
+                        {% endif %}
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="card rounded-2xl shadow-sm p-8" style="text-align: center;">
+                    <p style="font-size: 1.15rem; font-weight: 700; color: var(--color-primary); margin-bottom: 0.5rem;">
+                        No se encontraron profesionales habilitados con los filtros seleccionados.
+                    </p>
+                    <p style="color: var(--color-text-muted); margin-bottom: 1.5rem;">
+                        Prueba seleccionando otra zona geográfica o publica una solicitud abierta para toda la red.
+                    </p>
+                    <div style="display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap;">
+                        <a href="{% url 'buscador_profesionales' %}" class="btn btn-outline btn-sm">Limpiar Filtros</a>
+                        <a href="{% url 'solicitar_asistencia_abierta' %}" class="btn btn-secondary btn-sm">📢 Publicar Solicitud Abierta</a>
+                    </div>
+                </div>
+            {% endif %}
         {% endif %}
-    </div>
+    </section>
 </div>
 {% endblock %}

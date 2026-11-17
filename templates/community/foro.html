@@ -1,140 +1,268 @@
 {% extends 'base.html' %}
 
-{% block title %}Foro de Comunidad Agraria - AgroJujuy{% endblock %}
+{% block title %}Foro de Comunidad Agraria — AgroJujuy{% endblock %}
 
 {% block content %}
-<div style="max-width: 840px; margin: 1.5rem auto;">
-    <div style="margin-bottom: 1.5rem;">
-        <h1 style="font-size: 1.8rem; font-weight: 800; color: var(--color-primary);">
-            Muro Comunitario e Intercambio Agrario
-        </h1>
-        <p style="color: var(--color-text-muted); font-size: 0.95rem;">
-            Espacio público para que productores e ingenieros compartan problemas, soluciones, ideas y sugerencias técnicas.
-        </p>
-    </div>
-
-    <!-- Módulo Comercial / Banner Publicitario Estático en Foro -->
-    <div class="banner-publicidad">
+<div style="max-width: 920px; margin: 1rem auto;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
         <div>
-            <span class="banner-publicidad-tag">ESPACIO PUBLICITARIO DE AGROINSUMOS</span>
-            <h3 style="font-size: 1.05rem; font-weight: 800; margin-top: 0.35rem;">Sistemas de Riego Tecnificado y Geomembranas Jujuy</h3>
-            <p style="font-size: 0.85rem; opacity: 0.9;">Goteo, aspersión y almacenamiento hídrico para zonas de altura y valles templados.</p>
+            <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--color-primary);">
+                Muro Comunitario e Intercambio Agrario
+            </h1>
+            <p style="color: var(--color-text-muted); font-size: 0.95rem;">
+                Espacio público para explorar y compartir consultas técnicas, experiencias de cultivo y soluciones en Jujuy.
+            </p>
         </div>
-        <span class="badge" style="background-color: var(--color-tertiary); color: #FFFFFF;">Anuncio Oficial</span>
     </div>
 
-    <!-- Formulario para Publicar en el Muro -->
-    <div class="card" style="border-top: 4px solid var(--color-primary);">
-        <h2 style="font-size: 1.1rem; font-weight: 700; color: var(--color-primary); margin-bottom: 0.75rem;">
-            📢 Publicar en el Muro Comunitario
-        </h2>
-        
-        <form method="POST" action="{% url 'foro_comunidad' %}">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="crear_post">
-            
-            <div class="form-group">
-                <label class="form-label">Título del Problema, Idea o Consulta:</label>
-                {{ post_form.titulo }}
+    <!-- Barra de Búsqueda por Temas o Palabras Clave -->
+    <section class="card rounded-2xl shadow-sm p-6" aria-label="Buscador de temas del foro" style="margin-bottom: 1.5rem;">
+        <form method="GET" action="{% url 'foro_comunidad' %}" style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: flex-end;">
+            <div style="flex: 1; min-width: 240px;">
+                <label class="form-label" for="id_q_foro">
+                    <span aria-hidden="true">🔎</span> Buscar por tema, cultivo o palabra clave:
+                </label>
+                <input type="search" name="q" id="id_q_foro" value="{{ query }}" placeholder="Ej: heladas, papa, riego, biofertilizantes, mildiu..." class="form-control">
             </div>
-
-            <div class="form-group">
-                <label class="form-label">Descripción detallada:</label>
-                {{ post_form.contenido }}
-            </div>
-
-            <div style="display: flex; justify-content: flex-end;">
-                <button type="submit" class="btn btn-primary btn-sm">
-                    Publicar en la Comunidad
-                </button>
+            <div style="display: flex; gap: 0.5rem;">
+                <button type="submit" class="btn btn-primary">Buscar Temas</button>
+                {% if query %}
+                    <a href="{% url 'foro_comunidad' %}" class="btn btn-outline">Limpiar</a>
+                {% endif %}
             </div>
         </form>
-    </div>
+    </section>
 
-    <!-- Muro de Publicaciones con Respuestas Anidadas -->
-    <div style="margin-top: 2rem;">
-        <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--color-primary); margin-bottom: 1rem;">
-            Conversaciones y Aportes Recientes ({{ posts|length }})
-        </h2>
+    <!-- Módulo Comercial / Banner Publicitario Estático en Foro -->
+    <aside class="banner-publicidad" aria-label="Espacio publicitario de agroinsumos">
+        <div>
+            <span class="banner-publicidad-tag">ESPACIO PUBLICITARIO DE AGROINSUMOS</span>
+            <h2 style="font-size: 1.08rem; font-weight: 800; margin-top: 0.35rem; color: #FFFFFF;">
+                Sistemas de Riego Tecnificado y Geomembranas Jujuy
+            </h2>
+            <p style="font-size: 0.88rem; opacity: 0.92;">
+                Goteo, aspersión y almacenamiento hídrico para zonas de altura y valles templados.
+            </p>
+        </div>
+        <span class="badge badge-warning">Anuncio Oficial</span>
+    </aside>
+
+    <!-- Carrusel Accesible de Temas Destacados -->
+    {% if destacados and not query %}
+        <section class="carousel-wrapper" aria-label="Temas destacados de la comunidad">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+                <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--color-primary); margin: 0;">
+                    ✨ Temas Recientes Destacados
+                </h2>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button type="button" id="carousel-prev" class="btn btn-outline btn-sm" aria-label="Tema destacado anterior">&larr;</button>
+                    <button type="button" id="carousel-next" class="btn btn-outline btn-sm" aria-label="Siguiente tema destacado">&rarr;</button>
+                </div>
+            </div>
+
+            <div class="carousel-track" id="forum-carousel">
+                {% for d in destacados %}
+                    <div class="carousel-slide card rounded-xl p-4" style="margin-bottom: 0; background: var(--color-background); border: 1px solid rgba(23, 63, 50, 0.12);">
+                        <span class="badge badge-soft" style="font-size: 0.7rem; margin-bottom: 0.4rem;">
+                            💬 {{ d.respuestas.count }} respuesta(s)
+                        </span>
+                        <h3 style="font-size: 1rem; font-weight: 700; color: var(--color-primary); margin-bottom: 0.35rem;">
+                            <a href="#post-{{ d.id }}" style="text-decoration: none;">{{ d.titulo|truncatewords:10 }}</a>
+                        </h3>
+                        <p style="font-size: 0.85rem; color: var(--color-text-muted); margin: 0;">
+                            {{ d.contenido|truncatewords:15 }}
+                        </p>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
+    <!-- Formulario para Publicar en el Muro -->
+    {% if user.is_authenticated %}
+        <details class="card rounded-2xl shadow-sm p-6" style="border-top: 4px solid var(--color-primary);">
+            <summary style="cursor: pointer; font-size: 1.1rem; font-weight: 700; color: var(--color-primary);">
+                📢 Crear Nueva Publicación en el Muro Comunitario
+            </summary>
+            <form method="POST" action="{% url 'foro_comunidad' %}" style="margin-top: 1.25rem;">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="crear_post">
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ post_form.titulo.id_for_label }}">Título del Problema, Idea o Consulta:</label>
+                    {{ post_form.titulo }}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ post_form.contenido.id_for_label }}">Descripción detallada:</label>
+                    {{ post_form.contenido }}
+                </div>
+
+                <div style="display: flex; justify-content: flex-end;">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        Publicar en la Comunidad
+                    </button>
+                </div>
+            </form>
+        </details>
+    {% else %}
+        <div class="card rounded-2xl shadow-sm p-6" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <p style="margin: 0; font-size: 0.95rem; color: var(--color-text-muted);">
+                🔑 ¿Deseas plantear una consulta o responder en el foro? Inicia sesión o regístrate gratuitamente.
+            </p>
+            <a href="{% url 'login' %}" class="btn btn-primary btn-sm">Iniciar Sesión para Participar</a>
+        </div>
+    {% endif %}
+
+    <!-- Listado Paginado de Publicaciones (Vista Compacta con Encabezado y Resumen Breve) -->
+    <section style="margin-top: 1.75rem;" aria-label="Publicaciones del foro">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--color-primary);">
+                {% if query %}Resultados para «{{ query }}» ({{ total_posts }}){% else %}Publicaciones de la Comunidad ({{ total_posts }}){% endif %}
+            </h2>
+        </div>
 
         {% for post in posts %}
-            <div class="card" style="margin-bottom: 1.5rem;">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+            <article id="post-{{ post.id }}" class="card rounded-2xl shadow-sm p-6" style="margin-bottom: 1.25rem;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.5rem;">
                     <div>
-                        <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--color-primary); margin: 0 0 0.2rem 0;">
+                        <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--color-primary); margin: 0 0 0.25rem 0;">
                             {{ post.titulo }}
                         </h3>
-                        <span style="font-size: 0.8rem; color: var(--color-text-muted);">
-                            Publicado por <strong>{{ post.autor.get_full_name|default:post.autor.username }}</strong>
+                        <span style="font-size: 0.82rem; color: var(--color-text-muted);">
+                            Por <strong>{{ post.autor.get_full_name|default:post.autor.username }}</strong>
                             {% if post.autor.role == 'PROFESSIONAL' %}
-                                <span class="badge badge-success" style="font-size: 0.65rem; padding: 1px 4px;">Ingeniero CIAPA</span>
+                                <span class="badge badge-success" style="font-size: 0.65rem; padding: 2px 6px;">Ingeniero CIAPAJ</span>
                             {% elif post.autor.role == 'PRODUCER' %}
-                                <span class="badge badge-warning" style="font-size: 0.65rem; padding: 1px 4px;">Productor</span>
+                                <span class="badge badge-warning" style="font-size: 0.65rem; padding: 2px 6px;">Productor</span>
                             {% endif %}
                             &bull; {{ post.fecha_creacion|date:"d/m/Y H:i" }}
                         </span>
                     </div>
-                    <span class="badge badge-neutral" style="font-size: 0.75rem;">
-                        {{ post.respuestas.count }} respuesta(s)
+                    <span class="badge badge-soft">
+                        💬 {{ post.respuestas.count }} respuesta(s)
                     </span>
                 </div>
 
-                <p style="font-size: 0.95rem; color: var(--color-text-main); line-height: 1.5; margin: 0.75rem 0 1rem 0;">
-                    {{ post.contenido|linebreaksbr }}
+                <!-- Descripción breve al cargar -->
+                <p style="font-size: 0.95rem; color: var(--color-text-muted); line-height: 1.5; margin: 0.65rem 0;">
+                    {{ post.contenido|truncatewords:24 }}
                 </p>
 
-                <!-- Respuestas Anidadas -->
-                <div style="background: #F6F8F6; border-radius: 6px; padding: 0.85rem; border-left: 3px solid var(--color-tertiary); margin-top: 1rem;">
-                    <h4 style="font-size: 0.85rem; font-weight: 700; color: var(--color-primary); text-transform: uppercase; margin-bottom: 0.75rem;">
-                        Respuestas Técnicas y Comentarios ({{ post.respuestas.count }}):
-                    </h4>
+                <!-- Desplegable bajo demanda para leer el contenido completo y las respuestas anidadas -->
+                <details style="margin-top: 0.75rem; background: var(--color-background); border-radius: var(--radius-xl); padding: 0.85rem 1rem; border-left: 4px solid var(--color-tertiary);">
+                    <summary style="cursor: pointer; font-size: 0.9rem; font-weight: 700; color: var(--color-primary);">
+                        Ver publicación completa y respuestas ({{ post.respuestas.count }})
+                    </summary>
 
-                    {% if post.respuestas.all %}
-                        <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem;">
-                            {% for resp in post.respuestas.all %}
-                                <div style="background: #FFFFFF; padding: 0.65rem 0.85rem; border-radius: 6px; border: 1px solid var(--color-neutral-light);">
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-                                        <strong style="font-size: 0.85rem; color: var(--color-primary);">
-                                            {{ resp.autor.get_full_name|default:resp.autor.username }}
-                                            {% if resp.autor.role == 'PROFESSIONAL' %}
-                                                <span class="badge badge-success" style="font-size: 0.6rem; padding: 1px 4px;">Ing. CIAPA</span>
-                                            {% endif %}
-                                        </strong>
-                                        <span style="font-size: 0.75rem; color: var(--color-text-muted);">
-                                            {{ resp.fecha_creacion|date:"d/m/Y H:i" }}
-                                        </span>
-                                    </div>
-                                    <p style="font-size: 0.9rem; color: var(--color-text-main); margin: 0;">
-                                        {{ resp.contenido }}
-                                    </p>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <p style="font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 0.75rem;">
-                            Aún no hay respuestas en esta publicación. ¡Sé el primero en aportar!
+                    <div style="margin-top: 0.85rem; padding-bottom: 0.85rem; border-bottom: 1px solid var(--color-neutral-light);">
+                        <p style="font-size: 0.95rem; color: var(--color-text-main); line-height: 1.6;">
+                            {{ post.contenido|linebreaksbr }}
                         </p>
-                    {% endif %}
+                    </div>
 
-                    <!-- Input para Anidar Respuesta -->
-                    <form method="POST" action="{% url 'foro_comunidad' %}" style="display: flex; gap: 0.5rem; align-items: center;">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="responder_post">
-                        <input type="hidden" name="post_id" value="{{ post.id }}">
-                        <input type="text" name="contenido" placeholder="Escribe un aporte o respuesta anidada..." required class="form-control" autocomplete="off" style="flex: 1; font-size: 0.85rem; padding: 0.5rem 0.75rem;">
-                        <button type="submit" class="btn btn-secondary btn-sm" style="white-space: nowrap;">
-                            Responder
-                        </button>
-                    </form>
-                </div>
-            </div>
+                    <div style="margin-top: 0.85rem;">
+                        <h4 style="font-size: 0.85rem; font-weight: 700; color: var(--color-primary); text-transform: uppercase; margin-bottom: 0.75rem;">
+                            Respuestas Técnicas ({{ post.respuestas.count }}):
+                        </h4>
+
+                        {% if post.respuestas.all %}
+                            <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem;">
+                                {% for resp in post.respuestas.all %}
+                                    <div style="background: #FFFFFF; padding: 0.75rem 1rem; border-radius: var(--radius-lg); border: 1px solid var(--color-neutral-light);">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; flex-wrap: wrap;">
+                                            <strong style="font-size: 0.85rem; color: var(--color-primary);">
+                                                {{ resp.autor.get_full_name|default:resp.autor.username }}
+                                                {% if resp.autor.role == 'PROFESSIONAL' %}
+                                                    <span class="badge badge-success" style="font-size: 0.6rem; padding: 1px 5px;">Ing. CIAPAJ</span>
+                                                {% endif %}
+                                            </strong>
+                                            <span style="font-size: 0.75rem; color: var(--color-text-muted);">
+                                                {{ resp.fecha_creacion|date:"d/m/Y H:i" }}
+                                            </span>
+                                        </div>
+                                        <p style="font-size: 0.9rem; color: var(--color-text-main); margin: 0;">
+                                            {{ resp.contenido }}
+                                        </p>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p style="font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 0.75rem;">
+                                Aún no hay respuestas en esta publicación.
+                            </p>
+                        {% endif %}
+
+                        {% if user.is_authenticated %}
+                            <form method="POST" action="{% url 'foro_comunidad' %}" style="display: flex; gap: 0.5rem; align-items: center;">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="responder_post">
+                                <input type="hidden" name="post_id" value="{{ post.id }}">
+                                <label for="resp-input-{{ post.id }}" class="visually-hidden">Escribe una respuesta</label>
+                                <input type="text" id="resp-input-{{ post.id }}" name="contenido" placeholder="Escribe un aporte o respuesta anidada..." required class="form-control" autocomplete="off" style="flex: 1; font-size: 0.88rem; padding: 0.55rem 0.85rem;">
+                                <button type="submit" class="btn btn-secondary btn-sm">
+                                    Responder
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </details>
+            </article>
         {% empty %}
-            <div class="card" style="text-align: center; padding: 3rem 1rem;">
+            <div class="card rounded-2xl shadow-sm p-8" style="text-align: center;">
                 <p style="font-size: 1.1rem; color: var(--color-text-muted);">
-                    No hay publicaciones todavía. Comparte una duda, técnica o sugerencia arriba.
+                    No se encontraron publicaciones que coincidan con tu búsqueda.
                 </p>
             </div>
         {% endfor %}
-    </div>
+
+        <!-- Paginación del Foro -->
+        {% if page_obj and page_obj.paginator.num_pages > 1 %}
+            <nav class="pagination-nav" aria-label="Paginación del foro">
+                {% if page_obj.has_previous %}
+                    <a href="?q={{ query|urlencode }}&amp;page={{ page_obj.previous_page_number }}" class="btn btn-outline btn-sm">
+                        &larr; Anterior
+                    </a>
+                {% endif %}
+
+                <span class="badge badge-soft" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
+                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?q={{ query|urlencode }}&amp;page={{ page_obj.next_page_number }}" class="btn btn-outline btn-sm">
+                        Siguiente &rarr;
+                    </a>
+                {% endif %}
+            </nav>
+        {% endif %}
+    </section>
 </div>
+
+<script>
+(function() {
+    const slides = document.querySelectorAll('#forum-carousel .carousel-slide');
+    const prevBtn = document.getElementById('carousel-prev');
+    const nextBtn = document.getElementById('carousel-next');
+    if (!slides.length || !prevBtn || !nextBtn) return;
+
+    let currentIndex = 0;
+    function highlightSlide(idx) {
+        slides.forEach(function(s, i) {
+            s.style.borderColor = (i === idx) ? 'var(--color-tertiary)' : 'rgba(23, 63, 50, 0.12)';
+            s.style.boxShadow = (i === idx) ? 'var(--shadow-sm)' : 'none';
+        });
+    }
+    highlightSlide(0);
+
+    prevBtn.addEventListener('click', function() {
+        currentIndex = (currentIndex - 1 + slides.length) % slides.length;
+        highlightSlide(currentIndex);
+    });
+    nextBtn.addEventListener('click', function() {
+        currentIndex = (currentIndex + 1) % slides.length;
+        highlightSlide(currentIndex);
+    });
+})();
+</script>
 {% endblock %}

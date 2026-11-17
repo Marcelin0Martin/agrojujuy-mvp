@@ -1,77 +1,99 @@
 {% extends 'base.html' %}
 
-{% block title %}Mi Perfil Profesional - AgroJujuy{% endblock %}
+{% block title %}Mi perfil CIAPAJ — AgroJujuy{% endblock %}
 
 {% block content %}
-<div style="max-width: 650px; margin: 1.5rem auto;">
-    <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-            <h1 class="card-title" style="margin: 0;">🎓 Mi Perfil Profesional</h1>
+<div style="max-width: 720px; margin: 1rem auto;">
+    <div class="card rounded-2xl shadow-md p-6">
+        <div class="card-title">
+            <h1 style="font-size: 1.45rem; font-weight: 800; color: var(--color-primary); margin: 0;">
+                <span aria-hidden="true">🎓</span> Mi perfil CIAPAJ
+            </h1>
             <span class="badge {% if object.estado_validacion == 'Habilitado' %}badge-success{% elif object.estado_validacion == 'Pendiente' %}badge-warning{% else %}badge-danger{% endif %}">
                 {{ object.estado_validacion }}
             </span>
         </div>
 
-        <p style="font-size: 0.9rem; color: var(--color-text-muted); margin-bottom: 1rem;">
-            <strong>Matrícula Provincial CIAPA:</strong> {{ object.matricula_provincial }} (Asignada institucionalmente).
+        <p style="font-size: 0.92rem; color: var(--color-text-muted); margin-bottom: 1.5rem;">
+            Tus credenciales institucionales (nombre, apellido, correo electrónico, matrícula y especialidades validadas por CIAPAJ) se encuentran protegidas. Puedes actualizar tus zonas de cobertura, teléfono de contacto y reseña profesional en cualquier momento.
         </p>
 
-        <form method="POST">
+        <!-- Datos Institucionales Protegidos CIAPAJ (Solo Lectura) -->
+        <div style="background: var(--color-background); border-radius: var(--radius-xl); padding: 1.25rem; margin-bottom: 1.5rem; border: 1px solid rgba(23, 63, 50, 0.1);">
+            <h2 style="font-size: 0.95rem; font-weight: 700; color: var(--color-primary); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.03em;">
+                🔒 Credenciales Institucionales CIAPAJ (Protegidas)
+            </h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+                <div>
+                    <span class="form-label" style="font-size: 0.8rem; margin-bottom: 0.2rem;">Profesional Titular</span>
+                    <div class="readonly-box">Ing. {{ object.usuario.first_name }} {{ object.usuario.last_name }}</div>
+                </div>
+                <div>
+                    <span class="form-label" style="font-size: 0.8rem; margin-bottom: 0.2rem;">Correo Electrónico</span>
+                    <div class="readonly-box">{{ object.usuario.email }}</div>
+                </div>
+                <div>
+                    <span class="form-label" style="font-size: 0.8rem; margin-bottom: 0.2rem;">Matrícula Provincial CIAPAJ</span>
+                    <div class="readonly-box">{{ object.matricula_provincial }}</div>
+                </div>
+                <div>
+                    <span class="form-label" style="font-size: 0.8rem; margin-bottom: 0.2rem;">Especialidad(es) Acreditada(s)</span>
+                    <div class="readonly-box">
+                        🌿 {{ object.especialidad }}{% if object.especialidad_propuesta %}, {{ object.especialidad_propuesta }}{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulario de Datos Editables -->
+        <form method="POST" novalidate>
             {% csrf_token %}
 
             {% if form.errors %}
-                <div class="alert alert-error">
+                <div class="alert alert-error" role="alert">
                     Por favor revisa los errores indicados abajo.
                 </div>
             {% endif %}
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                <div class="form-group">
-                    <label class="form-label">Nombre:</label>
-                    {{ form.first_name }}
-                    {{ form.first_name.errors }}
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Apellido:</label>
-                    {{ form.last_name }}
-                    {{ form.last_name.errors }}
-                </div>
-            </div>
+            <h2 style="font-size: 1.05rem; font-weight: 700; color: var(--color-primary); margin-bottom: 1rem;">
+                ✏️ Disponibilidad Territorial y Contacto
+            </h2>
 
-            <div class="form-group">
-                <label class="form-label">Correo Electrónico:</label>
-                {{ form.email }}
-                {{ form.email.errors }}
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Especialidad Agronómica:</label>
-                {{ form.especialidad }}
-                {{ form.especialidad.errors }}
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Zonas Geográficas de Cobertura:</label>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; background: #F6F8F6; padding: 0.75rem; border-radius: 6px; border: 1px solid #CBD5E1;">
+            <fieldset class="form-group" style="border: 1.5px solid #94A39B; border-radius: var(--radius-xl); padding: 1rem; background: var(--color-background);" {% if form.zonas.errors %}aria-invalid="true" aria-describedby="error_zonas"{% endif %}>
+                <legend class="form-label" style="padding: 0 0.5rem;">
+                    Zonas Geográficas de Cobertura <span class="required-indicator" aria-hidden="true">*</span>
+                </legend>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.6rem;">
                     {{ form.zonas }}
                 </div>
-                {{ form.zonas.errors }}
-            </div>
+                {% if form.zonas.errors %}
+                    <p id="error_zonas" class="field-error" role="alert">⛔ {{ form.zonas.errors|join:", " }}</p>
+                {% endif %}
+            </fieldset>
 
             <div class="form-group">
-                <label class="form-label">Teléfono de Contacto:</label>
+                <label class="form-label" for="{{ form.telefono.id_for_label }}">
+                    Teléfono de Contacto <span class="required-indicator" aria-hidden="true">*</span>
+                </label>
                 {{ form.telefono }}
-                {{ form.telefono.errors }}
+                <span class="field-help">Formato válido entre 8 y 15 dígitos (ej: +54 388 4123456)</span>
+                {% if form.telefono.errors %}
+                    <p id="error_telefono" class="field-error" role="alert">⛔ {{ form.telefono.errors|join:", " }}</p>
+                {% endif %}
             </div>
 
             <div class="form-group">
-                <label class="form-label">Resumen Profesional / Trayectoria:</label>
+                <label class="form-label" for="{{ form.biografia.id_for_label }}">
+                    Resumen Profesional / Trayectoria
+                </label>
                 {{ form.biografia }}
-                {{ form.biografia.errors }}
+                {% if form.biografia.errors %}
+                    <p id="error_biografia" class="field-error" role="alert">⛔ {{ form.biografia.errors|join:", " }}</p>
+                {% endif %}
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
-                Actualizar Datos Profesionales
+            <button type="submit" class="btn btn-primary w-full mt-4">
+                Guardar Cambios en Mi perfil CIAPAJ
             </button>
         </form>
     </div>

@@ -1,5 +1,22 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import RegexValidator
 from django.db import models
+
+
+telefono_validator = RegexValidator(
+    regex=r'^\+?[\d\s\-]{8,20}$',
+    message="Ingrese un número de teléfono válido (entre 8 y 15 dígitos, puede incluir +, espacios o guiones)."
+)
+
+dni_validator = RegexValidator(
+    regex=r'^\d{7,8}$',
+    message="El DNI debe contener entre 7 y 8 dígitos numéricos sin puntos."
+)
+
+renspa_validator = RegexValidator(
+    regex=r'^[0-9\.\-\/A-Za-z]{6,22}$',
+    message="Ingrese un número de RENSPA válido (ej: 09.001.0.00123/00 o código de 6 a 22 caracteres)."
+)
 
 
 class CustomUser(AbstractUser):
@@ -30,10 +47,39 @@ class Productor(models.Model):
     )
 
     usuario = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='perfil_productor')
+    dni = models.CharField(
+        max_length=10,
+        default='',
+        blank=True,
+        validators=[dni_validator],
+        verbose_name="DNI del Productor",
+        help_text="Documento Nacional de Identidad (7 u 8 dígitos)"
+    )
+    renspa = models.CharField(
+        max_length=30,
+        default='',
+        blank=True,
+        validators=[renspa_validator],
+        verbose_name="Número de RENSPA",
+        help_text="Registro Nacional Sanitario de Productores Agropecuarios"
+    )
     region = models.CharField(max_length=50, choices=REGION_CHOICES)
-    rubro_productivo = models.CharField(max_length=150, help_text="Ej: Papa andina, hortalizas, maíz, tabaco, cítricos")
-    telefono = models.CharField(max_length=30, blank=True, default='')
-    direccion_finca = models.CharField(max_length=255, blank=True, default='', verbose_name="Ubicación / Finca")
+    rubro_productivo = models.CharField(
+        max_length=150,
+        help_text="Ej: Papa andina, hortalizas, maíz, tabaco, cítricos"
+    )
+    telefono = models.CharField(
+        max_length=30,
+        blank=True,
+        default='',
+        validators=[telefono_validator]
+    )
+    direccion_finca = models.CharField(
+        max_length=255,
+        blank=True,
+        default='',
+        verbose_name="Ubicación / Finca"
+    )
     fecha_registro = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -67,16 +113,33 @@ class Profesional(models.Model):
     matricula_provincial = models.CharField(
         max_length=50,
         unique=True,
-        verbose_name="Matrícula Provincial CIAPA",
-        help_text="Número obligatorio de matrícula del Colegio de Ingenieros Agrónomos y Profesionales Afines"
+        verbose_name="Matrícula Provincial CIAPAJ",
+        help_text="Número obligatorio de matrícula del Colegio de Ingenieros Agrónomos y Profesionales Afines de Jujuy"
     )
-    especialidad = models.CharField(max_length=100, choices=ESPECIALIDADES_CHOICES, default='Agronomía General')
+    especialidad = models.CharField(
+        max_length=500,
+        default='Agronomía General',
+        verbose_name="Especialidades Agronómicas",
+        help_text="Una o más especialidades separadas por coma"
+    )
+    especialidad_propuesta = models.CharField(
+        max_length=150,
+        blank=True,
+        default='',
+        verbose_name="Especialidad Propuesta",
+        help_text="Nueva especialidad propuesta durante el registro"
+    )
     zonas_cobertura = models.CharField(
         max_length=255,
         default='Valles, Yungas',
         help_text="Regiones de cobertura separadas por coma (Puna, Valles, Yungas, Quebrada)"
     )
-    telefono = models.CharField(max_length=30, blank=True, default='')
+    telefono = models.CharField(
+        max_length=30,
+        blank=True,
+        default='',
+        validators=[telefono_validator]
+    )
     biografia = models.TextField(blank=True, default='', verbose_name="Perfil Profesional / Trayectoria")
     estado_validacion = models.CharField(
         max_length=30,
@@ -100,6 +163,12 @@ class Profesional(models.Model):
 
     def get_zonas_list(self):
         return [z.strip() for z in self.zonas_cobertura.split(',') if z.strip()]
+
+    def get_especialidades_list(self):
+        items = [e.strip() for e in self.especialidad.split(',') if e.strip()]
+        if self.especialidad_propuesta and self.especialidad_propuesta.strip() not in items:
+            items.append(self.especialidad_propuesta.strip())
+        return items
 
 
 class ConfiguracionSeguridad(models.Model):

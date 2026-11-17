@@ -1,99 +1,220 @@
 {% extends 'base.html' %}
 
-{% block title %}Registro Profesional Agrario - AgroJujuy{% endblock %}
+{% block title %}Registro Profesional Agrario (CIAPAJ) — AgroJujuy{% endblock %}
 
 {% block content %}
-<div style="max-width: 650px; margin: 1.5rem auto;">
-    <div class="card">
-        <h1 class="card-title">🎓 Registro de Profesional Agrario (CIAPA)</h1>
-        <div class="alert alert-info" style="font-size: 0.9rem; margin-bottom: 1.25rem;">
-            <strong>Nota Institucional:</strong> Todo registro profesional requiere la validación de la Matrícula Provincial CIAPA. Tras completar este formulario, tu cuenta quedará en estado <em>Pendiente de Validación</em> y no podrás operar hasta que el administrador institucional apruebe el perfil.
+<div style="max-width: 720px; margin: 1rem auto;">
+    <div class="card rounded-2xl shadow-md p-6">
+        <h1 class="card-title">
+            <span><span aria-hidden="true">🎓</span> Registro de Profesional Agrario (CIAPAJ)</span>
+            <span class="badge badge-warning">Auditoría Institucional</span>
+        </h1>
+        <div class="alert alert-info" role="status" style="font-size: 0.92rem; margin-bottom: 1.5rem;">
+            <strong>Nota Institucional:</strong> Todo registro profesional exige la validación de la Matrícula Provincial CIAPAJ. Tras completar este formulario, tu cuenta quedará en estado <em>Pendiente de Validación</em> hasta su aprobación por la administración institucional.
         </div>
 
-        <form method="POST">
+        <form method="POST" novalidate>
             {% csrf_token %}
 
             {% if form.errors %}
-                <div class="alert alert-error">
-                    Por favor corrija los errores marcados abajo.
+                <div id="error-summary" class="alert alert-error" role="alert" tabindex="-1">
+                    <strong>Por favor revisa y corrige los siguientes errores en el formulario:</strong>
+                    <ul style="margin-top: 0.5rem; padding-left: 1.25rem; font-size: 0.9rem;">
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <li><a href="#{{ field.id_for_label }}" style="color: #991B1B;">{{ field.label }}: {{ error }}</a></li>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
                 </div>
             {% endif %}
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
                 <div class="form-group">
-                    <label class="form-label">Nombre:</label>
+                    <label class="form-label" for="{{ form.first_name.id_for_label }}">
+                        Nombre <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
+                    </label>
                     {{ form.first_name }}
-                    {{ form.first_name.errors }}
+                    {% if form.first_name.errors %}
+                        <p id="error_first_name" class="field-error" role="alert">⛔ {{ form.first_name.errors|join:", " }}</p>
+                    {% endif %}
                 </div>
+
                 <div class="form-group">
-                    <label class="form-label">Apellido:</label>
+                    <label class="form-label" for="{{ form.last_name.id_for_label }}">
+                        Apellido <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
+                    </label>
                     {{ form.last_name }}
-                    {{ form.last_name.errors }}
+                    {% if form.last_name.errors %}
+                        <p id="error_last_name" class="field-error" role="alert">⛔ {{ form.last_name.errors|join:", " }}</p>
+                    {% endif %}
                 </div>
             </div>
 
             <div class="form-group">
-                <label class="form-label">Usuario:</label>
+                <label class="form-label" for="{{ form.username.id_for_label }}">
+                    Nombre de Usuario <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
+                </label>
                 {{ form.username }}
-                {{ form.username.errors }}
+                <div id="username-feedback" aria-live="polite"></div>
+                {% if form.username.errors %}
+                    <p id="error_username" class="field-error" role="alert">⛔ {{ form.username.errors|join:", " }}</p>
+                {% endif %}
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Correo Electrónico:</label>
-                {{ form.email }}
-                {{ form.email.errors }}
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.email.id_for_label }}">
+                        Correo Electrónico <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
+                    </label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                        <p id="error_email" class="field-error" role="alert">⛔ {{ form.email.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.matricula_provincial.id_for_label }}">
+                        Matrícula Provincial (CIAPAJ) <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
+                    </label>
+                    {{ form.matricula_provincial }}
+                    <span id="help_matricula_provincial" class="field-help">{{ form.matricula_provincial.help_text }}</span>
+                    {% if form.matricula_provincial.errors %}
+                        <p id="error_matricula_provincial" class="field-error" role="alert">⛔ {{ form.matricula_provincial.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
             </div>
 
+            <!-- Selección Múltiple de Especialidades Agronómicas -->
+            <fieldset class="form-group" style="border: 1.5px solid #94A39B; border-radius: var(--radius-xl); padding: 1rem; background: var(--color-background);" {% if form.especialidades.errors %}aria-invalid="true" aria-describedby="error_especialidades"{% endif %}>
+                <legend class="form-label" style="padding: 0 0.5rem; margin-bottom: 0.25rem;">
+                    Especialidades Agronómicas (Selección Múltiple) <span class="required-indicator" aria-hidden="true">*</span>
+                </legend>
+                <span class="field-help" style="margin-bottom: 0.75rem;">Selecciona todas las áreas técnicas en las que brindas asesoramiento:</span>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 0.6rem;">
+                    {{ form.especialidades }}
+                </div>
+                {% if form.especialidades.errors %}
+                    <p id="error_especialidades" class="field-error" role="alert">⛔ {{ form.especialidades.errors|join:", " }}</p>
+                {% endif %}
+            </fieldset>
+
+            <!-- Opción de Proponer Nueva Especialidad -->
             <div class="form-group">
-                <label class="form-label">Número de Matrícula Provincial (CIAPA) *:</label>
-                {{ form.matricula_provincial }}
-                <small style="color: var(--color-text-muted);">Obligatorio (ej: MP-1045/J). Será validado institucionalmente.</small>
-                {{ form.matricula_provincial.errors }}
+                <label class="form-label" for="{{ form.especialidad_propuesta.id_for_label }}">
+                    Proponer Nueva Especialidad (Opcional)
+                </label>
+                {{ form.especialidad_propuesta }}
+                <span id="help_especialidad_propuesta" class="field-help">{{ form.especialidad_propuesta.help_text }}</span>
+                {% if form.especialidad_propuesta.errors %}
+                    <p id="error_especialidad_propuesta" class="field-error" role="alert">⛔ {{ form.especialidad_propuesta.errors|join:", " }}</p>
+                {% endif %}
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Especialidad Agronómica:</label>
-                {{ form.especialidad }}
-                {{ form.especialidad.errors }}
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Zonas Geográficas de Cobertura:</label>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; background: #F6F8F6; padding: 0.75rem; border-radius: 6px; border: 1px solid #CBD5E1;">
+            <!-- Zonas Geográficas de Cobertura -->
+            <fieldset class="form-group" style="border: 1.5px solid #94A39B; border-radius: var(--radius-xl); padding: 1rem; background: var(--color-background);" {% if form.zonas_cobertura.errors %}aria-invalid="true" aria-describedby="error_zonas_cobertura"{% endif %}>
+                <legend class="form-label" style="padding: 0 0.5rem; margin-bottom: 0.25rem;">
+                    Zonas Geográficas de Cobertura <span class="required-indicator" aria-hidden="true">*</span>
+                </legend>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.6rem;">
                     {{ form.zonas_cobertura }}
                 </div>
-                {{ form.zonas_cobertura.errors }}
-            </div>
+                {% if form.zonas_cobertura.errors %}
+                    <p id="error_zonas_cobertura" class="field-error" role="alert">⛔ {{ form.zonas_cobertura.errors|join:", " }}</p>
+                {% endif %}
+            </fieldset>
 
             <div class="form-group">
-                <label class="form-label">Teléfono de Contacto:</label>
+                <label class="form-label" for="{{ form.telefono.id_for_label }}">
+                    Teléfono de Contacto <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
+                </label>
                 {{ form.telefono }}
-                {{ form.telefono.errors }}
+                <span id="help_telefono" class="field-help">{{ form.telefono.help_text }}</span>
+                {% if form.telefono.errors %}
+                    <p id="error_telefono" class="field-error" role="alert">⛔ {{ form.telefono.errors|join:", " }}</p>
+                {% endif %}
             </div>
 
             <div class="form-group">
-                <label class="form-label">Resumen Profesional / Trayectoria:</label>
+                <label class="form-label" for="{{ form.biografia.id_for_label }}">
+                    Resumen Profesional / Trayectoria
+                </label>
                 {{ form.biografia }}
-                {{ form.biografia.errors }}
+                {% if form.biografia.errors %}
+                    <p id="error_biografia" class="field-error" role="alert">⛔ {{ form.biografia.errors|join:", " }}</p>
+                {% endif %}
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Contraseña:</label>
-                {{ form.password1 }}
-                <small style="color: var(--color-text-muted);">Mínimo 8 caracteres, alfanumérica y segura.</small>
-                {{ form.password1.errors }}
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.password1.id_for_label }}">
+                        Contraseña <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
+                    </label>
+                    {{ form.password1 }}
+                    <span id="help_password1" class="field-help">Mínimo 8 caracteres, alfanumérica y segura.</span>
+                    {% if form.password1.errors %}
+                        <p id="error_password1" class="field-error" role="alert">⛔ {{ form.password1.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.password2.id_for_label }}">
+                        Confirmar Contraseña <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
+                    </label>
+                    {{ form.password2 }}
+                    {% if form.password2.errors %}
+                        <p id="error_password2" class="field-error" role="alert">⛔ {{ form.password2.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Confirmar Contraseña:</label>
-                {{ form.password2 }}
-                {{ form.password2.errors }}
-            </div>
-
-            <button type="submit" class="btn btn-secondary" style="width: 100%; margin-top: 1rem;">
-                Enviar Solicitud de Registro y Validación
+            <button type="submit" class="btn btn-secondary w-full mt-4">
+                Enviar Solicitud de Registro y Validación CIAPAJ
             </button>
         </form>
     </div>
 </div>
+
+<script>
+(function() {
+    const usernameInput = document.getElementById('{{ form.username.id_for_label }}');
+    const feedback = document.getElementById('username-feedback');
+    let timer = null;
+
+    if (usernameInput && feedback) {
+        usernameInput.addEventListener('input', function() {
+            clearTimeout(timer);
+            const val = usernameInput.value.trim();
+            if (!val) {
+                feedback.textContent = '';
+                usernameInput.removeAttribute('aria-invalid');
+                return;
+            }
+            timer = setTimeout(function() {
+                fetch("{% url 'validar_username_ajax' %}?username=" + encodeURIComponent(val))
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        feedback.textContent = data.mensaje || '';
+                        if (data.disponible === false) {
+                            feedback.className = 'text-error-msg';
+                            usernameInput.setAttribute('aria-invalid', 'true');
+                        } else if (data.disponible === true) {
+                            feedback.className = 'text-success-msg';
+                            usernameInput.setAttribute('aria-invalid', 'false');
+                        }
+                    })
+                    .catch(function() {});
+            }, 300);
+        });
+    }
+
+    const errorSummary = document.getElementById('error-summary');
+    if (errorSummary) {
+        errorSummary.focus();
+    }
+})();
+</script>
 {% endblock %}

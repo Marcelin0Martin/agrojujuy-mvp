@@ -1,69 +1,126 @@
 {% extends 'base.html' %}
 
-{% block title %}Bandeja de Solicitudes - Productor - AgroJujuy{% endblock %}
+{% block title %}Mis Solicitudes — Productor — AgroJujuy{% endblock %}
 
 {% block content %}
-<div style="max-width: 800px; margin: 1.5rem auto;">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+<div style="max-width: 880px; margin: 1rem auto;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
         <div>
-            <h1 style="font-size: 1.8rem; font-weight: 800; color: var(--color-primary);">
+            <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--color-primary);">
                 Bandeja de Solicitudes Enviadas
             </h1>
             <p style="color: var(--color-text-muted); font-size: 0.95rem;">
-                Historial acotado a tus últimas 5 consultas de asistencia técnica agronómica.
+                Seguimiento de tus consultas técnicas dirigidas y abiertas, ordenadas priorizando las pendientes.
             </p>
         </div>
-        <a href="{% url 'buscador_profesionales' %}" class="btn btn-primary btn-sm">
-            🔍 Nueva Consulta a Ingeniero
+        <div style="display: flex; gap: 0.65rem; flex-wrap: wrap;">
+            <a href="{% url 'solicitar_asistencia_abierta' %}" class="btn btn-secondary btn-sm">
+                <span aria-hidden="true">📢</span> Solicitud Abierta
+            </a>
+            <a href="{% url 'buscador_profesionales' %}" class="btn btn-primary btn-sm">
+                <span aria-hidden="true">🔍</span> Solicitud Dirigida
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtros por Estado -->
+    <div class="filter-pills" role="group" aria-label="Filtrar solicitudes por estado" style="margin-bottom: 1.5rem;">
+        <a href="{% url 'bandeja_productor' %}" class="filter-pill {% if not filtro_estado %}filter-pill-active{% endif %}">
+            Todas
+        </a>
+        <a href="?estado=Pendiente" class="filter-pill {% if filtro_estado == 'Pendiente' %}filter-pill-active{% endif %}">
+            ⏳ Pendientes
+        </a>
+        <a href="?estado=Aceptado" class="filter-pill {% if filtro_estado == 'Aceptado' %}filter-pill-active{% endif %}">
+            ✔ Aceptadas
+        </a>
+        <a href="?estado=Finalizado" class="filter-pill {% if filtro_estado == 'Finalizado' %}filter-pill-active{% endif %}">
+            🏁 Finalizadas
         </a>
     </div>
 
     {% if tickets %}
-        <div style="display: flex; flex-direction: column; gap: 1rem;">
+        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
             {% for ticket in tickets %}
-                <div class="card" style="border-left: 5px solid {% if ticket.estado == 'Aceptado' %}var(--color-secondary){% else %}var(--color-tertiary){% endif %}; margin-bottom: 0;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <article class="card rounded-2xl shadow-sm p-6" style="margin-bottom: 0; border-left: 5px solid {% if ticket.estado == 'Aceptado' or ticket.estado == 'Finalizado' %}var(--color-secondary){% else %}var(--color-tertiary){% endif %};">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.65rem;">
                         <div>
-                            <span style="font-size: 0.8rem; font-weight: 700; color: var(--color-text-muted);">Ticket #{{ ticket.id }} &bull; {{ ticket.fecha_creacion|date:"d/m/Y H:i" }}</span>
-                            <h2 style="font-size: 1.2rem; font-weight: 700; color: var(--color-primary); margin: 0.2rem 0;">
+                            <span style="font-size: 0.8rem; font-weight: 700; color: var(--color-text-muted);">
+                                Ticket #{{ ticket.id }} &bull; Modalidad: {{ ticket.modalidad }} &bull; {{ ticket.fecha_creacion|date:"d/m/Y H:i" }}
+                            </span>
+                            <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--color-primary); margin: 0.25rem 0;">
                                 {{ ticket.titulo }}
                             </h2>
                         </div>
-                        <span class="badge {% if ticket.estado == 'Aceptado' %}badge-success{% elif ticket.estado == 'Pendiente' %}badge-warning{% else %}badge-neutral{% endif %}">
-                            {{ ticket.estado }}
-                        </span>
+                        <div style="display: flex; gap: 0.4rem; align-items: center;">
+                            <span class="badge {% if ticket.estado == 'Aceptado' or ticket.estado == 'Finalizado' %}badge-success{% elif ticket.estado == 'Pendiente' %}badge-warning{% else %}badge-neutral{% endif %}">
+                                {{ ticket.estado }}
+                            </span>
+                            {% if ticket.confirmado_por_productor %}
+                                <span class="badge badge-soft">✔ Recepción Confirmada</span>
+                            {% endif %}
+                        </div>
                     </div>
 
-                    <p style="font-size: 0.9rem; color: var(--color-text-main); margin-bottom: 0.75rem;">
-                        <strong>Profesional Asignado:</strong> Ing. {{ ticket.profesional.usuario.get_full_name|default:ticket.profesional.usuario.username }} (Mat. {{ ticket.profesional.matricula_provincial }})
+                    <p style="font-size: 0.92rem; color: var(--color-text-main); margin-bottom: 0.65rem;">
+                        <strong>Profesional Asignado:</strong>
+                        {% if ticket.profesional %}
+                            Ing. {{ ticket.profesional.usuario.get_full_name|default:ticket.profesional.usuario.username }} (Mat. {{ ticket.profesional.matricula_provincial }})
+                        {% else %}
+                            <em>Abierta a la red CIAPAJ (Esperando que un ingeniero tome el caso)</em>
+                        {% endif %}
                     </p>
 
-                    <p style="font-size: 0.85rem; color: var(--color-text-muted); line-height: 1.4; margin-bottom: 1rem;">
-                        {{ ticket.descripcion|truncatewords:25 }}
+                    <p style="font-size: 0.9rem; color: var(--color-text-muted); line-height: 1.45; margin-bottom: 1rem;">
+                        {{ ticket.descripcion|truncatewords:28 }}
                     </p>
 
-                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--color-neutral-light); padding-top: 0.75rem;">
+                    {% if ticket.estado == 'Finalizado' %}
+                        <div style="background: #ECFDF5; border: 1px solid #10B981; border-radius: var(--radius-xl); padding: 1rem; margin-bottom: 1rem;">
+                            <strong style="color: #065F46; font-size: 0.9rem; display: block; margin-bottom: 0.25rem;">
+                                🏁 Informe de Finalización del Ingeniero ({{ ticket.fecha_finalizacion|date:"d/m/Y H:i" }}):
+                            </strong>
+                            <p style="color: #065F46; font-size: 0.9rem; margin: 0;">
+                                {{ ticket.descripcion_finalizacion }}
+                            </p>
+                        </div>
+                    {% endif %}
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; border-top: 1px solid var(--color-neutral-light); padding-top: 0.9rem;">
                         <span style="font-size: 0.85rem; color: var(--color-text-muted);">
                             💬 {{ ticket.mensajes.count }} mensaje(s) en hilo técnico
                         </span>
-                        <a href="{% url 'chat_ticket' ticket.id %}" class="btn btn-outline btn-sm">
-                            Abrir Chat Directo (1 a 1) &rarr;
-                        </a>
+
+                        <div style="display: flex; gap: 0.65rem; flex-wrap: wrap;">
+                            {% if ticket.estado == 'Finalizado' and not ticket.confirmado_por_productor %}
+                                <form method="POST" action="{% url 'confirmar_recepcion' ticket.id %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="next" value="{% url 'bandeja_productor' %}">
+                                    <button type="submit" class="btn btn-secondary btn-sm">
+                                        ✔ Confirmar Recepción del Trabajo
+                                    </button>
+                                </form>
+                            {% endif %}
+                            <a href="{% url 'chat_ticket' ticket.id %}" class="btn btn-outline btn-sm">
+                                Abrir Hilo Técnico &rarr;
+                            </a>
+                        </div>
                     </div>
-                </div>
+                </article>
             {% endfor %}
         </div>
     {% else %}
-        <div class="card" style="text-align: center; padding: 3rem 1rem;">
+        <div class="card rounded-2xl shadow-sm p-8" style="text-align: center;">
             <p style="font-size: 1.2rem; font-weight: 700; color: var(--color-primary); margin-bottom: 0.5rem;">
-                No tienes solicitudes de asistencia técnica activas.
+                No se encontraron solicitudes en esta vista.
             </p>
             <p style="color: var(--color-text-muted); margin-bottom: 1.5rem;">
-                Utiliza el buscador inteligente para encontrar un ingeniero habilitado para tu zona y plantear tu consulta.
+                Puedes buscar un especialista puntual o publicar una solicitud abierta para que cualquier ingeniero disponible la tome.
             </p>
-            <a href="{% url 'buscador_profesionales' %}" class="btn btn-primary">
-                Ir al Buscador de Profesionales
-            </a>
+            <div style="display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap;">
+                <a href="{% url 'buscador_profesionales' %}" class="btn btn-primary btn-sm">Ir al Buscador</a>
+                <a href="{% url 'solicitar_asistencia_abierta' %}" class="btn btn-secondary btn-sm">Publicar Solicitud Abierta</a>
+            </div>
         </div>
     {% endif %}
 </div>

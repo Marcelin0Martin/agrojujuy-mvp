@@ -1,28 +1,62 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.paginator import Paginator
+from django.db.models import Q
+from django.shortcuts import render, redirect
 from django.views.generic import View
 from django.contrib import messages
 
-from .models import PostComunidad, RespuestaComunidad
+from .models import PostComunidad
 from .forms import PostComunidadForm, RespuestaComunidadForm
 from application.use_cases import PublicarEnComunidadUseCase, ResponderPostComunidadUseCase
 from infrastructure.adapters.repositories import DjangoComunidadRepository
 
 
-class MuroComunidadView(LoginRequiredMixin, View):
+class MuroComunidadView(View):
+    """
+    Foro / Muro Comunitario de AgroJujuy:
+    - Accesible para lectura pública sin necesidad de iniciar sesión.
+    - Incluye barra de búsqueda por temas o palabras clave (?q=...).
+    - Muestra resumen breve por publicación (con despliegue bajo demanda) y paginación.
+    """
     template_name = 'community/foro.html'
+    PER_PAGE = 6
 
     def get(self, request):
-        posts = PostComunidad.objects.all().prefetch_related('respuestas', 'respuestas__autor').order_by('-fecha_creacion')
+        query = request.GET.get('q', '').strip()
+        page_number = request.GET.get('page', 1)
+
+        qs = PostComunidad.objects.select_related('autor').prefetch_related(
+            'respuestas', 'respuestas__autor'
+        ).order_by('-fecha_creacion')
+
+        if query:
+            qs = qs.filter(
+                Q(titulo__icontains=query) |
+                Q(contenido__icontains=query) |
+                Q(autor__first_name__icontains=query) |
+                Q(autor__last_name__icontains=query)
+            )
+
+        destacados = list(qs[:4])
+        paginator = Paginator(qs, self.PER_PAGE)
+        page_obj = paginator.get_page(page_number)
+
         post_form = PostComunidadForm()
         respuesta_form = RespuestaComunidadForm()
         return render(request, self.template_name, {
-            'posts': posts,
+            'posts': page_obj.object_list,
+            'page_obj': page_obj,
+            'total_posts': paginator.count,
+            'destacados': destacados,
+            'query': query,
             'post_form': post_form,
             'respuesta_form': respuesta_form,
         })
 
     def post(self, request):
+        if not request.user.is_authenticated:
+            messages.info(request, "Debes iniciar sesión para publicar o responder en el foro comunitario.")
+            return redirect('login')
+
         action = request.POST.get('action')
         repo = DjangoComunidadRepository()
 

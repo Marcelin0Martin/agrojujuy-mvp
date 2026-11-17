@@ -1,85 +1,190 @@
-/* AgroJujuy Stylesheet - WCAG 2.1 AA Compliant - Mobile First */
+/* ==========================================================================
+   AgroJujuy Design System — Iteration 2 (Emil Kowalski "Taste" + WCAG 2.1 AA)
+   Paleta SDD: Primary #173F32 | Secondary #10B981 | Tertiary #C88A4B | Bg #F6F8F6
+   ========================================================================== */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
   --color-primary: #173F32;
-  --color-primary-dark: #0f2b22;
+  --color-primary-dark: #0E2920;
+  --color-primary-soft: #E8F0EC;
   --color-secondary: #10B981;
+  --color-secondary-accessible: #065F46; /* Contraste > 7:1 sobre blanco */
   --color-tertiary: #C88A4B;
+  --color-tertiary-dark: #8F5B25; /* Contraste > 4.6:1 sobre blanco */
   --color-neutral: #6B7570;
-  --color-neutral-dark: #2A332F;
-  --color-neutral-light: #E5E9E6;
+  --color-neutral-dark: #1F2924;
+  --color-neutral-light: #E2E8E4;
   --color-background: #F6F8F6;
-  --color-card-bg: #FFFFFF;
+  --color-surface: #FFFFFF;
   --color-text-main: #173F32;
-  --color-text-muted: #4B5563;
-  --color-danger: #DC2626;
+  --color-text-muted: #434E48; /* Contraste > 7.5:1 sobre #F6F8F6 y #FFFFFF */
+  --color-danger: #B91C1C; /* Contraste > 5.5:1 sobre blanco */
+  --color-danger-bg: #FEF2F2;
+  --color-focus: #C88A4B;
+
+  --radius-lg: 0.625rem;
+  --radius-xl: 0.875rem;
+  --radius-2xl: 1.125rem;
+  --radius-full: 9999px;
+
+  --shadow-xs: 0 1px 2px rgba(23, 63, 50, 0.04);
+  --shadow-sm: 0 2px 8px -1px rgba(23, 63, 50, 0.06), 0 1px 3px -1px rgba(23, 63, 50, 0.04);
+  --shadow-md: 0 8px 24px -4px rgba(23, 63, 50, 0.08), 0 2px 6px -1px rgba(23, 63, 50, 0.04);
+  --shadow-lg: 0 16px 36px -6px rgba(23, 63, 50, 0.12), 0 4px 10px -2px rgba(23, 63, 50, 0.05);
+
+  --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-* {
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+html {
+  font-size: 100%;
+  scroll-padding-top: 5.5rem;
 }
 
 body {
   font-family: var(--font-family);
   background-color: var(--color-background);
   color: var(--color-text-main);
-  line-height: 1.5;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
-/* Accessible High Contrast Outdoors Links & Text */
+/* ==========================================================================
+   Accesibilidad WCAG 2.1 AA (Foco, Skip Link, Reduced Motion, Visually Hidden)
+   ========================================================================== */
+:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 1rem;
+  background-color: var(--color-primary);
+  color: #FFFFFF !important;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius-xl);
+  font-weight: 700;
+  z-index: 9999;
+  text-decoration: none;
+  box-shadow: var(--shadow-md);
+  transition: top 0.2s var(--ease-out-expo);
+}
+
+.skip-link:focus {
+  top: 0.75rem;
+  outline: 3px solid var(--color-tertiary);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ==========================================================================
+   Tipografía y Enlaces Accesibles
+   ========================================================================== */
 a {
   color: var(--color-primary);
   text-decoration: underline;
   text-underline-offset: 3px;
   font-weight: 600;
+  transition: color 0.15s ease;
 }
 
-a:hover, a:focus {
-  color: var(--color-tertiary);
+a:hover {
+  color: var(--color-tertiary-dark);
 }
 
-/* Prohibido #10B981 para texto sobre fondo blanco según SDD.
-   El color secundario #10B981 se utiliza exclusivamente en fondos de botones oscuros, pills con texto blanco o bordes. */
+/* Prohibido #10B981 para texto sobre fondo blanco según SDD */
 .text-secondary {
-  color: #065F46 !important; /* Variante oscura con contraste AAA para texto */
+  color: var(--color-secondary-accessible) !important;
 }
 
-/* Global Container */
+/* ==========================================================================
+   Utilidades Tailwind-Compatible (Rounded, Shadows, Spacing, Flex/Grid)
+   ========================================================================== */
+.rounded-xl { border-radius: var(--radius-xl); }
+.rounded-2xl { border-radius: var(--radius-2xl); }
+.rounded-full { border-radius: var(--radius-full); }
+.shadow-sm { box-shadow: var(--shadow-sm); }
+.shadow-md { box-shadow: var(--shadow-md); }
+.shadow-lg { box-shadow: var(--shadow-lg); }
+.p-4 { padding: 1rem; }
+.p-6 { padding: 1.5rem; }
+.p-8 { padding: 2rem; }
+.gap-3 { gap: 0.75rem; }
+.gap-4 { gap: 1rem; }
+.gap-6 { gap: 1.5rem; }
+.mb-4 { margin-bottom: 1rem; }
+.mb-6 { margin-bottom: 1.5rem; }
+.mt-4 { margin-top: 1rem; }
+.mt-6 { margin-top: 1.5rem; }
+.w-full { width: 100%; }
+
+/* ==========================================================================
+   Contenedor Global y Header Institucional
+   ========================================================================== */
 .container {
   width: 100%;
-  max-width: 1024px;
+  max-width: 1120px;
   margin: 0 auto;
-  padding: 1rem;
+  padding: 1.25rem 1rem;
 }
 
-/* Header Global */
+@media (min-width: 640px) {
+  .container {
+    padding: 1.5rem;
+  }
+}
+
 .global-header {
   background-color: var(--color-primary);
   color: #FFFFFF;
-  padding: 0.75rem 1rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  padding: 0.85rem 1rem;
+  box-shadow: var(--shadow-md);
   position: sticky;
   top: 0;
   z-index: 100;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .header-inner {
-  max-width: 1024px;
+  max-width: 1120px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.85rem;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 840px) {
   .header-inner {
     flex-direction: row;
     justify-content: space-between;
@@ -88,114 +193,151 @@ a:hover, a:focus {
 }
 
 .brand-title {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 1.25rem;
+  gap: 0.6rem;
+  font-size: 1.3rem;
   font-weight: 800;
-  color: #FFFFFF;
+  color: #FFFFFF !important;
   text-decoration: none;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
 }
 
 .brand-badge {
   background-color: var(--color-tertiary);
   color: #FFFFFF;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 700;
-  padding: 0.15rem 0.5rem;
-  border-radius: 9999px;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-full);
   text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
-/* Role Selector Temporal (Auditoría Admin) */
+/* Selector Temporal de Roles (Auditoría Admin) */
 .role-switcher-banner {
-  background-color: #2D4A3E;
+  background-color: rgba(255, 255, 255, 0.08);
   border: 1px solid var(--color-tertiary);
-  border-radius: 6px;
-  padding: 0.4rem 0.75rem;
-  display: flex;
+  border-radius: var(--radius-xl);
+  padding: 0.4rem 0.85rem;
+  display: inline-flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.5rem;
   font-size: 0.8rem;
   color: #FFFFFF;
 }
 
 .role-switcher-banner select {
-  background-color: #173F32;
+  background-color: var(--color-primary-dark);
   color: #FFFFFF;
   border: 1px solid var(--color-tertiary);
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
+  padding: 0.3rem 0.65rem;
+  border-radius: 0.5rem;
   font-size: 0.8rem;
   font-weight: 600;
+  width: auto;
 }
 
+/* Navegación Principal */
 .nav-links {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 0.5rem;
   align-items: center;
 }
 
 .nav-links a {
-  color: #FFFFFF;
+  color: rgba(255, 255, 255, 0.92);
   text-decoration: none;
   font-size: 0.9rem;
-  padding: 0.4rem 0.6rem;
-  border-radius: 4px;
-  transition: background 0.2s;
+  font-weight: 500;
+  padding: 0.5rem 0.85rem;
+  border-radius: var(--radius-xl);
+  transition: background-color 0.2s var(--ease-out-expo), color 0.2s var(--ease-out-expo);
 }
 
-.nav-links a:hover {
-  background-color: rgba(255, 255, 255, 0.15);
+.nav-links a:hover,
+.nav-links a[aria-current="page"] {
+  background-color: rgba(255, 255, 255, 0.14);
   color: #FFFFFF;
+}
+
+.nav-links a[aria-current="page"] {
+  font-weight: 700;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
 }
 
 .nav-btn-logout {
-  background-color: transparent;
+  background-color: rgba(255, 255, 255, 0.08);
   color: #FFFFFF;
-  border: 1px solid rgba(255,255,255,0.4);
-  padding: 0.35rem 0.75rem;
-  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 0.45rem 0.9rem;
+  border-radius: var(--radius-xl);
   cursor: pointer;
   font-size: 0.85rem;
+  font-weight: 600;
+  min-height: 40px;
+  transition: background-color 0.2s var(--ease-out-expo);
 }
 
-/* Card & Sections */
+.nav-btn-logout:hover {
+  background-color: rgba(255, 255, 255, 0.18);
+}
+
+/* ==========================================================================
+   Tarjetas y Superficies ("Taste" - Emil Kowalski)
+   ========================================================================== */
 .card {
-  background: var(--color-card-bg);
-  border: 1px solid var(--color-neutral-light);
-  border-radius: 8px;
-  padding: 1.25rem;
-  margin-bottom: 1.25rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  background: var(--color-surface);
+  border: 1px solid rgba(23, 63, 50, 0.08);
+  border-radius: var(--radius-2xl);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.25s var(--ease-out-expo), transform 0.25s var(--ease-out-expo);
+}
+
+.card-interactive:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
 }
 
 .card-title {
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: var(--color-primary);
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.85rem;
+  letter-spacing: -0.015em;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
-/* Buttons */
+/* ==========================================================================
+   Botones (Objetivo táctil mínimo 44x44px - WCAG 2.5.5)
+   ========================================================================== */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.65rem 1.25rem;
+  padding: 0.7rem 1.35rem;
   font-weight: 600;
   font-size: 0.95rem;
-  border-radius: 6px;
+  border-radius: var(--radius-xl);
   cursor: pointer;
   text-decoration: none;
-  border: none;
+  border: 1px solid transparent;
   gap: 0.5rem;
-  min-height: 44px; /* Accessible touch target */
+  min-height: 44px;
+  box-shadow: var(--shadow-xs);
+  transition: transform 0.15s var(--ease-out-expo), background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn:active {
+  transform: scale(0.98);
 }
 
 .btn-primary {
@@ -205,6 +347,7 @@ a:hover, a:focus {
 
 .btn-primary:hover {
   background-color: var(--color-primary-dark);
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-secondary {
@@ -214,6 +357,7 @@ a:hover, a:focus {
 
 .btn-secondary:hover {
   background-color: #059669;
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-tertiary {
@@ -222,60 +366,153 @@ a:hover, a:focus {
 }
 
 .btn-tertiary:hover {
-  background-color: #A36F38;
+  background-color: var(--color-tertiary-dark);
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-outline {
-  background-color: transparent;
-  border: 2px solid var(--color-primary);
-  color: var(--color-primary);
+  background-color: #FFFFFF;
+  border: 1.5px solid var(--color-primary);
+  color: var(--color-primary) !important;
+}
+
+.btn-outline:hover {
+  background-color: var(--color-primary-soft);
 }
 
 .btn-sm {
-  padding: 0.35rem 0.75rem;
-  font-size: 0.85rem;
-  min-height: 36px;
+  padding: 0.45rem 0.95rem;
+  font-size: 0.875rem;
+  min-height: 38px;
+  border-radius: var(--radius-lg);
 }
 
-/* Form inputs with outdoor contrast */
+/* ==========================================================================
+   Formularios, Inputs y Errores Accesibles (WCAG 3.3.1 / 3.3.2)
+   ========================================================================== */
 .form-group {
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
 }
 
 .form-label {
   display: block;
-  font-weight: 700;
-  font-size: 0.9rem;
-  margin-bottom: 0.35rem;
+  font-weight: 600;
+  font-size: 0.92rem;
+  margin-bottom: 0.4rem;
   color: var(--color-primary);
 }
 
-.form-control, input[type="text"], input[type="email"], input[type="password"], select, textarea {
+.required-indicator {
+  color: var(--color-danger);
+  font-weight: 700;
+  margin-left: 0.15rem;
+}
+
+.form-control,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+input[type="tel"],
+select,
+textarea {
   width: 100%;
-  padding: 0.65rem 0.85rem;
-  border: 2px solid #CBD5E1;
-  border-radius: 6px;
+  padding: 0.7rem 0.95rem;
+  border: 1.5px solid #94A39B; /* Contraste >= 3:1 sobre blanco */
+  border-radius: var(--radius-xl);
   background-color: #FFFFFF;
   color: var(--color-neutral-dark);
   font-family: inherit;
   font-size: 0.95rem;
   font-weight: 500;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.form-control:focus, input:focus, select:focus, textarea:focus {
+.form-control:focus,
+input:focus,
+select:focus,
+textarea:focus {
   outline: none;
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(23, 63, 50, 0.2);
 }
 
-/* Badges */
-.badge {
+/* Estado de error accesible */
+input[aria-invalid="true"],
+select[aria-invalid="true"],
+textarea[aria-invalid="true"],
+.input-error {
+  border-color: var(--color-danger) !important;
+  background-color: var(--color-danger-bg);
+}
+
+.field-error {
+  color: var(--color-danger);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-top: 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.field-help {
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+  margin-top: 0.3rem;
+  display: block;
+}
+
+.readonly-box {
+  background-color: #EEF2EF;
+  border: 1.5px solid #CBD5CE;
+  border-radius: var(--radius-xl);
+  padding: 0.7rem 0.95rem;
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.text-error-msg {
+  color: var(--color-danger);
+  font-size: 0.85rem;
+  font-weight: 600;
   display: inline-block;
-  padding: 0.25rem 0.6rem;
+  margin-top: 0.35rem;
+}
+
+.text-success-msg {
+  color: var(--color-secondary-accessible);
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-block;
+  margin-top: 0.35rem;
+}
+
+.text-warning-msg {
+  color: var(--color-tertiary-dark);
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-block;
+  margin-top: 0.35rem;
+}
+
+/* ==========================================================================
+   Badges y Píldoras de Estado
+   ========================================================================== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.75rem;
   font-size: 0.75rem;
   font-weight: 700;
-  border-radius: 4px;
+  border-radius: var(--radius-full);
   text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .badge-success {
@@ -298,12 +535,21 @@ a:hover, a:focus {
   color: #FFFFFF;
 }
 
-/* Grid Buscador de Profesionales (Mobile First) */
+.badge-soft {
+  background-color: var(--color-primary-soft);
+  color: var(--color-primary);
+  text-transform: none;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   Cuadrícula del Buscador Inteligente y Paginación
+   ========================================================================== */
 .profesionales-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1.25rem;
-  margin-top: 1rem;
+  gap: 1.5rem;
+  margin-top: 1.25rem;
 }
 
 @media (min-width: 640px) {
@@ -312,32 +558,74 @@ a:hover, a:focus {
   }
 }
 
-@media (min-width: 960px) {
-  .profesionales-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
 .profesional-card {
   border-left: 5px solid var(--color-primary);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  padding: 1.5rem;
 }
 
-/* Banners Publicitarios Estáticos (Mockup de Agroinsumos) */
+/* Chips de Filtro Rápido */
+.filter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+}
+
+.filter-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-full);
+  border: 1.5px solid #94A39B;
+  background-color: #FFFFFF;
+  color: var(--color-primary);
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s var(--ease-out-expo);
+}
+
+.filter-pill:hover {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-soft);
+}
+
+.filter-pill-active {
+  background-color: var(--color-primary) !important;
+  color: #FFFFFF !important;
+  border-color: var(--color-primary) !important;
+}
+
+/* Paginación Accesible */
+.pagination-nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+}
+
+/* ==========================================================================
+   Banners Publicitarios Estáticos (Módulo Comercial SDD)
+   ========================================================================== */
 .banner-publicidad {
-  background: linear-gradient(135deg, #173F32 0%, #2A5A4A 100%);
+  background: linear-gradient(135deg, #173F32 0%, #235746 100%);
   color: #FFFFFF;
-  border: 2px dashed var(--color-tertiary);
-  border-radius: 8px;
-  padding: 1rem 1.25rem;
+  border: 1.5px dashed var(--color-tertiary);
+  border-radius: var(--radius-2xl);
+  padding: 1.35rem 1.5rem;
   margin: 1.5rem 0;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.75rem;
   align-items: center;
   text-align: center;
+  box-shadow: var(--shadow-sm);
 }
 
 @media (min-width: 640px) {
@@ -354,90 +642,118 @@ a:hover, a:focus {
   font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.05em;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-full);
+  display: inline-block;
 }
 
-/* Chat Hilo 1 a 1 */
+/* ==========================================================================
+   Chat Directo 1 a 1
+   ========================================================================== */
 .chat-container {
   display: flex;
   flex-direction: column;
-  height: 480px;
-  border: 1px solid var(--color-neutral-light);
-  border-radius: 8px;
+  height: 500px;
+  border: 1px solid rgba(23, 63, 50, 0.12);
+  border-radius: var(--radius-2xl);
   background: #FFFFFF;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
 }
 
 .chat-messages {
   flex: 1;
   overflow-y: auto;
-  padding: 1rem;
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1rem;
 }
 
 .chat-bubble {
   max-width: 80%;
-  padding: 0.75rem 1rem;
-  border-radius: 12px;
+  padding: 0.9rem 1.15rem;
+  border-radius: var(--radius-2xl);
   font-size: 0.95rem;
-  line-height: 1.4;
+  line-height: 1.45;
+  box-shadow: var(--shadow-xs);
 }
 
 .chat-bubble-emisor {
   align-self: flex-end;
   background-color: var(--color-primary);
   color: #FFFFFF;
-  border-bottom-right-radius: 2px;
+  border-bottom-right-radius: 0.25rem;
 }
 
 .chat-bubble-receptor {
   align-self: flex-start;
   background-color: #EBF1ED;
   color: var(--color-text-main);
-  border-bottom-left-radius: 2px;
+  border-bottom-left-radius: 0.25rem;
 }
 
 .chat-bubble-meta {
-  font-size: 0.7rem;
-  opacity: 0.8;
-  margin-top: 0.35rem;
+  font-size: 0.72rem;
+  opacity: 0.85;
+  margin-top: 0.4rem;
   display: block;
 }
 
-/* Mensajes / Alertas Django */
+/* ==========================================================================
+   Carrusel Accesible del Foro
+   ========================================================================== */
+.carousel-wrapper {
+  position: relative;
+  background: var(--color-surface);
+  border: 1px solid rgba(23, 63, 50, 0.1);
+  border-radius: var(--radius-2xl);
+  padding: 1.5rem;
+  margin-bottom: 1.75rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.carousel-track {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+/* ==========================================================================
+   Alertas y Footer
+   ========================================================================== */
 .alert {
-  padding: 0.85rem 1.25rem;
-  border-radius: 6px;
-  margin-bottom: 1rem;
+  padding: 1rem 1.35rem;
+  border-radius: var(--radius-xl);
+  margin-bottom: 1.25rem;
   font-weight: 600;
+  box-shadow: var(--shadow-xs);
 }
 
 .alert-success {
-  background-color: #D1FAE5;
-  border: 1px solid #10B981;
+  background-color: #ECFDF5;
+  border: 1.5px solid #10B981;
   color: #065F46;
 }
 
 .alert-error, .alert-danger {
-  background-color: #FEE2E2;
-  border: 1px solid #EF4444;
+  background-color: #FEF2F2;
+  border: 1.5px solid var(--color-danger);
   color: #991B1B;
 }
 
-.alert-info {
-  background-color: #FEF3C7;
-  border: 1px solid #C88A4B;
-  color: #92400E;
+.alert-info, .alert-warning {
+  background-color: #FFFBEB;
+  border: 1.5px solid var(--color-tertiary);
+  color: #78350F;
 }
 
-/* Footer */
 footer {
   margin-top: auto;
-  background-color: #173F32;
+  background-color: var(--color-primary);
   color: #E5E9E6;
-  padding: 1.5rem 1rem;
-  font-size: 0.85rem;
+  padding: 2rem 1rem;
+  font-size: 0.875rem;
   text-align: center;
+  border-top: 3px solid var(--color-tertiary);
 }

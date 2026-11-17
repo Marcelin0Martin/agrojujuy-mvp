@@ -63,7 +63,7 @@ class Command(BaseCommand):
             defaults={
                 'email': 'admin@agrojujuy.gob.ar',
                 'first_name': 'Administrador',
-                'last_name': 'Institucional CIAPA',
+                'last_name': 'Institucional CIAPAJ',
                 'role': 'ADMIN',
                 'is_staff': True,
                 'is_superuser': True,
@@ -78,7 +78,7 @@ class Command(BaseCommand):
             self.stdout.write("ℹ Usuario Admin ya existía.")
 
         # 2. Generar 100 Productores asignados aleatoriamente a las 4 regiones
-        self.stdout.write("Generando 100 productores agrícolas...")
+        self.stdout.write("Generando 100 productores agrícolas con DNI y RENSPA...")
         productores_creados = []
         for i in range(1, 101):
             username = f"productor_{i:03d}"
@@ -101,9 +101,13 @@ class Command(BaseCommand):
 
             region = random.choice(REGIONES_VALIDAS)
             rubro = random.choice(RUBROS_JUJUY)
-            prod, _ = Productor.objects.get_or_create(
+            dni = str(25000000 + i * 137)
+            renspa = f"09.{random.randint(1, 15):03d}.0.{10000 + i:05d}/00"
+            prod, _ = Productor.objects.update_or_create(
                 usuario=user,
                 defaults={
+                    'dni': dni,
+                    'renspa': renspa,
                     'region': region,
                     'rubro_productivo': rubro,
                     'telefono': f"+54 388 {random.randint(4000000, 6999999)}",
@@ -121,7 +125,7 @@ class Command(BaseCommand):
 
         for i in range(1, 101):
             username = f"profesional_{i:03d}"
-            email = f"ingeniero{i}@ciapa-jujuy.test"
+            email = f"ingeniero{i}@ciapaj-jujuy.test"
             first_name = fake.first_name()
             last_name = fake.last_name()
             user, u_created = CustomUser.objects.get_or_create(
@@ -139,22 +143,22 @@ class Command(BaseCommand):
                 ConfiguracionSeguridad.objects.get_or_create(usuario=user)
 
             matricula = f"MP-{1000 + i}/J"
-            especialidad = random.choice(ESPECIALIDADES_VALIDAS)
-            # 80% Habilitado, 20% Pendiente
+            # Selección de 1 o 2 especialidades
+            esps = random.sample(ESPECIALIDADES_VALIDAS, random.randint(1, 2))
+            especialidad_str = ", ".join(esps)
             estado = "Habilitado" if i <= 80 else "Pendiente"
 
-            # Zonas de cobertura aleatorias (1 a 3 zonas)
             num_zonas = random.randint(1, 3)
             zonas = ", ".join(random.sample(REGIONES_VALIDAS, num_zonas))
 
-            prof, _ = Profesional.objects.get_or_create(
+            prof, _ = Profesional.objects.update_or_create(
                 usuario=user,
                 defaults={
                     'matricula_provincial': matricula,
-                    'especialidad': especialidad,
+                    'especialidad': especialidad_str,
                     'zonas_cobertura': zonas,
                     'telefono': f"+54 388 {random.randint(4000000, 6999999)}",
-                    'biografia': f"Ingeniero Agrónomo egresado de la FCA-UNJu con amplia experiencia en {especialidad.lower()} en regiones {zonas}.",
+                    'biografia': f"Ingeniero Agrónomo egresado de la FCA-UNJu con experiencia en {especialidad_str.lower()} en regiones {zonas}.",
                     'estado_validacion': estado,
                     'fecha_validacion': timezone.now() if estado == 'Habilitado' else None,
                 }
@@ -163,7 +167,7 @@ class Command(BaseCommand):
             if estado == 'Habilitado':
                 profesionales_habilitados.append(prof)
 
-        self.stdout.write(self.style.SUCCESS("✔ 100 Profesionales listos (80 Habilitados, 20 Pendientes CIAPA)."))
+        self.stdout.write(self.style.SUCCESS("✔ 100 Profesionales listos (80 Habilitados, 20 Pendientes CIAPAJ)."))
 
         # 4. Generar 5 Usuarios No Registrados / Inactivos
         self.stdout.write("Generando 5 usuarios no registrados / inactivos...")
@@ -177,7 +181,7 @@ class Command(BaseCommand):
                     'first_name': fake.first_name(),
                     'last_name': fake.last_name(),
                     'role': 'PRODUCER',
-                    'is_active': False,  # Inactivo
+                    'is_active': False,
                 }
             )
             if u_created:
@@ -192,7 +196,7 @@ class Command(BaseCommand):
         for i in range(1, 41):
             autor = random.choice(todos_los_usuarios)
             titulo = random.choice(TITULOS_FORO) + f" (Caso #{i})"
-            contenido = fake.paragraph(nb_sentences=3)
+            contenido = fake.paragraph(nb_sentences=4)
             post, p_created = PostComunidad.objects.get_or_create(
                 titulo=titulo,
                 defaults={
@@ -201,7 +205,6 @@ class Command(BaseCommand):
                     'fecha_creacion': timezone.now() - timedelta(days=random.randint(1, 30)),
                 }
             )
-            # Agregar 1 a 3 respuestas anidadas por post
             if p_created:
                 num_resp = random.randint(1, 3)
                 for _ in range(num_resp):
@@ -214,36 +217,39 @@ class Command(BaseCommand):
                     )
         self.stdout.write(self.style.SUCCESS("✔ 40 Posts en foro comunitario con respuestas anidadas creados."))
 
-        # 6. Generar 50 Tickets de asistencia técnica y chats directos (1 a 1) entre productores y habilitados
+        # 6. Generar 50 Tickets de asistencia técnica (Dirigidos y Abiertos)
         self.stdout.write("Generando 50 tickets de asistencia con chats cruzados 1 a 1...")
         for i in range(1, 51):
             productor = random.choice(productores_creados)
-            profesional = random.choice(profesionales_habilitados)
+            es_abierta = (i > 42)  # 8 solicitudes abiertas disponibles
+            profesional = None if es_abierta else random.choice(profesionales_habilitados)
+            modalidad = 'ABIERTA' if es_abierta else 'DIRIGIDA'
             titulo = random.choice(TITULOS_TICKETS) + f" - Finca #{random.randint(10, 99)}"
-            estado = "Aceptado" if random.random() > 0.3 else "Pendiente"
+            estado = "Pendiente" if es_abierta else random.choice(["Pendiente", "Aceptado", "Finalizado"])
 
             ticket, t_created = TicketAsistencia.objects.get_or_create(
                 productor=productor,
-                profesional=profesional,
                 titulo=titulo,
                 defaults={
+                    'profesional': profesional,
+                    'modalidad': modalidad,
+                    'especialidad_requerida': random.choice(ESPECIALIDADES_VALIDAS),
                     'descripcion': f"Consulta técnica solicitada por el productor sobre {titulo}. " + fake.text(max_nb_chars=180),
                     'estado': estado,
+                    'descripcion_finalizacion': "Se realizó inspección en lote y ajuste de dosis fitosanitaria." if estado == 'Finalizado' else "",
+                    'fecha_finalizacion': timezone.now() if estado == 'Finalizado' else None,
                     'fecha_creacion': timezone.now() - timedelta(days=random.randint(1, 20)),
                 }
             )
 
-            # Generar conversación inicial en el canal 1 a 1
-            if t_created:
-                # Mensaje 1 del productor
+            if t_created and profesional:
                 MensajeTicket.objects.create(
                     ticket=ticket,
                     emisor=productor.usuario,
                     contenido=f"Hola Ing. {profesional.usuario.last_name}, solicito su orientación técnica: {ticket.descripcion}",
                     fecha_envio=ticket.fecha_creacion
                 )
-                # Si el ticket fue aceptado, mensaje de respuesta del ingeniero
-                if estado == 'Aceptado':
+                if estado in ['Aceptado', 'Finalizado']:
                     MensajeTicket.objects.create(
                         ticket=ticket,
                         emisor=profesional.usuario,

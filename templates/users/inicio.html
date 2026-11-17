@@ -1,34 +1,59 @@
 {% extends 'base.html' %}
 
-{% block title %}Inicio - AgroJujuy{% endblock %}
+{% block title %}Inicio — AgroJujuy{% endblock %}
 
 {% block content %}
-<div style="text-align: center; max-width: 720px; margin: 2rem auto;">
+<div style="max-width: 860px; margin: 1.5rem auto; text-align: center;">
     <span class="badge badge-warning" style="margin-bottom: 1rem; font-size: 0.85rem;">Conectando el Agro Jujeño</span>
-    <h1 style="font-size: 2.2rem; font-weight: 800; color: var(--color-primary); line-height: 1.2; margin-bottom: 1rem;">
+    <h1 style="font-size: clamp(1.85rem, 4vw, 2.5rem); font-weight: 800; color: var(--color-primary); line-height: 1.2; margin-bottom: 1.15rem; letter-spacing: -0.025em;">
         Red Integral de Asistencia Agronómica y Productores de Jujuy
     </h1>
-    <p style="font-size: 1.1rem; color: var(--color-text-muted); margin-bottom: 2rem;">
-        Plataforma oficial para la articulación directa entre productores agrícolas de las 4 regiones (Puna, Quebrada, Valles y Yungas) e ingenieros agrónomos habilitados con matrícula institucional CIAPA.
+    <p style="font-size: 1.1rem; color: var(--color-text-muted); max-width: 680px; margin: 0 auto 2rem auto;">
+        Plataforma oficial para la articulación directa entre productores agrícolas de las 4 regiones (Puna, Quebrada, Valles y Yungas) e ingenieros agrónomos habilitados con matrícula institucional CIAPAJ.
     </p>
 
     <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2.5rem;">
         <a href="{% url 'registro_productor' %}" class="btn btn-tertiary">
-            🚜 Soy Productor Agrícola
+            <span aria-hidden="true">🚜</span> Soy Productor Agrícola
         </a>
         <a href="{% url 'registro_profesional' %}" class="btn btn-primary">
-            🎓 Soy Ingeniero Agrónomo (CIAPA)
+            <span aria-hidden="true">🎓</span> Soy Ingeniero Agrónomo (CIAPAJ)
         </a>
         <a href="{% url 'login' %}" class="btn btn-outline">
-            🔑 Ingresar a mi Cuenta
+            <span aria-hidden="true">🔑</span> Ingresar a mi Cuenta
         </a>
     </div>
 
-    <div class="card" style="text-align: left; background: #FFFFFF; border-left: 6px solid var(--color-tertiary);">
-        <h2 style="font-size: 1.1rem; font-weight: 700; color: var(--color-primary); margin-bottom: 0.5rem;">Garantía de Validación Institucional CIAPA</h2>
-        <p style="font-size: 0.95rem; color: var(--color-text-muted);">
-            Cada profesional registrado en la plataforma atraviesa una auditoría estricta de matrícula provincial antes de habilitar su contacto directo con productores, garantizando seriedad técnica y seguridad en campo.
-        </p>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; text-align: left; margin-bottom: 2rem;">
+        <div class="card card-interactive rounded-2xl shadow-sm p-6" style="margin-bottom: 0; border-left: 5px solid var(--color-primary);">
+            <h2 style="font-size: 1.1rem; font-weight: 700; color: var(--color-primary); margin-bottom: 0.5rem;">
+                🔍 Buscador Público
+            </h2>
+            <p style="font-size: 0.9rem; color: var(--color-text-muted); margin-bottom: 1rem;">
+                Explora por región y especialidad a los profesionales habilitados por CIAPAJ sin necesidad de registrarte.
+            </p>
+            <a href="{% url 'buscador_profesionales' %}" style="font-size: 0.9rem;">Ir al Buscador &rarr;</a>
+        </div>
+
+        <div class="card card-interactive rounded-2xl shadow-sm p-6" style="margin-bottom: 0; border-left: 5px solid var(--color-secondary);">
+            <h2 style="font-size: 1.1rem; font-weight: 700; color: var(--color-primary); margin-bottom: 0.5rem;">
+                💬 Foro Comunitario
+            </h2>
+            <p style="font-size: 0.9rem; color: var(--color-text-muted); margin-bottom: 1rem;">
+                Consulta experiencias técnicas, alertas climáticas y recomendaciones compartidas por la comunidad agraria.
+            </p>
+            <a href="{% url 'foro_comunidad' %}" style="font-size: 0.9rem;">Ver el Foro &rarr;</a>
+        </div>
+
+        <div class="card card-interactive rounded-2xl shadow-sm p-6" style="margin-bottom: 0; border-left: 5px solid var(--color-tertiary);">
+            <h2 style="font-size: 1.1rem; font-weight: 700; color: var(--color-primary); margin-bottom: 0.5rem;">
+                🏛️ Sobre Nosotros
+            </h2>
+            <p style="font-size: 0.9rem; color: var(--color-text-muted); margin-bottom: 1rem;">
+                Conoce el protocolo de validación institucional CIAPAJ y RENSPA que respalda cada intervención en campo.
+            </p>
+            <a href="{% url 'nosotros' %}" style="font-size: 0.9rem;">Conocer más &rarr;</a>
+        </div>
     </div>
 </div>
 {% endblock %}
