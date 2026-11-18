@@ -3,54 +3,66 @@
 {% block title %}Mi Finca y Perfil de Productor — AgroJujuy{% endblock %}
 
 {% block content %}
-<div style="max-width: 680px; margin: 1rem auto;">
-    <div class="card rounded-2xl shadow-md p-6">
+<div style="max-width: 960px; margin: 1rem auto;">
+    <div class="card rounded-2xl shadow-md p-8" style="background: #FFFFFF; border-top: 6px solid var(--color-tertiary);">
         <div class="card-title">
-            <h1 style="font-size: 1.45rem; font-weight: 800; color: var(--color-primary); margin: 0;">
-                <span aria-hidden="true">🚜</span> Mi Finca y Perfil de Productor
+            <h1 style="font-size: 1.55rem; font-weight: 800; color: var(--color-primary); margin: 0; display: flex; align-items: center; gap: 0.55rem;">
+                <i data-lucide="tractor" data-size="25"></i> Mi Finca y Perfil de Productor
             </h1>
             <span class="badge badge-soft">Datos Institucionales Protegidos</span>
         </div>
 
-        <p style="font-size: 0.92rem; color: var(--color-text-muted); margin-bottom: 1.5rem;">
+        <p style="font-size: 0.95rem; color: var(--color-text-muted); margin-bottom: 1.5rem;">
             Por seguridad y trazabilidad sanitaria institucional, tu identidad, DNI, RENSPA, región geográfica y ubicación de finca se encuentran protegidos. Puedes actualizar tu rubro productivo y teléfono de contacto en cualquier momento.
         </p>
 
         <!-- Datos Institucionales Protegidos (Solo Lectura) -->
-        <div style="background: var(--color-background); border-radius: var(--radius-xl); padding: 1.25rem; margin-bottom: 1.5rem; border: 1px solid rgba(23, 63, 50, 0.1);">
-            <h2 style="font-size: 0.95rem; font-weight: 700; color: var(--color-primary); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.03em;">
-                🔒 Datos Registrados y Protegidos
+        <div style="background: var(--color-background); border-radius: var(--radius-xl); padding: 1.35rem; margin-bottom: 1.75rem; border: 1px solid rgba(23, 63, 50, 0.1);">
+            <h2 style="font-size: 0.95rem; font-weight: 700; color: var(--color-primary); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.03em; display: flex; align-items: center; gap: 0.45rem;">
+                <i data-lucide="lock" data-size="17"></i> Datos Registrados y Protegidos
             </h2>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
                 <div>
-                    <span class="form-label" style="font-size: 0.8rem; margin-bottom: 0.2rem;">Nombre y Apellido</span>
-                    <div class="readonly-box">{{ object.usuario.first_name }} {{ object.usuario.last_name }}</div>
+                    <span class="form-label" style="font-size: 0.8rem; margin-bottom: 0.25rem;">Nombre y Apellido</span>
+                    <div class="readonly-box">
+                        <i data-lucide="user" data-size="15"></i> {{ object.usuario.first_name }} {{ object.usuario.last_name }}
+                    </div>
                 </div>
                 <div>
-                    <span class="form-label" style="font-size: 0.8rem; margin-bottom: 0.2rem;">Correo Electrónico</span>
-                    <div class="readonly-box">{{ object.usuario.email }}</div>
+                    <span class="form-label" style="font-size: 0.8rem; margin-bottom: 0.25rem;">Correo Electrónico</span>
+                    <div class="readonly-box">
+                        <i data-lucide="mail" data-size="15"></i> {{ object.usuario.email }}
+                    </div>
                 </div>
                 <div>
-                    <span class="form-label" style="font-size: 0.8rem; margin-bottom: 0.2rem;">DNI</span>
-                    <div class="readonly-box">{{ object.dni|default:"No especificado" }}</div>
+                    <span class="form-label" style="font-size: 0.8rem; margin-bottom: 0.25rem;">DNI</span>
+                    <div class="readonly-box">
+                        <i data-lucide="file-text" data-size="15"></i> {{ object.dni|default:"No especificado" }}
+                    </div>
                 </div>
                 <div>
-                    <span class="form-label" style="font-size: 0.8rem; margin-bottom: 0.2rem;">Número RENSPA</span>
-                    <div class="readonly-box">{{ object.renspa|default:"No especificado" }}</div>
+                    <span class="form-label" style="font-size: 0.8rem; margin-bottom: 0.25rem;">Número RENSPA</span>
+                    <div class="readonly-box">
+                        <i data-lucide="shield-check" data-size="15"></i> {{ object.renspa|default:"No especificado" }}
+                    </div>
                 </div>
                 <div>
-                    <span class="form-label" style="font-size: 0.8rem; margin-bottom: 0.2rem;">Región Geográfica</span>
-                    <div class="readonly-box">📍 {{ object.region }}</div>
+                    <span class="form-label" style="font-size: 0.8rem; margin-bottom: 0.25rem;">Región Geográfica</span>
+                    <div class="readonly-box">
+                        <i data-lucide="map-pin" data-size="15"></i> {{ object.region }}
+                    </div>
                 </div>
                 <div>
-                    <span class="form-label" style="font-size: 0.8rem; margin-bottom: 0.2rem;">Dirección / Ubicación de Finca</span>
-                    <div class="readonly-box">{{ object.direccion_finca|default:"Sin especificar" }}</div>
+                    <span class="form-label" style="font-size: 0.8rem; margin-bottom: 0.25rem;">Dirección / Ubicación de Finca</span>
+                    <div class="readonly-box">
+                        <i data-lucide="compass" data-size="15"></i> {{ object.direccion_finca|default:"Sin especificar" }}
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Formulario de Datos Editables -->
-        <form method="POST" novalidate>
+        <form method="POST" novalidate data-loading-text="Guardando cambios...">
             {% csrf_token %}
 
             {% if form.errors %}
@@ -59,33 +71,35 @@
                 </div>
             {% endif %}
 
-            <h2 style="font-size: 1.05rem; font-weight: 700; color: var(--color-primary); margin-bottom: 1rem;">
-                ✏️ Datos Operativos Editables
+            <h2 style="font-size: 1.1rem; font-weight: 700; color: var(--color-primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.45rem;">
+                <i data-lucide="edit-3" data-size="18"></i> Datos Operativos Editables
             </h2>
 
-            <div class="form-group">
-                <label class="form-label" for="{{ form.rubro_productivo.id_for_label }}">
-                    Rubro Productivo Actual <span class="required-indicator" aria-hidden="true">*</span>
-                </label>
-                {{ form.rubro_productivo }}
-                {% if form.rubro_productivo.errors %}
-                    <p id="error_rubro_productivo" class="field-error" role="alert">⛔ {{ form.rubro_productivo.errors|join:", " }}</p>
-                {% endif %}
-            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem;">
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.rubro_productivo.id_for_label }}">
+                        <i data-lucide="sprout" data-size="16"></i> Rubro Productivo Actual <span class="required-indicator" aria-hidden="true">*</span>
+                    </label>
+                    {{ form.rubro_productivo }}
+                    {% if form.rubro_productivo.errors %}
+                        <p id="error_rubro_productivo" class="field-error" role="alert">{{ form.rubro_productivo.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
 
-            <div class="form-group">
-                <label class="form-label" for="{{ form.telefono.id_for_label }}">
-                    Teléfono / WhatsApp de Contacto <span class="required-indicator" aria-hidden="true">*</span>
-                </label>
-                {{ form.telefono }}
-                <span class="field-help">Formato válido entre 8 y 15 dígitos (ej: +54 388 4123456)</span>
-                {% if form.telefono.errors %}
-                    <p id="error_telefono" class="field-error" role="alert">⛔ {{ form.telefono.errors|join:", " }}</p>
-                {% endif %}
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.telefono.id_for_label }}">
+                        <i data-lucide="phone" data-size="16"></i> Teléfono / WhatsApp de Contacto <span class="required-indicator" aria-hidden="true">*</span>
+                    </label>
+                    {{ form.telefono }}
+                    <span class="field-help">Formato válido entre 8 y 15 dígitos (ej: +54 388 4123456)</span>
+                    {% if form.telefono.errors %}
+                        <p id="error_telefono" class="field-error" role="alert">{{ form.telefono.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
             </div>
 
             <button type="submit" class="btn btn-primary w-full mt-4">
-                Guardar Cambios Operativos
+                <i data-lucide="check-circle" data-size="18"></i> Guardar Cambios Operativos
             </button>
         </form>
     </div>
