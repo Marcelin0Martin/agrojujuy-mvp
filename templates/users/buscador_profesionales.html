@@ -43,17 +43,6 @@
                             <option value="{{ r }}" {% if filtro_region == r %}selected{% endif %}>{{ r }}</option>
                         {% endfor %}
                     </select>
-
-                    <!-- Píldoras de clic rápido por Región -->
-                    <div class="filter-pills" role="group" aria-label="Filtro rápido por región" style="margin-top: 0.75rem;">
-                        {% for r in regiones %}
-                            <a href="?region={{ r|urlencode }}{% if filtro_especialidad %}&amp;especialidad={{ filtro_especialidad|urlencode }}{% endif %}"
-                               class="filter-pill {% if filtro_region == r %}filter-pill-active{% endif %}"
-                               {% if filtro_region == r %}aria-current="true"{% endif %}>
-                                <i data-lucide="map-pin" data-size="14"></i> {{ r }}
-                            </a>
-                        {% endfor %}
-                    </div>
                 </div>
 
                 <div>
