@@ -11,6 +11,14 @@ from django.utils.html import escape
 from django.views.generic import TemplateView, CreateView, UpdateView, DetailView
 from django.urls import reverse_lazy
 
+import json
+from collections import Counter
+from django.views.generic import TemplateView
+from .models import Productor, Profesional
+from application.tickets.models import TicketAsistencia
+from domain.rules import REGIONES_VALIDAS
+
+
 from .models import CustomUser, Productor, Profesional, ConfiguracionSeguridad
 from .forms import (
     RegistroProductorForm,
@@ -42,8 +50,50 @@ class InicioView(TemplateView):
 
 
 class NosotrosView(TemplateView):
-    """Apartado público institucional 'Nosotros' (About Us) accesible sin iniciar sesión."""
+    """Apartado público institucional 'Nosotros' con mapa territorial interactivo de Jujuy."""
     template_name = 'users/nosotros.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        productores = list(Productor.objects.all())
+        profesionales = list(Profesional.objects.filter(estado_validacion='Habilitado'))
+        tickets = list(TicketAsistencia.objects.select_related('productor').all())
+
+        descripciones_regiones = {
+            'Puna': 'Altiplano jujeño: cultivos andinos, papa andina, quinua y ganadería de camélidos.',
+            'Quebrada': 'Valles intermontanos: horticultura de altura, frutales de pepita y cultivos andinos.',
+            'Valles': 'Zona templada central: tabaco, hortalizas intensivas, granos y forrajes.',
+            'Yungas': 'Selva pedemontana subtropical: caña de azúcar, cítricos, banano y hortalizas primicia.',
+        }
+
+        datos_regiones = {}
+        for region in REGIONES_VALIDAS:
+            prods_region = [p for p in productores if p.region == region]
+            profs_region = [pr for pr in profesionales if region in pr.get_zonas_list()]
+            tickets_region = [t for t in tickets if t.productor.region == region]
+            tickets_resueltos = [t for t in tickets_region if t.estado in ('Finalizado', 'Cerrado')]
+
+            rubros = Counter(
+                p.rubro_productivo.strip().capitalize()
+                for p in prods_region if p.rubro_productivo
+            )
+            top_rubros = [r for r, _ in rubros.most_common(3)]
+
+            datos_regiones[region] = {
+                'nombre': region,
+                'descripcion': descripciones_regiones.get(region, ''),
+                'productores': len(prods_region),
+                'profesionales': len(profs_region),
+                'tickets_totales': len(tickets_region),
+                'tickets_resueltos': len(tickets_resueltos),
+                'top_rubros': top_rubros,
+            }
+
+        context['datos_regiones'] = datos_regiones
+        context['total_productores'] = len(productores)
+        context['total_profesionales'] = len(profesionales)
+        return context
 
 
 class LoginPersonalizadoView(BaseLoginView):

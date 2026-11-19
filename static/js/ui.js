@@ -200,7 +200,98 @@
         }
     }
 
+
+    function initMapaJujuy() {
+        const dataScript = document.getElementById('datos-regiones-jujuy');
+        const svgMap = document.getElementById('mapa-jujuy-svg');
+        if (!dataScript || !svgMap) return;
+
+        let datosRegiones = {};
+        try {
+            datosRegiones = JSON.parse(dataScript.textContent);
+        } catch (e) {
+            return;
+        }
+
+        const paths = svgMap.querySelectorAll('path[data-region]');
+        const buttons = document.querySelectorAll('[data-region-btn]');
+        const tituloEl = document.getElementById('detalle-region-titulo');
+        const descEl = document.getElementById('detalle-region-desc');
+        const kpiProdEl = document.getElementById('kpi-productores');
+        const kpiProfEl = document.getElementById('kpi-profesionales');
+        const kpiTicketsEl = document.getElementById('kpi-tickets');
+        const rubrosEl = document.getElementById('detalle-region-rubros');
+        const btnBuscarEl = document.getElementById('btn-buscar-en-region');
+
+        function seleccionarRegion(regionNombre) {
+            const info = datosRegiones[regionNombre];
+            if (!info) return;
+
+            paths.forEach(function (p) {
+                const esActiva = p.getAttribute('data-region') === regionNombre;
+                p.style.opacity = esActiva ? '1' : '0.62';
+                p.style.strokeWidth = esActiva ? '4.5' : '2.5';
+                p.style.stroke = esActiva ? '#FDE68A' : '#FFFFFF';
+            });
+
+            buttons.forEach(function (b) {
+                if (b.getAttribute('data-region-btn') === regionNombre) {
+                    b.classList.add('filter-pill-active');
+                } else {
+                    b.classList.remove('filter-pill-active');
+                }
+            });
+
+            if (tituloEl) tituloEl.textContent = 'Región ' + info.nombre;
+            if (descEl) descEl.textContent = info.descripcion;
+            if (kpiProdEl) kpiProdEl.textContent = info.productores;
+            if (kpiProfEl) kpiProfEl.textContent = info.profesionales;
+            if (kpiTicketsEl) kpiTicketsEl.textContent = info.tickets_totales;
+
+            if (rubrosEl) {
+                rubrosEl.innerHTML = '';
+                if (info.top_rubros && info.top_rubros.length > 0) {
+                    info.top_rubros.forEach(function (rubro) {
+                        const span = document.createElement('span');
+                        span.className = 'badge badge-soft';
+                        span.textContent = rubro;
+                        rubrosEl.appendChild(span);
+                    });
+                } else {
+                    const span = document.createElement('span');
+                    span.className = 'badge badge-soft';
+                    span.textContent = 'Diversos cultivos regionales';
+                    rubrosEl.appendChild(span);
+                }
+            }
+
+            if (btnBuscarEl) {
+                const hrefActual = btnBuscarEl.getAttribute('href') || '';
+                const baseUrl = hrefActual.split('?')[0];
+                if (baseUrl) {
+                    btnBuscarEl.setAttribute('href', baseUrl + '?region=' + encodeURIComponent(regionNombre));
+                }
+                btnBuscarEl.textContent = 'Ver Ingenieros en ' + regionNombre;
+            }
+        }
+
+        paths.forEach(function (p) {
+            p.addEventListener('click', function () {
+                seleccionarRegion(p.getAttribute('data-region'));
+            });
+        });
+
+        buttons.forEach(function (b) {
+            b.addEventListener('click', function () {
+                seleccionarRegion(b.getAttribute('data-region-btn'));
+            });
+        });
+
+        seleccionarRegion('Puna');
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
+        initMapaJujuy();
         renderLucideIcons();
         initSearchFilters();
         initFormLoadingStates();
