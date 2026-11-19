@@ -3,17 +3,19 @@
 {% block title %}Registro de Productor Agrícola — AgroJujuy{% endblock %}
 
 {% block content %}
-<div style="max-width: 680px; margin: 1rem auto;">
-    <div class="card rounded-2xl shadow-md p-6">
-        <h1 class="card-title">
-            <span><span aria-hidden="true">🚜</span> Registro de Productor Agrícola</span>
+<div style="max-width: 960px; margin: 1rem auto;">
+    <div class="card rounded-2xl shadow-md p-8" style="background: #FFFFFF; border-top: 6px solid var(--color-tertiary);">
+        <h1 class="card-title" style="font-size: 1.6rem;">
+            <span style="display: flex; align-items: center; gap: 0.6rem;">
+                <i data-lucide="tractor" data-size="26"></i> Registro de Productor Agrícola
+            </span>
             <span class="badge badge-soft">Validación DNI &amp; RENSPA</span>
         </h1>
-        <p style="font-size: 0.95rem; color: var(--color-text-muted); margin-bottom: 1.5rem;">
-            Crea tu perfil de productor para consultar profesionales agronómicos de tu región, publicar solicitudes abiertas o dirigidas y participar en el foro. Los campos marcados con <span class="required-indicator">*</span> (obligatorio) son requeridos.
+        <p style="font-size: 0.98rem; color: var(--color-text-muted); margin-bottom: 1.75rem;">
+            Crea tu perfil de productor para consultar profesionales agronómicos de tu región, publicar solicitudes abiertas o dirigidas y participar en el foro. Los campos marcados con <span class="required-indicator">*</span> son obligatorios.
         </p>
 
-        <form method="POST" novalidate>
+        <form method="POST" novalidate data-loading-text="Registrando productor...">
             {% csrf_token %}
 
             {% if form.errors %}
@@ -32,145 +34,147 @@
                 </div>
             {% endif %}
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem;">
                 <div class="form-group">
                     <label class="form-label" for="{{ form.first_name.id_for_label }}">
-                        Nombre <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
+                        <i data-lucide="user" data-size="16"></i> Nombre <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
                     </label>
                     {{ form.first_name }}
                     {% if form.first_name.errors %}
-                        <p id="error_first_name" class="field-error" role="alert">⛔ {{ form.first_name.errors|join:", " }}</p>
+                        <p id="error_first_name" class="field-error" role="alert">{{ form.first_name.errors|join:", " }}</p>
                     {% endif %}
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="{{ form.last_name.id_for_label }}">
-                        Apellido <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
+                        <i data-lucide="user" data-size="16"></i> Apellido <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
                     </label>
                     {{ form.last_name }}
                     {% if form.last_name.errors %}
-                        <p id="error_last_name" class="field-error" role="alert">⛔ {{ form.last_name.errors|join:", " }}</p>
+                        <p id="error_last_name" class="field-error" role="alert">{{ form.last_name.errors|join:", " }}</p>
                     {% endif %}
                 </div>
             </div>
 
-            <div class="form-group">
-                <label class="form-label" for="{{ form.username.id_for_label }}">
-                    Nombre de Usuario <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
-                </label>
-                {{ form.username }}
-                <div id="username-feedback" aria-live="polite"></div>
-                {% if form.username.errors %}
-                    <p id="error_username" class="field-error" role="alert">⛔ {{ form.username.errors|join:", " }}</p>
-                {% endif %}
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem;">
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.username.id_for_label }}">
+                        <i data-lucide="user-check" data-size="16"></i> Nombre de Usuario <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
+                    </label>
+                    {{ form.username }}
+                    <div id="username-feedback" aria-live="polite"></div>
+                    {% if form.username.errors %}
+                        <p id="error_username" class="field-error" role="alert">{{ form.username.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.email.id_for_label }}">
+                        <i data-lucide="mail" data-size="16"></i> Correo Electrónico <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
+                    </label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                        <p id="error_email" class="field-error" role="alert">{{ form.email.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
             </div>
 
-            <div class="form-group">
-                <label class="form-label" for="{{ form.email.id_for_label }}">
-                    Correo Electrónico <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
-                </label>
-                {{ form.email }}
-                {% if form.email.errors %}
-                    <p id="error_email" class="field-error" role="alert">⛔ {{ form.email.errors|join:", " }}</p>
-                {% endif %}
-            </div>
-
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem;">
                 <div class="form-group">
                     <label class="form-label" for="{{ form.dni.id_for_label }}">
-                        DNI del Productor <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
+                        <i data-lucide="file-text" data-size="16"></i> DNI del Productor <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
                     </label>
                     {{ form.dni }}
                     <span id="help_dni" class="field-help">{{ form.dni.help_text }}</span>
                     {% if form.dni.errors %}
-                        <p id="error_dni" class="field-error" role="alert">⛔ {{ form.dni.errors|join:", " }}</p>
+                        <p id="error_dni" class="field-error" role="alert">{{ form.dni.errors|join:", " }}</p>
                     {% endif %}
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="{{ form.renspa.id_for_label }}">
-                        Número de RENSPA <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
+                        <i data-lucide="shield-check" data-size="16"></i> Número de RENSPA <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
                     </label>
                     {{ form.renspa }}
                     <span id="help_renspa" class="field-help">{{ form.renspa.help_text }}</span>
                     {% if form.renspa.errors %}
-                        <p id="error_renspa" class="field-error" role="alert">⛔ {{ form.renspa.errors|join:", " }}</p>
+                        <p id="error_renspa" class="field-error" role="alert">{{ form.renspa.errors|join:", " }}</p>
                     {% endif %}
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem;">
                 <div class="form-group">
                     <label class="form-label" for="{{ form.region.id_for_label }}">
-                        Zona Geográfica de la Finca <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
+                        <i data-lucide="map-pin" data-size="16"></i> Zona Geográfica de la Finca <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
                     </label>
                     {{ form.region }}
                     <span id="help_region" class="field-help">Puna, Valles, Yungas o Quebrada</span>
                     {% if form.region.errors %}
-                        <p id="error_region" class="field-error" role="alert">⛔ {{ form.region.errors|join:", " }}</p>
+                        <p id="error_region" class="field-error" role="alert">{{ form.region.errors|join:", " }}</p>
                     {% endif %}
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="{{ form.rubro_productivo.id_for_label }}">
-                        Rubro Productivo Principal <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
+                        <i data-lucide="sprout" data-size="16"></i> Rubro Productivo Principal <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
                     </label>
                     {{ form.rubro_productivo }}
                     <span id="help_rubro_productivo" class="field-help">{{ form.rubro_productivo.help_text }}</span>
                     {% if form.rubro_productivo.errors %}
-                        <p id="error_rubro_productivo" class="field-error" role="alert">⛔ {{ form.rubro_productivo.errors|join:", " }}</p>
+                        <p id="error_rubro_productivo" class="field-error" role="alert">{{ form.rubro_productivo.errors|join:", " }}</p>
                     {% endif %}
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem;">
                 <div class="form-group">
                     <label class="form-label" for="{{ form.telefono.id_for_label }}">
-                        Teléfono / WhatsApp de Contacto <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
+                        <i data-lucide="phone" data-size="16"></i> Teléfono / WhatsApp de Contacto <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
                     </label>
                     {{ form.telefono }}
                     <span id="help_telefono" class="field-help">{{ form.telefono.help_text }}</span>
                     {% if form.telefono.errors %}
-                        <p id="error_telefono" class="field-error" role="alert">⛔ {{ form.telefono.errors|join:", " }}</p>
+                        <p id="error_telefono" class="field-error" role="alert">{{ form.telefono.errors|join:", " }}</p>
                     {% endif %}
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="{{ form.direccion_finca.id_for_label }}">
-                        Ubicación / Dirección de Finca <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
+                        <i data-lucide="compass" data-size="16"></i> Ubicación / Dirección de Finca <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
                     </label>
                     {{ form.direccion_finca }}
                     {% if form.direccion_finca.errors %}
-                        <p id="error_direccion_finca" class="field-error" role="alert">⛔ {{ form.direccion_finca.errors|join:", " }}</p>
+                        <p id="error_direccion_finca" class="field-error" role="alert">{{ form.direccion_finca.errors|join:", " }}</p>
                     {% endif %}
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem;">
                 <div class="form-group">
                     <label class="form-label" for="{{ form.password1.id_for_label }}">
-                        Contraseña <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
+                        <i data-lucide="lock" data-size="16"></i> Contraseña <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
                     </label>
                     {{ form.password1 }}
                     <span id="help_password1" class="field-help">Mínimo 8 caracteres, alfanumérica y segura.</span>
                     {% if form.password1.errors %}
-                        <p id="error_password1" class="field-error" role="alert">⛔ {{ form.password1.errors|join:", " }}</p>
+                        <p id="error_password1" class="field-error" role="alert">{{ form.password1.errors|join:", " }}</p>
                     {% endif %}
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="{{ form.password2.id_for_label }}">
-                        Confirmar Contraseña <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
+                        <i data-lucide="lock" data-size="16"></i> Confirmar Contraseña <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
                     </label>
                     {{ form.password2 }}
                     {% if form.password2.errors %}
-                        <p id="error_password2" class="field-error" role="alert">⛔ {{ form.password2.errors|join:", " }}</p>
+                        <p id="error_password2" class="field-error" role="alert">{{ form.password2.errors|join:", " }}</p>
                     {% endif %}
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-tertiary w-full mt-4">
-                Completar Registro de Productor
+            <button type="submit" class="btn btn-tertiary w-full mt-4" style="font-size: 1rem;">
+                <i data-lucide="tractor" data-size="19"></i> Completar Registro de Productor
             </button>
         </form>
     </div>

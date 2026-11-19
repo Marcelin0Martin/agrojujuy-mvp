@@ -3,92 +3,101 @@
 {% block title %}Bandeja de Trabajos — Profesional CIAPAJ — AgroJujuy{% endblock %}
 
 {% block content %}
-<div style="max-width: 900px; margin: 1rem auto;">
+<div style="max-width: 1160px; margin: 1rem auto;">
     <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
         <div>
-            <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--color-primary);">
-                Bandeja de Trabajos y Solicitudes Recibidas
+            <h1 style="font-size: 1.9rem; font-weight: 800; color: var(--color-primary); display: flex; align-items: center; gap: 0.55rem;">
+                <i data-lucide="inbox" data-size="26"></i> Bandeja de Trabajos y Solicitudes Recibidas
             </h1>
-            <p style="color: var(--color-text-muted); font-size: 0.95rem;">
+            <p style="color: var(--color-text-muted); font-size: 0.96rem;">
                 Solicitudes dirigidas a tu perfil y solicitudes abiertas de la red CIAPAJ (ordenadas priorizando pendientes).
             </p>
         </div>
         <div style="display: flex; gap: 0.65rem; align-items: center;">
-            <span class="badge badge-success">Ingeniero Habilitado CIAPAJ</span>
-            <a href="{% url 'perfil_profesional' %}" class="btn btn-outline btn-sm">Mi perfil CIAPAJ</a>
+            <span class="badge badge-success">
+                <i data-lucide="shield-check" data-size="13"></i> Ingeniero Habilitado CIAPAJ
+            </span>
+            <a href="{% url 'perfil_profesional' %}" class="btn btn-outline btn-sm">
+                <i data-lucide="user" data-size="15"></i> Mi perfil CIAPAJ
+            </a>
         </div>
     </div>
 
-    <!-- Barra de Filtros por Estado (Todos, Pendientes, Aceptados, Finalizados) -->
+    <!-- Barra de Filtros por Estado -->
     <div class="filter-pills" role="group" aria-label="Filtrar trabajos por estado" style="margin-bottom: 1.5rem;">
         <a href="{% url 'bandeja_profesional' %}" class="filter-pill {% if not filtro_estado %}filter-pill-active{% endif %}">
-            Todos (Pendientes primero)
+            <i data-lucide="layers" data-size="15"></i> Todos (Pendientes primero)
         </a>
         <a href="?estado=Pendiente" class="filter-pill {% if filtro_estado == 'Pendiente' %}filter-pill-active{% endif %}">
-            ⏳ Solo Pendientes
+            <i data-lucide="clock" data-size="15"></i> Solo Pendientes
         </a>
         <a href="?estado=Aceptado" class="filter-pill {% if filtro_estado == 'Aceptado' %}filter-pill-active{% endif %}">
-            ✔ Solo Aceptados
+            <i data-lucide="check-circle" data-size="15"></i> Solo Aceptados
         </a>
         <a href="?estado=Finalizado" class="filter-pill {% if filtro_estado == 'Finalizado' %}filter-pill-active{% endif %}">
-            🏁 Finalizados
+            <i data-lucide="flag" data-size="15"></i> Finalizados
         </a>
     </div>
 
     {% if tickets %}
-        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap: 1.25rem;">
             {% for ticket in tickets %}
-                <article class="card rounded-2xl shadow-sm p-6" style="margin-bottom: 0; border-left: 5px solid {% if ticket.estado == 'Aceptado' or ticket.estado == 'Finalizado' %}var(--color-secondary){% else %}var(--color-tertiary){% endif %};">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.65rem;">
-                        <div>
-                            <span style="font-size: 0.8rem; font-weight: 700; color: var(--color-text-muted);">
-                                Ticket #{{ ticket.id }} &bull; Modalidad: {{ ticket.modalidad }} &bull; {{ ticket.fecha_creacion|date:"d/m/Y H:i" }}
-                            </span>
-                            <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--color-primary); margin: 0.25rem 0;">
-                                {{ ticket.titulo }}
-                            </h2>
+                <article class="card rounded-2xl shadow-sm p-6" style="background: #FFFFFF; margin-bottom: 0; border-left: 5px solid {% if ticket.estado == 'Aceptado' or ticket.estado == 'Finalizado' %}var(--color-secondary){% else %}var(--color-tertiary){% endif %}; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.65rem;">
+                            <div>
+                                <span style="font-size: 0.8rem; font-weight: 700; color: var(--color-text-muted);">
+                                    Ticket #{{ ticket.id }} &bull; Modalidad: {{ ticket.modalidad }} &bull; {{ ticket.fecha_creacion|date:"d/m/Y H:i" }}
+                                </span>
+                                <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--color-primary); margin: 0.25rem 0;">
+                                    {{ ticket.titulo }}
+                                </h2>
+                            </div>
+                            <div style="display: flex; gap: 0.4rem; align-items: center;">
+                                <span class="badge {% if ticket.estado == 'Aceptado' or ticket.estado == 'Finalizado' %}badge-success{% elif ticket.estado == 'Pendiente' %}badge-warning{% else %}badge-neutral{% endif %}">
+                                    {{ ticket.estado }}
+                                </span>
+                                {% if ticket.confirmado_por_productor %}
+                                    <span class="badge badge-soft">
+                                        <i data-lucide="check-circle" data-size="12"></i> Confirmado por Productor
+                                    </span>
+                                {% endif %}
+                            </div>
                         </div>
-                        <div style="display: flex; gap: 0.4rem; align-items: center;">
-                            <span class="badge {% if ticket.estado == 'Aceptado' or ticket.estado == 'Finalizado' %}badge-success{% elif ticket.estado == 'Pendiente' %}badge-warning{% else %}badge-neutral{% endif %}">
-                                {{ ticket.estado }}
-                            </span>
-                            {% if ticket.confirmado_por_productor %}
-                                <span class="badge badge-soft">✔ Confirmado por Productor</span>
-                            {% endif %}
-                        </div>
-                    </div>
 
-                    <div style="background: var(--color-background); padding: 1rem; border-radius: var(--radius-xl); margin: 0.6rem 0 0.85rem 0;">
-                        <p style="font-size: 0.92rem; margin-bottom: 0.25rem;">
-                            <strong>Productor:</strong> {{ ticket.productor.usuario.get_full_name|default:ticket.productor.usuario.username }} &bull;
-                            <strong>Región:</strong> {{ ticket.productor.region }} &bull;
-                            <strong>Rubro:</strong> {{ ticket.productor.rubro_productivo }}
-                        </p>
-                        <p style="font-size: 0.85rem; color: var(--color-text-muted); margin: 0;">
-                            <strong>RENSPA:</strong> {{ ticket.productor.renspa|default:"-" }} |
-                            <strong>Contacto:</strong> {{ ticket.productor.telefono }} |
-                            {{ ticket.productor.direccion_finca|default:"Sin dirección especificada" }}
-                        </p>
-                    </div>
-
-                    <p style="font-size: 0.92rem; color: var(--color-text-main); line-height: 1.5; margin-bottom: 1rem;">
-                        {{ ticket.descripcion }}
-                    </p>
-
-                    {% if ticket.estado == 'Finalizado' %}
-                        <div style="background: #ECFDF5; border: 1px solid #10B981; border-radius: var(--radius-xl); padding: 0.9rem; margin-bottom: 1rem;">
-                            <strong style="color: #065F46; font-size: 0.88rem; display: block;">
-                                🏁 Trabajo Finalizado el {{ ticket.fecha_finalizacion|date:"d/m/Y H:i" }}:
-                            </strong>
-                            <p style="color: #065F46; font-size: 0.88rem; margin: 0.2rem 0 0 0;">
-                                {{ ticket.descripcion_finalizacion }}
+                        <div style="background: var(--color-background); padding: 1rem; border-radius: var(--radius-xl); margin: 0.6rem 0 0.85rem 0;">
+                            <p style="font-size: 0.92rem; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+                                <i data-lucide="tractor" data-size="16"></i>
+                                <strong>Productor:</strong> {{ ticket.productor.usuario.get_full_name|default:ticket.productor.usuario.username }} &bull;
+                                <strong>Región:</strong> {{ ticket.productor.region }} &bull;
+                                <strong>Rubro:</strong> {{ ticket.productor.rubro_productivo }}
+                            </p>
+                            <p style="font-size: 0.85rem; color: var(--color-text-muted); margin: 0;">
+                                <strong>RENSPA:</strong> {{ ticket.productor.renspa|default:"-" }} |
+                                <strong>Contacto:</strong> {{ ticket.productor.telefono }} |
+                                {{ ticket.productor.direccion_finca|default:"Sin dirección especificada" }}
                             </p>
                         </div>
-                    {% endif %}
+
+                        <p style="font-size: 0.92rem; color: var(--color-text-main); line-height: 1.5; margin-bottom: 1rem;">
+                            {{ ticket.descripcion }}
+                        </p>
+
+                        {% if ticket.estado == 'Finalizado' %}
+                            <div style="background: #ECFDF5; border: 1px solid #10B981; border-radius: var(--radius-xl); padding: 0.9rem; margin-bottom: 1rem;">
+                                <strong style="color: #065F46; font-size: 0.88rem; display: flex; align-items: center; gap: 0.35rem;">
+                                    <i data-lucide="flag" data-size="15"></i> Trabajo Finalizado el {{ ticket.fecha_finalizacion|date:"d/m/Y H:i" }}:
+                                </strong>
+                                <p style="color: #065F46; font-size: 0.88rem; margin: 0.2rem 0 0 0;">
+                                    {{ ticket.descripcion_finalizacion }}
+                                </p>
+                            </div>
+                        {% endif %}
+                    </div>
 
                     <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--color-neutral-light); padding-top: 0.9rem; flex-wrap: wrap; gap: 0.65rem;">
-                        <span style="font-size: 0.85rem; color: var(--color-text-muted);">
-                            💬 {{ ticket.mensajes.count }} mensaje(s) en hilo técnico
+                        <span style="font-size: 0.85rem; color: var(--color-text-muted); display: flex; align-items: center; gap: 0.35rem;">
+                            <i data-lucide="message-square" data-size="15"></i> {{ ticket.mensajes.count }} mensaje(s) en hilo técnico
                         </span>
 
                         <div style="display: flex; gap: 0.65rem; flex-wrap: wrap;">
@@ -96,7 +105,8 @@
                                 <form method="POST" action="{% url 'aceptar_ticket' ticket.id %}" style="display:inline;">
                                     {% csrf_token %}
                                     <button type="submit" class="btn btn-secondary btn-sm">
-                                        ✔ {% if ticket.modalidad == 'ABIERTA' %}Tomar Solicitud Abierta{% else %}Aceptar Trabajo{% endif %}
+                                        <i data-lucide="check-circle" data-size="15"></i>
+                                        {% if ticket.modalidad == 'ABIERTA' %}Tomar Solicitud Abierta{% else %}Aceptar Trabajo{% endif %}
                                     </button>
                                 </form>
                             {% endif %}
@@ -109,7 +119,7 @@
             {% endfor %}
         </div>
     {% else %}
-        <div class="card rounded-2xl shadow-sm p-8" style="text-align: center;">
+        <div class="card rounded-2xl shadow-sm p-8" style="background: #FFFFFF; text-align: center;">
             <p style="font-size: 1.2rem; font-weight: 700; color: var(--color-primary); margin-bottom: 0.5rem;">
                 No hay solicitudes que coincidan con el filtro seleccionado.
             </p>

@@ -1,26 +1,51 @@
 {% extends 'base.html' %}
 
-{% block title %}Solicitar Asistencia Técnica - AgroJujuy{% endblock %}
+{% block title %}Solicitar Asistencia Técnica — AgroJujuy{% endblock %}
 
 {% block content %}
-<div style="max-width: 650px; margin: 1.5rem auto;">
+<div style="max-width: 960px; margin: 1rem auto;">
     <div style="margin-bottom: 1rem;">
-        <a href="{% url 'buscador_profesionales' %}" style="font-size: 0.9rem;">&larr; Volver al Buscador</a>
+        <a href="{% url 'buscador_profesionales' %}" class="btn btn-outline btn-sm">
+            <i data-lucide="arrow-left" data-size="16"></i> Volver al Buscador
+        </a>
     </div>
 
-    <div class="card">
-        <h1 class="card-title">📩 Solicitar Asistencia Técnica</h1>
-        
-        <div style="background: #F6F8F6; padding: 1rem; border-radius: 6px; border-left: 4px solid var(--color-primary); margin-bottom: 1.5rem;">
-            <p style="margin: 0; font-size: 0.95rem;">
-                <strong>Destinatario:</strong> Ing. {{ profesional.usuario.get_full_name|default:profesional.usuario.username }}<br>
-                <strong>Matrícula Provincial:</strong> {{ profesional.matricula_provincial }} (CIAPA Habilitado)<br>
-                <strong>Especialidad:</strong> {{ profesional.especialidad }}<br>
-                <strong>Zonas de Cobertura:</strong> {{ profesional.zonas_cobertura }}
-            </p>
+    <div class="card rounded-2xl shadow-md p-8" style="background: #FFFFFF; border-top: 6px solid var(--color-primary);">
+        <h1 class="card-title" style="font-size: 1.55rem;">
+            <span style="display: flex; align-items: center; gap: 0.55rem;">
+                <i data-lucide="send" data-size="24"></i> Solicitar Asistencia Técnica
+            </span>
+            <span class="badge badge-soft">Modalidad Dirigida</span>
+        </h1>
+
+        <div style="background: var(--color-background); padding: 1.15rem 1.35rem; border-radius: var(--radius-xl); border-left: 4px solid var(--color-primary); margin-bottom: 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.75rem;">
+            <div>
+                <strong style="color: var(--color-primary); font-size: 0.85rem; display: flex; align-items: center; gap: 0.35rem;">
+                    <i data-lucide="graduation-cap" data-size="16"></i> Destinatario:
+                </strong>
+                <span style="font-size: 0.96rem; font-weight: 700;">Ing. {{ profesional.usuario.get_full_name|default:profesional.usuario.username }}</span>
+            </div>
+            <div>
+                <strong style="color: var(--color-primary); font-size: 0.85rem; display: flex; align-items: center; gap: 0.35rem;">
+                    <i data-lucide="award" data-size="16"></i> Matrícula Provincial:
+                </strong>
+                <span style="font-size: 0.96rem; font-weight: 700; color: var(--color-tertiary-dark);">{{ profesional.matricula_provincial }} (CIAPAJ)</span>
+            </div>
+            <div>
+                <strong style="color: var(--color-primary); font-size: 0.85rem; display: flex; align-items: center; gap: 0.35rem;">
+                    <i data-lucide="leaf" data-size="16"></i> Especialidad:
+                </strong>
+                <span style="font-size: 0.94rem;">{{ profesional.especialidad }}</span>
+            </div>
+            <div>
+                <strong style="color: var(--color-primary); font-size: 0.85rem; display: flex; align-items: center; gap: 0.35rem;">
+                    <i data-lucide="map-pin" data-size="16"></i> Zonas de Cobertura:
+                </strong>
+                <span style="font-size: 0.94rem;">{{ profesional.zonas_cobertura }}</span>
+            </div>
         </div>
 
-        <form method="POST">
+        <form method="POST" data-loading-text="Enviando solicitud...">
             {% csrf_token %}
 
             {% if form.errors %}
@@ -30,25 +55,34 @@
             {% endif %}
 
             <div class="form-group">
-                <label class="form-label">Motivo / Consulta Principal *:</label>
+                <label class="form-label" for="{{ form.titulo.id_for_label }}">
+                    <i data-lucide="edit-3" data-size="16"></i> Motivo / Consulta Principal <span class="required-indicator">*</span>:
+                </label>
                 {{ form.titulo }}
-                <small style="color: var(--color-text-muted);">Ej: Problema de marchitez bacteriana en tomate, calibración de abonos, etc.</small>
-                {{ form.titulo.errors }}
+                <span class="field-help">Ej: Problema de marchitez bacteriana en tomate, calibración de abonos, etc.</span>
+                {% if form.titulo.errors %}
+                    <p class="field-error" role="alert">{{ form.titulo.errors|join:", " }}</p>
+                {% endif %}
             </div>
 
             <div class="form-group">
-                <label class="form-label">Detalle del problema agronómico *:</label>
+                <label class="form-label" for="{{ form.descripcion.id_for_label }}">
+                    <i data-lucide="file-text" data-size="16"></i> Detalle del problema agronómico <span class="required-indicator">*</span>:
+                </label>
                 {{ form.descripcion }}
-                <small style="color: var(--color-text-muted);">Describe síntomas, tiempo de afectación, variedad cultivada y lote afectado.</small>
-                {{ form.descripcion.errors }}
+                <span class="field-help">Describe síntomas, tiempo de afectación, variedad cultivada y lote afectado.</span>
+                {% if form.descripcion.errors %}
+                    <p class="field-error" role="alert">{{ form.descripcion.errors|join:", " }}</p>
+                {% endif %}
             </div>
 
-            <div class="alert alert-info" style="font-size: 0.85rem; margin-top: 1rem;">
-                ℹ Al enviar la solicitud se creará automáticamente un <strong>canal de mensajería directa 1 a 1</strong> exclusivo entre tú y el profesional.
+            <div class="alert alert-info" style="font-size: 0.9rem; margin-top: 1rem; display: flex; align-items: center; gap: 0.6rem;">
+                <i data-lucide="info" data-size="18"></i>
+                <span>Al enviar la solicitud se creará automáticamente un <strong>canal de mensajería directa 1 a 1</strong> exclusivo entre tú y el profesional.</span>
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
-                Enviar Solicitud y Abrir Chat Directo
+            <button type="submit" class="btn btn-primary w-full mt-4" style="font-size: 1rem;">
+                <i data-lucide="send" data-size="18"></i> Enviar Solicitud y Abrir Chat Directo
             </button>
         </form>
     </div>
