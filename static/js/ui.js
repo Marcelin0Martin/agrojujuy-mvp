@@ -1,56 +1,57 @@
 /**
  * AgroJujuy UI & Usability Engine
- * Iconos SVG a color (amigables e intuitivos para productores e ingenieros) + Filtros y Accesibilidad.
+ * Iconos SVG a color + Sidebar Responsive + Filtros y Accesibilidad.
  * Cumple 100% con OWASP CSP (script-src 'self').
  */
 (function () {
     'use strict';
 
-    // Paleta de colores amigables por icono (Color principal + Fondo suave duotono)
+    // Paleta de colores amigables por icono (Modo claro + Modo oscuro en Sidebar)
     const ICON_THEMES = {
-        'sprout':         { stroke: '#059669', bg: '#D1FAE5' },
-        'leaf':           { stroke: '#10B981', bg: '#D1FAE5' },
-        'trees':          { stroke: '#047857', bg: '#A7F3D0' },
-        'tractor':        { stroke: '#D97706', bg: '#FEF3C7' },
-        'sun':            { stroke: '#EA580C', bg: '#FFEDD5' },
-        'mountain':       { stroke: '#92400E', bg: '#FDE68A' },
-        'graduation-cap': { stroke: '#2563EB', bg: '#DBEAFE' },
-        'award':          { stroke: '#7C3AED', bg: '#EDE9FE' },
-        'shield-check':   { stroke: '#059669', bg: '#D1FAE5' },
-        'search':         { stroke: '#0284C7', bg: '#E0F2FE' },
-        'compass':        { stroke: '#0284C7', bg: '#E0F2FE' },
-        'map-pin':        { stroke: '#DC2626', bg: '#FEE2E2' },
-        'microscope':     { stroke: '#7C3AED', bg: '#EDE9FE' },
-        'clipboard-list': { stroke: '#D97706', bg: '#FEF3C7' },
-        'inbox':          { stroke: '#0284C7', bg: '#E0F2FE' },
-        'megaphone':      { stroke: '#059669', bg: '#D1FAE5' },
-        'message-square': { stroke: '#0284C7', bg: '#E0F2FE' },
-        'messages-square':{ stroke: '#059669', bg: '#D1FAE5' },
-        'user':           { stroke: '#0F766E', bg: '#CCFBF1' },
-        'user-check':     { stroke: '#059669', bg: '#D1FAE5' },
-        'key-round':      { stroke: '#D97706', bg: '#FEF3C7' },
-        'lock':           { stroke: '#B45309', bg: '#FEF3C7' },
-        'settings':       { stroke: '#475569', bg: '#F1F5F9' },
-        'log-out':        { stroke: '#DC2626', bg: '#FEE2E2' },
-        'check-circle':   { stroke: '#059669', bg: '#D1FAE5' },
-        'clock':          { stroke: '#D97706', bg: '#FEF3C7' },
-        'flag':           { stroke: '#059669', bg: '#D1FAE5' },
-        'alert-circle':   { stroke: '#DC2626', bg: '#FEE2E2' },
-        'info':           { stroke: '#0284C7', bg: '#E0F2FE' },
-        'help-circle':    { stroke: '#0284C7', bg: '#E0F2FE' },
-        'phone':          { stroke: '#059669', bg: '#D1FAE5' },
-        'mail':           { stroke: '#0284C7', bg: '#E0F2FE' },
-        'edit-3':         { stroke: '#D97706', bg: '#FEF3C7' },
-        'send':           { stroke: '#059669', bg: '#D1FAE5' },
-        'building-2':     { stroke: '#0F766E', bg: '#CCFBF1' },
-        'sparkles':       { stroke: '#D97706', bg: '#FEF3C7' },
-        'filter':         { stroke: '#0284C7', bg: '#E0F2FE' },
-        'layers':         { stroke: '#0F766E', bg: '#CCFBF1' },
-        'file-text':      { stroke: '#0284C7', bg: '#E0F2FE' },
-        'arrow-left':     { stroke: 'currentColor', bg: 'transparent' },
-        'arrow-right':    { stroke: 'currentColor', bg: 'transparent' },
-        'x':              { stroke: 'currentColor', bg: 'transparent' },
-        'menu':           { stroke: 'currentColor', bg: 'transparent' }
+        'sprout':         { stroke: '#059669', bg: '#D1FAE5', darkStroke: '#34D399' },
+        'leaf':           { stroke: '#10B981', bg: '#D1FAE5', darkStroke: '#34D399' },
+        'trees':          { stroke: '#047857', bg: '#A7F3D0', darkStroke: '#34D399' },
+        'tractor':        { stroke: '#D97706', bg: '#FEF3C7', darkStroke: '#FBBF24' },
+        'sun':            { stroke: '#EA580C', bg: '#FFEDD5', darkStroke: '#FB923C' },
+        'mountain':       { stroke: '#92400E', bg: '#FDE68A', darkStroke: '#FCD34D' },
+        'graduation-cap': { stroke: '#2563EB', bg: '#DBEAFE', darkStroke: '#60A5FA' },
+        'award':          { stroke: '#7C3AED', bg: '#EDE9FE', darkStroke: '#A78BFA' },
+        'shield-check':   { stroke: '#059669', bg: '#D1FAE5', darkStroke: '#34D399' },
+        'search':         { stroke: '#0284C7', bg: '#E0F2FE', darkStroke: '#38BDF8' },
+        'compass':        { stroke: '#0284C7', bg: '#E0F2FE', darkStroke: '#38BDF8' },
+        'map-pin':        { stroke: '#DC2626', bg: '#FEE2E2', darkStroke: '#F87171' },
+        'microscope':     { stroke: '#7C3AED', bg: '#EDE9FE', darkStroke: '#A78BFA' },
+        'clipboard-list': { stroke: '#D97706', bg: '#FEF3C7', darkStroke: '#FBBF24' },
+        'inbox':          { stroke: '#0284C7', bg: '#E0F2FE', darkStroke: '#38BDF8' },
+        'megaphone':      { stroke: '#059669', bg: '#D1FAE5', darkStroke: '#34D399' },
+        'message-square': { stroke: '#0284C7', bg: '#E0F2FE', darkStroke: '#38BDF8' },
+        'messages-square':{ stroke: '#059669', bg: '#D1FAE5', darkStroke: '#34D399' },
+        'bell':           { stroke: '#DC2626', bg: '#FEE2E2', darkStroke: '#F87171' },
+        'user':           { stroke: '#0F766E', bg: '#CCFBF1', darkStroke: '#2DD4BF' },
+        'user-check':     { stroke: '#059669', bg: '#D1FAE5', darkStroke: '#34D399' },
+        'key-round':      { stroke: '#D97706', bg: '#FEF3C7', darkStroke: '#FBBF24' },
+        'lock':           { stroke: '#B45309', bg: '#FEF3C7', darkStroke: '#FBBF24' },
+        'settings':       { stroke: '#475569', bg: '#F1F5F9', darkStroke: '#CBD5E1' },
+        'log-out':        { stroke: '#DC2626', bg: '#FEE2E2', darkStroke: '#F87171' },
+        'check-circle':   { stroke: '#059669', bg: '#D1FAE5', darkStroke: '#34D399' },
+        'clock':          { stroke: '#D97706', bg: '#FEF3C7', darkStroke: '#FBBF24' },
+        'flag':           { stroke: '#059669', bg: '#D1FAE5', darkStroke: '#34D399' },
+        'alert-circle':   { stroke: '#DC2626', bg: '#FEE2E2', darkStroke: '#F87171' },
+        'info':           { stroke: '#0284C7', bg: '#E0F2FE', darkStroke: '#38BDF8' },
+        'help-circle':    { stroke: '#0284C7', bg: '#E0F2FE', darkStroke: '#38BDF8' },
+        'phone':          { stroke: '#059669', bg: '#D1FAE5', darkStroke: '#34D399' },
+        'mail':           { stroke: '#0284C7', bg: '#E0F2FE', darkStroke: '#38BDF8' },
+        'edit-3':         { stroke: '#D97706', bg: '#FEF3C7', darkStroke: '#FBBF24' },
+        'send':           { stroke: '#059669', bg: '#D1FAE5', darkStroke: '#34D399' },
+        'building-2':     { stroke: '#0F766E', bg: '#CCFBF1', darkStroke: '#2DD4BF' },
+        'sparkles':       { stroke: '#D97706', bg: '#FEF3C7', darkStroke: '#FBBF24' },
+        'filter':         { stroke: '#0284C7', bg: '#E0F2FE', darkStroke: '#38BDF8' },
+        'layers':         { stroke: '#0F766E', bg: '#CCFBF1', darkStroke: '#2DD4BF' },
+        'file-text':      { stroke: '#0284C7', bg: '#E0F2FE', darkStroke: '#38BDF8' },
+        'arrow-left':     { stroke: 'currentColor', bg: 'transparent', darkStroke: 'currentColor' },
+        'arrow-right':    { stroke: 'currentColor', bg: 'transparent', darkStroke: 'currentColor' },
+        'x':              { stroke: 'currentColor', bg: 'transparent', darkStroke: 'currentColor' },
+        'menu':           { stroke: 'currentColor', bg: 'transparent', darkStroke: 'currentColor' }
     };
 
     const LUCIDE_ICONS = {
@@ -60,6 +61,7 @@
         'megaphone': '<path d="m3 11 18-5v12L3 14v-3z" fill="currentColor" fill-opacity="0.2"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
         'message-square': '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="currentColor" fill-opacity="0.18"/>',
         'messages-square': '<path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4c0-1.1.9-2 2-2h8a2 2 0 0 1 2 2z" fill="currentColor" fill-opacity="0.18"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/>',
+        'bell': '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" fill="currentColor" fill-opacity="0.22"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
         'user': '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4" fill="currentColor" fill-opacity="0.2"/>',
         'user-check': '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4" fill="currentColor" fill-opacity="0.2"/><polyline points="16 11 18 13 22 9"/>',
         'shield-check': '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" fill="currentColor" fill-opacity="0.18"/><path d="m9 12 2 2 4-4"/>',
@@ -107,8 +109,9 @@
             if (!paths) return;
 
             const size = parseInt(el.getAttribute('data-size') || '18', 10);
-            const theme = ICON_THEMES[name] || { stroke: 'currentColor', bg: 'transparent' };
-            const insideDarkOrBtn = el.closest('.btn-primary, .btn-secondary, .btn-tertiary, .global-header, footer, .badge-success, .badge-warning, .badge-danger');
+            const theme = ICON_THEMES[name] || { stroke: 'currentColor', bg: 'transparent', darkStroke: 'currentColor' };
+            const insideSidebar = el.closest('.app-sidebar');
+            const insideDarkBtn = el.closest('.btn-primary, .btn-secondary, .btn-tertiary, .mobile-topbar, footer, .badge-success, .badge-warning, .badge-danger');
 
             const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
             svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
@@ -116,19 +119,28 @@
             svg.setAttribute('height', String(size));
             svg.setAttribute('viewBox', '0 0 24 24');
             svg.setAttribute('fill', 'none');
-            svg.setAttribute('stroke', insideDarkOrBtn ? 'currentColor' : theme.stroke);
             svg.setAttribute('stroke-width', '2.1');
             svg.setAttribute('stroke-linecap', 'round');
             svg.setAttribute('stroke-linejoin', 'round');
             svg.setAttribute('aria-hidden', 'true');
             svg.setAttribute('class', ('lucide-icon ' + (el.className || '')).trim());
 
-            if (!insideDarkOrBtn && theme.bg !== 'transparent') {
-                svg.style.color = theme.stroke;
-                svg.style.backgroundColor = theme.bg;
-                svg.style.padding = '3px';
-                svg.style.borderRadius = '7px';
-                svg.style.boxSizing = 'content-box';
+            if (insideSidebar) {
+                const insideLogoBox = el.closest('.sidebar-logo-box');
+                const strokeColor = insideLogoBox ? theme.stroke : (theme.darkStroke || '#34D399');
+                svg.setAttribute('stroke', strokeColor);
+                svg.style.color = strokeColor;
+            } else if (insideDarkBtn) {
+                svg.setAttribute('stroke', 'currentColor');
+            } else {
+                svg.setAttribute('stroke', theme.stroke);
+                if (theme.bg !== 'transparent') {
+                    svg.style.color = theme.stroke;
+                    svg.style.backgroundColor = theme.bg;
+                    svg.style.padding = '3px';
+                    svg.style.borderRadius = '7px';
+                    svg.style.boxSizing = 'content-box';
+                }
             }
 
             svg.innerHTML = paths;
@@ -136,7 +148,6 @@
         });
     }
 
-    // Auto-submit confiable para filtros del buscador (sin inline JS que pueda fallar)
     function initSearchFilters() {
         const buscadorForm = document.getElementById('buscador-form');
         if (!buscadorForm) return;
@@ -148,7 +159,6 @@
                 const espSel = document.getElementById('id_especialidad');
                 const mostrarInput = document.getElementById('id_mostrar_hidden');
 
-                // Si el usuario limpia ambos selectores estando en el buscador, mantener 'mostrar=todos' para que no quede vacía la pantalla
                 if (mostrarInput && regionSel && espSel) {
                     if (!regionSel.value && !espSel.value) {
                         mostrarInput.value = 'todos';
@@ -188,16 +198,36 @@
         });
     }
 
-    function initMobileNav() {
-        const toggleBtn = document.getElementById('mobile-nav-toggle');
-        const navMenu = document.getElementById('primary-nav-links');
-        if (toggleBtn && navMenu) {
+    function initSidebarDrawer() {
+        const toggleBtn = document.getElementById('sidebar-mobile-toggle');
+        const closeBtn = document.getElementById('sidebar-close-btn');
+        const sidebar = document.getElementById('app-sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        if (!sidebar) return;
+
+        function openSidebar() {
+            sidebar.classList.add('sidebar-open');
+            if (overlay) overlay.classList.add('overlay-visible');
+            if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
+        }
+
+        function closeSidebar() {
+            sidebar.classList.remove('sidebar-open');
+            if (overlay) overlay.classList.remove('overlay-visible');
+            if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
+        }
+
+        if (toggleBtn) {
             toggleBtn.addEventListener('click', function () {
-                const expanded = toggleBtn.getAttribute('aria-expanded') === 'true';
-                toggleBtn.setAttribute('aria-expanded', String(!expanded));
-                navMenu.classList.toggle('nav-open');
+                if (sidebar.classList.contains('sidebar-open')) {
+                    closeSidebar();
+                } else {
+                    openSidebar();
+                }
             });
         }
+        if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
+        if (overlay) overlay.addEventListener('click', closeSidebar);
     }
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -205,6 +235,6 @@
         initSearchFilters();
         initFormLoadingStates();
         initConfirmActions();
-        initMobileNav();
+        initSidebarDrawer();
     });
 })();

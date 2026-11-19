@@ -5,162 +5,383 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}AgroJujuy — Plataforma Agrícola Institucional{% endblock %}</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=4">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=5">
 </head>
 <body>
     <!-- Skip Link Accesible WCAG 2.4.1 -->
     <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
 
-    <!-- Header Global -->
-    <header class="global-header" role="banner">
-        <div class="header-inner">
-            <div class="brand-bar">
-                <div style="display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap;">
-                    <a href="{% url 'inicio' %}" class="brand-title" aria-label="AgroJujuy Inicio">
-                        <span class="brand-logo-mark" aria-hidden="true">
-                            <i data-lucide="sprout" data-size="20"></i>
-                        </span>
-                        <span>AgroJujuy</span>
-                        <span class="brand-badge">MVP</span>
-                    </a>
+    <!-- Overlay para menú móvil -->
+    <div id="sidebar-overlay" class="sidebar-overlay" aria-hidden="true"></div>
 
-                    <!-- Selector de estado temporal para Auditoría del Administrador -->
-                    {% if is_admin_user %}
-                    <div class="role-switcher-banner" role="region" aria-label="Selector de rol temporal para auditoría">
-                        <label for="admin-role-selector" style="cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem;">
-                            <i data-lucide="microscope" data-size="15"></i> <strong>Auditoría Visual:</strong>
-                        </label>
-                        <form method="POST" action="{% url 'cambiar_rol_temporal' %}" style="display: inline-flex; align-items: center; gap: 0.35rem;">
-                            {% csrf_token %}
-                            <select id="admin-role-selector" name="rol" onchange="this.form.submit()" aria-label="Cambiar rol temporal para auditoría">
-                                <option value="ADMIN" {% if effective_role == 'ADMIN' and not simulated_role %}selected{% endif %}>Rol: Administrador (Real)</option>
-                                <option value="PRODUCER" {% if effective_role == 'PRODUCER' %}selected{% endif %}>Simular: Productor</option>
-                                <option value="PROFESSIONAL" {% if effective_role == 'PROFESSIONAL' %}selected{% endif %}>Simular: Profesional Agrario</option>
-                                {% if simulated_role %}
-                                <option value="RESET">Restablecer a Admin</option>
-                                {% endif %}
-                            </select>
-                        </form>
-                        {% if simulated_role %}
-                        <span class="badge badge-warning" style="font-size: 0.65rem;">Modo Simulado</span>
-                        {% endif %}
+    <div class="app-shell">
+        <!-- Sidebar Lateral Fija (Adaptada del diseño de referencia a AgroJujuy) -->
+        <aside id="app-sidebar" class="app-sidebar" role="navigation" aria-label="Navegación principal lateral">
+            <!-- Cabecera de Marca -->
+            <div class="sidebar-brand">
+                <a href="{% url 'inicio' %}" class="sidebar-brand-link" aria-label="AgroJujuy Inicio">
+                    <span class="sidebar-logo-box" aria-hidden="true">
+                        <i data-lucide="sprout" data-size="24"></i>
+                    </span>
+                    <div>
+                        <span class="sidebar-brand-title">AgroJujuy</span>
+                        <span class="sidebar-brand-subtitle">Red Agrícola &bull; CIAPAJ</span>
                     </div>
-                    {% endif %}
-                </div>
-
-                <!-- Botón Menú Móvil Responsive -->
-                <button type="button" id="mobile-nav-toggle" class="mobile-nav-btn" aria-expanded="false" aria-controls="primary-nav-links" aria-label="Abrir menú de navegación">
-                    <i data-lucide="menu" data-size="20"></i>
+                </a>
+                <button type="button" id="sidebar-close-btn" class="sidebar-logout-icon-btn sidebar-close-btn" aria-label="Cerrar menú lateral">
+                    <i data-lucide="x" data-size="18"></i>
                 </button>
             </div>
 
-            <!-- Navegación Principal Accesible -->
-            <nav id="primary-nav-links" class="nav-links" aria-label="Navegación principal">
+            <!-- Cuerpo Desplazable de Enlaces por Secciones -->
+            <div class="sidebar-scroll">
+                {% if is_admin_user %}
+                    <div class="sidebar-role-switcher" role="region" aria-label="Selector de rol temporal para auditoría">
+                        <label for="admin-role-selector" style="font-size: 0.72rem; font-weight: 700; color: #FCD34D; display: flex; align-items: center; gap: 0.35rem; cursor: pointer;">
+                            <i data-lucide="microscope" data-size="14"></i> Auditoría Visual de Roles
+                        </label>
+                        <form method="POST" action="{% url 'cambiar_rol_temporal' %}">
+                            {% csrf_token %}
+                            <select id="admin-role-selector" name="rol" onchange="this.form.submit()" aria-label="Cambiar rol temporal para auditoría">
+                                <option value="ADMIN" {% if effective_role == 'ADMIN' and not simulated_role %}selected{% endif %}>Administrador (Real)</option>
+                                <option value="PRODUCER" {% if effective_role == 'PRODUCER' %}selected{% endif %}>Simular: Productor</option>
+                                <option value="PROFESSIONAL" {% if effective_role == 'PROFESSIONAL' %}selected{% endif %}>Simular: Profesional Agrario</option>
+                                {% if simulated_role %}
+                                    <option value="RESET">Restablecer a Admin</option>
+                                {% endif %}
+                            </select>
+                        </form>
+                    </div>
+                {% endif %}
+
                 {% if user.is_authenticated %}
                     {% if effective_role == 'PRODUCER' %}
-                        <a href="{% url 'buscador_profesionales' %}" {% if request.resolver_match.url_name == 'buscador_profesionales' %}aria-current="page"{% endif %}>
-                            <i data-lucide="search" data-size="16"></i> Buscar Ingeniero
-                        </a>
-                        <a href="{% url 'bandeja_productor' %}" {% if request.resolver_match.url_name == 'bandeja_productor' %}aria-current="page"{% endif %}>
-                            <i data-lucide="clipboard-list" data-size="16"></i> Mis Solicitudes
-                        </a>
-                        <a href="{% url 'solicitar_asistencia_abierta' %}" {% if request.resolver_match.url_name == 'solicitar_asistencia_abierta' %}aria-current="page"{% endif %}>
-                            <i data-lucide="megaphone" data-size="16"></i> Solicitud Abierta
-                        </a>
-                        <a href="{% url 'foro_comunidad' %}" {% if request.resolver_match.url_name == 'foro_comunidad' %}aria-current="page"{% endif %}>
-                            <i data-lucide="messages-square" data-size="16"></i> Foro Agrario
-                        </a>
-                        <a href="{% url 'perfil_productor' %}" {% if request.resolver_match.url_name == 'perfil_productor' %}aria-current="page"{% endif %}>
-                            <i data-lucide="tractor" data-size="16"></i> Mi Finca
-                        </a>
-                        <a href="{% url 'nosotros' %}" {% if request.resolver_match.url_name == 'nosotros' %}aria-current="page"{% endif %}>
-                            Nosotros
-                        </a>
+                        <div class="sidebar-section-label">Operación Agraria</div>
+                        <div class="sidebar-nav-list">
+                            <a href="{% url 'buscador_profesionales' %}" class="sidebar-nav-item" {% if request.resolver_match.url_name == 'buscador_profesionales' %}aria-current="page"{% endif %}>
+                                <i data-lucide="search" data-size="20"></i>
+                                <span class="sidebar-nav-text">
+                                    <span class="sidebar-nav-title">Buscar Ingeniero</span>
+                                    <span class="sidebar-nav-desc">Directorio habilitado CIAPAJ</span>
+                                </span>
+                            </a>
+
+                            <a href="{% url 'bandeja_productor' %}" class="sidebar-nav-item" {% if request.resolver_match.url_name == 'bandeja_productor' %}aria-current="page"{% endif %}>
+                                <i data-lucide="clipboard-list" data-size="20"></i>
+                                <span class="sidebar-nav-text">
+                                    <span class="sidebar-nav-title">Mis Solicitudes</span>
+                                    <span class="sidebar-nav-desc">Seguimiento de consultas</span>
+                                </span>
+                            </a>
+
+                            <a href="{% url 'solicitar_asistencia_abierta' %}" class="sidebar-nav-item" {% if request.resolver_match.url_name == 'solicitar_asistencia_abierta' %}aria-current="page"{% endif %}>
+                                <i data-lucide="megaphone" data-size="20"></i>
+                                <span class="sidebar-nav-text">
+                                    <span class="sidebar-nav-title">Solicitud Abierta</span>
+                                    <span class="sidebar-nav-desc">Publicar urgencia a la red</span>
+                                </span>
+                            </a>
+                        </div>
+
+                        <div class="sidebar-section-label">Comunidad y Alertas</div>
+                        <div class="sidebar-nav-list">
+                            <a href="{% url 'notificaciones' %}" class="sidebar-nav-item" {% if request.resolver_match.url_name == 'notificaciones' %}aria-current="page"{% endif %}>
+                                <i data-lucide="bell" data-size="20"></i>
+                                <span class="sidebar-nav-text">
+                                    <span class="sidebar-nav-title">Notificaciones</span>
+                                    <span class="sidebar-nav-desc">Mensajes y foro sin leer</span>
+                                </span>
+                                {% if unread_notifications_count > 0 %}
+                                    <span class="sidebar-counter-badge" aria-label="{{ unread_notifications_count }} notificaciones sin leer">
+                                        {{ unread_notifications_count }}
+                                    </span>
+                                {% endif %}
+                            </a>
+
+                            <a href="{% url 'foro_comunidad' %}" class="sidebar-nav-item" {% if request.resolver_match.url_name == 'foro_comunidad' %}aria-current="page"{% endif %}>
+                                <i data-lucide="messages-square" data-size="20"></i>
+                                <span class="sidebar-nav-text">
+                                    <span class="sidebar-nav-title">Foro Agrario</span>
+                                    <span class="sidebar-nav-desc">Experiencias y consultas</span>
+                                </span>
+                            </a>
+                        </div>
+
+                        <div class="sidebar-section-label">Cuenta e Institución</div>
+                        <div class="sidebar-nav-list">
+                            <a href="{% url 'perfil_productor' %}" class="sidebar-nav-item" {% if request.resolver_match.url_name == 'perfil_productor' %}aria-current="page"{% endif %}>
+                                <i data-lucide="tractor" data-size="20"></i>
+                                <span class="sidebar-nav-text">
+                                    <span class="sidebar-nav-title">Mi Finca</span>
+                                    <span class="sidebar-nav-desc">Perfil y rubro productivo</span>
+                                </span>
+                            </a>
+
+                            <a href="{% url 'nosotros' %}" class="sidebar-nav-item" {% if request.resolver_match.url_name == 'nosotros' %}aria-current="page"{% endif %}>
+                                <i data-lucide="building-2" data-size="20"></i>
+                                <span class="sidebar-nav-text">
+                                    <span class="sidebar-nav-title">Nosotros</span>
+                                    <span class="sidebar-nav-desc">Respaldo CIAPAJ y RENSPA</span>
+                                </span>
+                            </a>
+                        </div>
+
                     {% elif effective_role == 'PROFESSIONAL' %}
-                        <a href="{% url 'bandeja_profesional' %}" {% if request.resolver_match.url_name == 'bandeja_profesional' %}aria-current="page"{% endif %}>
-                            <i data-lucide="inbox" data-size="16"></i> Bandeja de Trabajos
-                        </a>
-                        <a href="{% url 'foro_comunidad' %}" {% if request.resolver_match.url_name == 'foro_comunidad' %}aria-current="page"{% endif %}>
-                            <i data-lucide="messages-square" data-size="16"></i> Foro Agrario
-                        </a>
-                        <a href="{% url 'perfil_profesional' %}" {% if request.resolver_match.url_name == 'perfil_profesional' %}aria-current="page"{% endif %}>
-                            <i data-lucide="graduation-cap" data-size="16"></i> Mi perfil CIAPAJ
-                        </a>
-                        <a href="{% url 'nosotros' %}" {% if request.resolver_match.url_name == 'nosotros' %}aria-current="page"{% endif %}>
-                            Nosotros
-                        </a>
+                        <div class="sidebar-section-label">Gestión Técnica</div>
+                        <div class="sidebar-nav-list">
+                            <a href="{% url 'bandeja_profesional' %}" class="sidebar-nav-item" {% if request.resolver_match.url_name == 'bandeja_profesional' %}aria-current="page"{% endif %}>
+                                <i data-lucide="inbox" data-size="20"></i>
+                                <span class="sidebar-nav-text">
+                                    <span class="sidebar-nav-title">Bandeja de Trabajos</span>
+                                    <span class="sidebar-nav-desc">Solicitudes recibidas</span>
+                                </span>
+                            </a>
+                        </div>
+
+                        <div class="sidebar-section-label">Comunidad y Alertas</div>
+                        <div class="sidebar-nav-list">
+                            <a href="{% url 'notificaciones' %}" class="sidebar-nav-item" {% if request.resolver_match.url_name == 'notificaciones' %}aria-current="page"{% endif %}>
+                                <i data-lucide="bell" data-size="20"></i>
+                                <span class="sidebar-nav-text">
+                                    <span class="sidebar-nav-title">Notificaciones</span>
+                                    <span class="sidebar-nav-desc">Mensajes y foro sin leer</span>
+                                </span>
+                                {% if unread_notifications_count > 0 %}
+                                    <span class="sidebar-counter-badge" aria-label="{{ unread_notifications_count }} notificaciones sin leer">
+                                        {{ unread_notifications_count }}
+                                    </span>
+                                {% endif %}
+                            </a>
+
+                            <a href="{% url 'foro_comunidad' %}" class="sidebar-nav-item" {% if request.resolver_match.url_name == 'foro_comunidad' %}aria-current="page"{% endif %}>
+                                <i data-lucide="messages-square" data-size="20"></i>
+                                <span class="sidebar-nav-text">
+                                    <span class="sidebar-nav-title">Foro Agrario</span>
+                                    <span class="sidebar-nav-desc">Consultas comunitarias</span>
+                                </span>
+                            </a>
+                        </div>
+
+                        <div class="sidebar-section-label">Perfil Institucional</div>
+                        <div class="sidebar-nav-list">
+                            <a href="{% url 'perfil_profesional' %}" class="sidebar-nav-item" {% if request.resolver_match.url_name == 'perfil_profesional' %}aria-current="page"{% endif %}>
+                                <i data-lucide="graduation-cap" data-size="20"></i>
+                                <span class="sidebar-nav-text">
+                                    <span class="sidebar-nav-title">Mi perfil CIAPAJ</span>
+                                    <span class="sidebar-nav-desc">Especialidades y cobertura</span>
+                                </span>
+                            </a>
+
+                            <a href="{% url 'nosotros' %}" class="sidebar-nav-item" {% if request.resolver_match.url_name == 'nosotros' %}aria-current="page"{% endif %}>
+                                <i data-lucide="building-2" data-size="20"></i>
+                                <span class="sidebar-nav-text">
+                                    <span class="sidebar-nav-title">Nosotros</span>
+                                    <span class="sidebar-nav-desc">Protocolo institucional</span>
+                                </span>
+                            </a>
+                        </div>
+
                     {% elif effective_role == 'ADMIN' %}
-                        <a href="/admin/">
-                            <i data-lucide="settings" data-size="16"></i> Panel Admin CIAPAJ
+                        <div class="sidebar-section-label">Administración CIAPAJ</div>
+                        <div class="sidebar-nav-list">
+                            <a href="/admin/" class="sidebar-nav-item">
+                                <i data-lucide="settings" data-size="20"></i>
+                                <span class="sidebar-nav-text">
+                                    <span class="sidebar-nav-title">Panel Admin CIAPAJ</span>
+                                    <span class="sidebar-nav-desc">Validación de matrículas</span>
+                                </span>
+                            </a>
+
+                            <a href="{% url 'buscador_profesionales' %}" class="sidebar-nav-item" {% if request.resolver_match.url_name == 'buscador_profesionales' %}aria-current="page"{% endif %}>
+                                <i data-lucide="search" data-size="20"></i>
+                                <span class="sidebar-nav-text">
+                                    <span class="sidebar-nav-title">Buscador</span>
+                                    <span class="sidebar-nav-desc">Directorio público</span>
+                                </span>
+                            </a>
+                        </div>
+
+                        <div class="sidebar-section-label">Comunidad y Alertas</div>
+                        <div class="sidebar-nav-list">
+                            <a href="{% url 'notificaciones' %}" class="sidebar-nav-item" {% if request.resolver_match.url_name == 'notificaciones' %}aria-current="page"{% endif %}>
+                                <i data-lucide="bell" data-size="20"></i>
+                                <span class="sidebar-nav-text">
+                                    <span class="sidebar-nav-title">Notificaciones</span>
+                                    <span class="sidebar-nav-desc">Mensajes y foro sin leer</span>
+                                </span>
+                                {% if unread_notifications_count > 0 %}
+                                    <span class="sidebar-counter-badge">{{ unread_notifications_count }}</span>
+                                {% endif %}
+                            </a>
+
+                            <a href="{% url 'foro_comunidad' %}" class="sidebar-nav-item" {% if request.resolver_match.url_name == 'foro_comunidad' %}aria-current="page"{% endif %}>
+                                <i data-lucide="messages-square" data-size="20"></i>
+                                <span class="sidebar-nav-text">
+                                    <span class="sidebar-nav-title">Foro Agrario</span>
+                                    <span class="sidebar-nav-desc">Muro comunitario</span>
+                                </span>
+                            </a>
+
+                            <a href="{% url 'nosotros' %}" class="sidebar-nav-item" {% if request.resolver_match.url_name == 'nosotros' %}aria-current="page"{% endif %}>
+                                <i data-lucide="building-2" data-size="20"></i>
+                                <span class="sidebar-nav-text">
+                                    <span class="sidebar-nav-title">Nosotros</span>
+                                    <span class="sidebar-nav-desc">Misión institucional</span>
+                                </span>
+                            </a>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="sidebar-section-label">Explorar Plataforma</div>
+                    <div class="sidebar-nav-list">
+                        <a href="{% url 'inicio' %}" class="sidebar-nav-item" {% if request.resolver_match.url_name == 'inicio' %}aria-current="page"{% endif %}>
+                            <i data-lucide="sprout" data-size="20"></i>
+                            <span class="sidebar-nav-text">
+                                <span class="sidebar-nav-title">Inicio</span>
+                                <span class="sidebar-nav-desc">Portada institucional</span>
+                            </span>
                         </a>
-                        <a href="{% url 'buscador_profesionales' %}" {% if request.resolver_match.url_name == 'buscador_profesionales' %}aria-current="page"{% endif %}>
-                            <i data-lucide="search" data-size="16"></i> Buscador
+
+                        <a href="{% url 'buscador_profesionales' %}" class="sidebar-nav-item" {% if request.resolver_match.url_name == 'buscador_profesionales' %}aria-current="page"{% endif %}>
+                            <i data-lucide="search" data-size="20"></i>
+                            <span class="sidebar-nav-text">
+                                <span class="sidebar-nav-title">Buscador</span>
+                                <span class="sidebar-nav-desc">Ingenieros CIAPAJ</span>
+                            </span>
                         </a>
-                        <a href="{% url 'foro_comunidad' %}" {% if request.resolver_match.url_name == 'foro_comunidad' %}aria-current="page"{% endif %}>
-                            <i data-lucide="messages-square" data-size="16"></i> Foro
+
+                        <a href="{% url 'foro_comunidad' %}" class="sidebar-nav-item" {% if request.resolver_match.url_name == 'foro_comunidad' %}aria-current="page"{% endif %}>
+                            <i data-lucide="messages-square" data-size="20"></i>
+                            <span class="sidebar-nav-text">
+                                <span class="sidebar-nav-title">Foro Agrario</span>
+                                <span class="sidebar-nav-desc">Comunidad abierta</span>
+                            </span>
                         </a>
-                        <a href="{% url 'nosotros' %}" {% if request.resolver_match.url_name == 'nosotros' %}aria-current="page"{% endif %}>
-                            Nosotros
+
+                        <a href="{% url 'nosotros' %}" class="sidebar-nav-item" {% if request.resolver_match.url_name == 'nosotros' %}aria-current="page"{% endif %}>
+                            <i data-lucide="building-2" data-size="20"></i>
+                            <span class="sidebar-nav-text">
+                                <span class="sidebar-nav-title">Nosotros</span>
+                                <span class="sidebar-nav-desc">Respaldo CIAPAJ y RENSPA</span>
+                            </span>
+                        </a>
+                    </div>
+
+                    <div class="sidebar-section-label">Acceso y Registro</div>
+                    <div class="sidebar-nav-list">
+                        <a href="{% url 'login' %}" class="sidebar-nav-item" {% if request.resolver_match.url_name == 'login' %}aria-current="page"{% endif %}>
+                            <i data-lucide="key-round" data-size="20"></i>
+                            <span class="sidebar-nav-text">
+                                <span class="sidebar-nav-title">Iniciar Sesión</span>
+                                <span class="sidebar-nav-desc">Ingresar a mi cuenta</span>
+                            </span>
+                        </a>
+
+                        <a href="{% url 'registro_productor' %}" class="sidebar-nav-item" {% if request.resolver_match.url_name == 'registro_productor' %}aria-current="page"{% endif %}>
+                            <i data-lucide="tractor" data-size="20"></i>
+                            <span class="sidebar-nav-text">
+                                <span class="sidebar-nav-title">Registro Productor</span>
+                                <span class="sidebar-nav-desc">Alta con DNI y RENSPA</span>
+                            </span>
+                        </a>
+
+                        <a href="{% url 'registro_profesional' %}" class="sidebar-nav-item" {% if request.resolver_match.url_name == 'registro_profesional' %}aria-current="page"{% endif %}>
+                            <i data-lucide="graduation-cap" data-size="20"></i>
+                            <span class="sidebar-nav-text">
+                                <span class="sidebar-nav-title">Registro Ingeniero</span>
+                                <span class="sidebar-nav-desc">Validación CIAPAJ</span>
+                            </span>
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Pie de Sidebar: Usuario Actual + Botón Salir + Estado Online -->
+            <div class="sidebar-footer">
+                {% if user.is_authenticated %}
+                    <div class="sidebar-user-card">
+                        <div style="display: flex; align-items: center; gap: 0.7rem; min-width: 0;">
+                            <div class="sidebar-user-avatar" aria-hidden="true">
+                                {{ user.first_name|default:user.username|slice:":1"|upper }}
+                            </div>
+                            <div style="min-width: 0;">
+                                <div style="font-size: 0.88rem; font-weight: 700; color: #FFFFFF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                    {{ user.get_full_name|default:user.username }}
+                                </div>
+                                <span class="sidebar-role-pill">
+                                    {% if effective_role == 'PRODUCER' %}Productor{% elif effective_role == 'PROFESSIONAL' %}Ingeniero CIAPAJ{% else %}Administrador{% endif %}
+                                </span>
+                            </div>
+                        </div>
+
+                        <form method="POST" action="{% url 'logout' %}" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="sidebar-logout-icon-btn" title="Cerrar Sesión ({{ user.username }})" aria-label="Cerrar Sesión">
+                                <i data-lucide="log-out" data-size="18"></i>
+                            </button>
+                        </form>
+                    </div>
+                {% endif %}
+
+                <div class="sidebar-status-bar">
+                    <span style="display: inline-flex; align-items: center; gap: 0.45rem;">
+                        <span class="status-dot-online" aria-hidden="true"></span>
+                        <span>Red Provincial CIAPAJ</span>
+                    </span>
+                    <span style="color: #10B981; font-weight: 700;">Online</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Contenido Principal a la Derecha de la Sidebar -->
+        <div class="app-main-wrapper">
+            <!-- Barra Superior Exclusiva para Móviles (< 960px) -->
+            <div class="mobile-topbar">
+                <a href="{% url 'inicio' %}" class="brand-title" style="font-size: 1.15rem;">
+                    <i data-lucide="sprout" data-size="20"></i>
+                    <span>AgroJujuy</span>
+                </a>
+                <div style="display: flex; align-items: center; gap: 0.65rem;">
+                    {% if user.is_authenticated and unread_notifications_count > 0 %}
+                        <a href="{% url 'notificaciones' %}" class="sidebar-counter-badge" style="text-decoration: none;" aria-label="{{ unread_notifications_count }} notificaciones sin leer">
+                            {{ unread_notifications_count }}
                         </a>
                     {% endif %}
+                    <button type="button" id="sidebar-mobile-toggle" class="mobile-nav-btn" aria-expanded="false" aria-controls="app-sidebar" aria-label="Abrir menú lateral">
+                        <i data-lucide="menu" data-size="20"></i>
+                    </button>
+                </div>
+            </div>
 
-                    <form method="POST" action="{% url 'logout' %}" style="display:inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="nav-btn-logout">
-                            <i data-lucide="log-out" data-size="15"></i> Salir ({{ user.username }})
-                        </button>
-                    </form>
-                {% else %}
-                    <a href="{% url 'nosotros' %}" {% if request.resolver_match.url_name == 'nosotros' %}aria-current="page"{% endif %}>
-                        Nosotros
-                    </a>
-                    <a href="{% url 'buscador_profesionales' %}" {% if request.resolver_match.url_name == 'buscador_profesionales' %}aria-current="page"{% endif %}>
-                        <i data-lucide="search" data-size="16"></i> Buscador
-                    </a>
-                    <a href="{% url 'foro_comunidad' %}" {% if request.resolver_match.url_name == 'foro_comunidad' %}aria-current="page"{% endif %}>
-                        <i data-lucide="messages-square" data-size="16"></i> Foro Agrario
-                    </a>
-                    <a href="{% url 'login' %}" {% if request.resolver_match.url_name == 'login' %}aria-current="page"{% endif %}>
-                        Iniciar Sesión
-                    </a>
-                    <a href="{% url 'registro_productor' %}" class="btn btn-tertiary btn-sm">
-                        <i data-lucide="tractor" data-size="15"></i> Registro Productor
-                    </a>
-                    <a href="{% url 'registro_profesional' %}" class="btn btn-secondary btn-sm">
-                        <i data-lucide="graduation-cap" data-size="15"></i> Registro Ingeniero
-                    </a>
-                {% endif %}
-            </nav>
+            <!-- Main Content Area con ID y tabindex="-1" para Skip Link -->
+            <main id="main-content" tabindex="-1" class="container" style="flex: 1; padding-top: 1.5rem; padding-bottom: 2.25rem;">
+                <div aria-live="polite" aria-atomic="true">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}" role="{% if 'error' in message.tags or 'danger' in message.tags %}alert{% else %}status{% endif %}" style="display: flex; align-items: center; gap: 0.65rem;">
+                                <i data-lucide="{% if 'error' in message.tags or 'danger' in message.tags %}alert-circle{% else %}check-circle{% endif %}" data-size="20"></i>
+                                <span>{{ message }}</span>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                {% block content %}{% endblock %}
+            </main>
+
+            <!-- Footer Institucional -->
+            <footer role="contentinfo">
+                <div class="container" style="display: flex; flex-direction: column; gap: 0.5rem; align-items: center; padding-top: 0; padding-bottom: 0;">
+                    <p><strong>AgroJujuy MVP</strong> — Sistema de Información Agraria y Asistencia Técnica Provincial</p>
+                    <p style="opacity: 0.9; font-size: 0.82rem;">
+                        Validación de Matrículas con respaldo institucional CIAPAJ &bull; Accesibilidad WCAG 2.1 AA &amp; Seguridad OWASP ASVS L2 &bull;
+                        <a href="{% url 'nosotros' %}" style="color: #FFFFFF;">Sobre Nosotros</a>
+                    </p>
+                </div>
+            </footer>
         </div>
-    </header>
+    </div>
 
-    <!-- Main Content Area con ID y tabindex="-1" para Skip Link (WCAG 1.2 / 1.8) -->
-    <main id="main-content" tabindex="-1" class="container" style="flex: 1; padding-top: 1.75rem; padding-bottom: 2.5rem;">
-        <div aria-live="polite" aria-atomic="true">
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }}" role="{% if 'error' in message.tags or 'danger' in message.tags %}alert{% else %}status{% endif %}" style="display: flex; align-items: center; gap: 0.65rem;">
-                        <i data-lucide="{% if 'error' in message.tags or 'danger' in message.tags %}alert-circle{% else %}check-circle{% endif %}" data-size="20"></i>
-                        <span>{{ message }}</span>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        </div>
-
-        {% block content %}{% endblock %}
-    </main>
-
-    <!-- Footer Institucional -->
-    <footer role="contentinfo">
-        <div class="container" style="display: flex; flex-direction: column; gap: 0.65rem; align-items: center;">
-            <p><strong>AgroJujuy MVP</strong> — Sistema de Información Agraria y Asistencia Técnica Provincial</p>
-            <p style="opacity: 0.9; font-size: 0.82rem;">
-                Validación de Matrículas con respaldo institucional CIAPAJ &bull; Accesibilidad WCAG 2.1 AA &amp; Seguridad OWASP ASVS L2 &bull;
-                <a href="{% url 'nosotros' %}" style="color: #FFFFFF;">Sobre Nosotros</a>
-            </p>
-        </div>
-    </footer>
-
-    <script src="{% static 'js/ui.js' %}?v=4"></script>
+    <script src="{% static 'js/ui.js' %}?v=5"></script>
 </body>
 </html>

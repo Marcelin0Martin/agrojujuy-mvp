@@ -237,6 +237,8 @@ class ChatTicketView(LoginRequiredMixin, View):
             messages.error(request, "No tienes permiso para acceder a este canal privado de asistencia.")
             return redirect('inicio')
 
+        from application.users.notifications import mark_ticket_messages_read
+        mark_ticket_messages_read(request, ticket.id)
         mensajes = ticket.mensajes.select_related('emisor').all().order_by('fecha_envio')
         form = MensajeChatForm()
         finalizar_form = FinalizarTicketForm()

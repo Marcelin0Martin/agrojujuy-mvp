@@ -307,3 +307,54 @@ def cambiar_rol_temporal(request):
                 return redirect('buscador_profesionales')
 
     return redirect('inicio')
+
+
+class NotificacionesView(LoginRequiredMixin, TemplateView):
+    """
+    Centro de Notificaciones unificado:
+    Muestra mensajes nuevos en chats 1 a 1 y comentarios nuevos en hilos del foro
+    sin alterar el DER del proyecto.
+    """
+    template_name = 'users/notificaciones.html'
+
+    def get_context_data(self, **kwargs):
+        from .notifications import obtener_notificaciones_usuario
+        context = super().get_context_data(**kwargs)
+        filtro = self.request.GET.get('tipo', '').strip()
+        notificaciones, unread_count = obtener_notificaciones_usuario(self.request)
+        if filtro in ('chat', 'foro'):
+            notificaciones_filtradas = [n for n in notificaciones if n['tipo'] == filtro]
+        elif filtro == 'no_leidas':
+            notificaciones_filtradas = [n for n in notificaciones if not n['leida']]
+        else:
+            notificaciones_filtradas = notificaciones
+
+        context['notificaciones'] = notificaciones_filtradas
+        context['total_notificaciones'] = len(notificaciones)
+        context['unread_count'] = unread_count
+        context['filtro_actual'] = filtro
+        return context
+
+
+def marcar_notificacion_leida(request):
+    """Marca una o todas las notificaciones como leídas y redirige al destino."""
+    from .notifications import obtener_notificaciones_usuario, mark_notifications_as_read
+
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    if request.method == 'POST':
+        notif_id = request.POST.get('notif_id', '').strip()
+        next_url = request.POST.get('next', '').strip()
+        if notif_id == 'ALL':
+            notificaciones, _ = obtener_notificaciones_usuario(request)
+            mark_notifications_as_read(request, [n['id'] for n in notificaciones])
+            messages.success(request, "Todas las notificaciones fueron marcadas como leídas.")
+            return redirect('notificaciones')
+        elif notif_id:
+            mark_notifications_as_read(request, [notif_id])
+            if next_url and next_url.startswith('/'):
+                return redirect(next_url)
+            return redirect('notificaciones')
+
+    return redirect('notificaciones')

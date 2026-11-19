@@ -257,7 +257,7 @@ class PerfilProductorForm(AccessibleFormMixin, forms.ModelForm):
     Formulario protegido de Productor:
     Nombre, apellido, correo, DNI, RENSPA, región geográfica y dirección de finca
     están protegidos institucionalmente y no pueden ser modificados de forma autónoma.
-    Solo se permite actualizar rubro_productivo y telefono.
+    Solo se permite actualizar rubro_productivo (especialidad productiva) y telefono.
     """
 
     class Meta:
@@ -273,11 +273,23 @@ class PerfilProductorForm(AccessibleFormMixin, forms.ModelForm):
 
 class PerfilProfesionalForm(AccessibleFormMixin, forms.ModelForm):
     """
-    Formulario protegido de Profesional (Mi perfil CIAPAJ):
-    Nombre, apellido, correo electrónico, matrícula y especialidad están protegidos
-    institucionalmente y no pueden ser modificados por el profesional.
-    Solo se permite actualizar zonas de cobertura, teléfono y biografía.
+    Formulario de Perfil Profesional (Mi perfil CIAPAJ):
+    Nombre, apellido, correo electrónico y matrícula provincial están protegidos
+    institucionalmente. Se permite actualizar especialidades, zonas de cobertura,
+    teléfono y biografía.
     """
+    especialidades = forms.MultipleChoiceField(
+        choices=[(e, e) for e in ESPECIALIDADES_VALIDAS],
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        label="Especialidades Agronómicas"
+    )
+    especialidad_propuesta = forms.CharField(
+        max_length=150,
+        required=False,
+        label="Otra Especialidad / Propuesta (Opcional)",
+        help_text="Si tienes otra especialidad específica que no figure en el listado, indícala aquí"
+    )
     zonas = forms.MultipleChoiceField(
         choices=[(r, r) for r in REGIONES_VALIDAS],
         widget=forms.CheckboxSelectMultiple,
@@ -287,13 +299,15 @@ class PerfilProfesionalForm(AccessibleFormMixin, forms.ModelForm):
 
     class Meta:
         model = Profesional
-        fields = ['telefono', 'biografia']
+        fields = ['especialidad_propuesta', 'telefono', 'biografia']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance and self.instance.pk:
             zonas_actuales = [z.strip() for z in self.instance.zonas_cobertura.split(',') if z.strip()]
             self.fields['zonas'].initial = zonas_actuales
+            esps_actuales = [e.strip() for e in self.instance.especialidad.split(',') if e.strip()]
+            self.fields['especialidades'].initial = [e for e in esps_actuales if e in ESPECIALIDADES_VALIDAS]
 
     def clean_telefono(self):
         tel = self.cleaned_data.get('telefono', '').strip()
@@ -301,9 +315,26 @@ class PerfilProfesionalForm(AccessibleFormMixin, forms.ModelForm):
             raise ValidationError("Ingrese un número de teléfono válido (entre 8 y 15 dígitos).")
         return tel
 
+    def clean(self):
+        cleaned_data = super().clean()
+        seleccionadas = list(cleaned_data.get('especialidades') or [])
+        propuesta = (cleaned_data.get('especialidad_propuesta') or '').strip()
+        if not seleccionadas and not propuesta:
+            self.add_error(
+                'especialidades',
+                "Debes seleccionar al menos una especialidad agronómica o indicar una nueva."
+            )
+        else:
+            cleaned_data['especialidades_consolidadas'] = ", ".join(seleccionadas) if seleccionadas else propuesta
+        return cleaned_data
+
     def save(self, commit=True):
         profesional = super().save(commit=False)
         profesional.zonas_cobertura = ", ".join(self.cleaned_data['zonas'])
+        profesional.especialidad = self.cleaned_data.get('especialidades_consolidadas', profesional.especialidad)
+        profesional.especialidad_propuesta = (self.cleaned_data.get('especialidad_propuesta') or '').strip()
         if commit:
-            profesional.save(update_fields=['zonas_cobertura', 'telefono', 'biografia'])
+            profesional.save(update_fields=[
+                'especialidad', 'especialidad_propuesta', 'zonas_cobertura', 'telefono', 'biografia'
+            ])
         return profesional

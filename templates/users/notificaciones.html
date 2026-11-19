@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+
+{% block title %}Notificaciones — AgroJujuy{% endblock %}
+
+{% block content %}
+<div style="max-width: 1120px; margin: 0.5rem auto;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+        <div>
+            <h1 style="font-size: 1.9rem; font-weight: 800; color: var(--color-primary); display: flex; align-items: center; gap: 0.55rem;">
+                <i data-lucide="bell" data-size="26"></i> Centro de Notificaciones
+                {% if unread_count > 0 %}
+                    <span class="badge badge-danger" style="font-size: 0.78rem;">{{ unread_count }} sin leer</span>
+                {% endif %}
+            </h1>
+            <p style="color: var(--color-text-muted); font-size: 0.96rem;">
+                Avisos de nuevos mensajes en tus conversaciones técnicas 1 a 1 y comentarios en tus hilos del foro comunitario.
+            </p>
+        </div>
+
+        {% if unread_count > 0 %}
+            <form method="POST" action="{% url 'marcar_notificacion_leida' %}">
+                {% csrf_token %}
+                <input type="hidden" name="notif_id" value="ALL">
+                <button type="submit" class="btn btn-outline btn-sm">
+                    <i data-lucide="check-circle" data-size="16"></i> Marcar todas como leídas
+                </button>
+            </form>
+        {% endif %}
+    </div>
+
+    <!-- Filtros rápidos de notificaciones -->
+    <div class="filter-pills" role="group" aria-label="Filtrar notificaciones" style="margin-bottom: 1.5rem;">
+        <a href="{% url 'notificaciones' %}" class="filter-pill {% if not filtro_actual %}filter-pill-active{% endif %}">
+            <i data-lucide="layers" data-size="15"></i> Todas ({{ total_notificaciones }})
+        </a>
+        <a href="?tipo=no_leidas" class="filter-pill {% if filtro_actual == 'no_leidas' %}filter-pill-active{% endif %}">
+            <i data-lucide="bell" data-size="15"></i> Sin leer ({{ unread_count }})
+        </a>
+        <a href="?tipo=chat" class="filter-pill {% if filtro_actual == 'chat' %}filter-pill-active{% endif %}">
+            <i data-lucide="message-square" data-size="15"></i> Mensajes de Chat 1 a 1
+        </a>
+        <a href="?tipo=foro" class="filter-pill {% if filtro_actual == 'foro' %}filter-pill-active{% endif %}">
+            <i data-lucide="messages-square" data-size="15"></i> Comentarios del Foro
+        </a>
+    </div>
+
+    {% if notificaciones %}
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            {% for notif in notificaciones %}
+                <article class="card rounded-2xl shadow-sm p-6" style="margin-bottom: 0; background: {% if not notif.leida %}#F0FDF4{% else %}#FFFFFF{% endif %}; border-left: 5px solid {% if not notif.leida %}var(--color-secondary){% else %}var(--color-neutral-light){% endif %};">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 0.65rem;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <span aria-hidden="true">
+                                <i data-lucide="{% if notif.tipo == 'chat' %}message-square{% else %}messages-square{% endif %}" data-size="22"></i>
+                            </span>
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                                    <span class="badge {% if notif.tipo == 'chat' %}badge-soft{% else %}badge-warning{% endif %}" style="font-size: 0.7rem;">
+                                        {{ notif.tipo_label }}
+                                    </span>
+                                    {% if not notif.leida %}
+                                        <span class="badge badge-danger" style="font-size: 0.68rem;">Nueva</span>
+                                    {% else %}
+                                        <span style="font-size: 0.76rem; color: var(--color-text-muted); font-weight: 600;">Leída</span>
+                                    {% endif %}
+                                </div>
+                                <h2 style="font-size: 1.12rem; font-weight: 800; color: var(--color-primary); margin: 0.3rem 0 0 0;">
+                                    {{ notif.titulo }}
+                                </h2>
+                            </div>
+                        </div>
+
+                        <span style="font-size: 0.8rem; color: var(--color-text-muted); display: inline-flex; align-items: center; gap: 0.35rem;">
+                            <i data-lucide="clock" data-size="14"></i> {{ notif.fecha|date:"d/m/Y H:i" }}
+                        </span>
+                    </div>
+
+                    <p style="font-size: 0.92rem; color: var(--color-text-main); margin-bottom: 0.5rem;">
+                        <strong>{{ notif.autor }}</strong>
+                        <span class="badge badge-soft" style="font-size: 0.68rem; padding: 2px 7px; margin-left: 0.25rem;">{{ notif.autor_rol }}</span>
+                        escribió:
+                    </p>
+
+                    <div style="background: #FFFFFF; border: 1px solid rgba(23, 63, 50, 0.1); border-radius: var(--radius-xl); padding: 0.85rem 1rem; font-size: 0.92rem; color: var(--color-text-muted); margin-bottom: 1rem;">
+                        «{{ notif.extracto|truncatewords:32 }}»
+                    </div>
+
+                    <div style="display: flex; justify-content: flex-end; gap: 0.65rem; flex-wrap: wrap;">
+                        {% if not notif.leida %}
+                            <form method="POST" action="{% url 'marcar_notificacion_leida' %}" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="notif_id" value="{{ notif.id }}">
+                                <button type="submit" class="btn btn-outline btn-sm">
+                                    <i data-lucide="check-circle" data-size="15"></i> Marcar leída
+                                </button>
+                            </form>
+                        {% endif %}
+
+                        <form method="POST" action="{% url 'marcar_notificacion_leida' %}" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="notif_id" value="{{ notif.id }}">
+                            <input type="hidden" name="next" value="{{ notif.url }}">
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                <span>{% if notif.tipo == 'chat' %}Ir a la Conversación{% else %}Ver en el Foro{% endif %}</span>
+                                <i data-lucide="arrow-right" data-size="15"></i>
+                            </button>
+                        </form>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card rounded-2xl shadow-sm p-8" style="background: #FFFFFF; text-align: center;">
+            <div style="margin-bottom: 0.75rem;">
+                <i data-lucide="bell" data-size="36"></i>
+            </div>
+            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--color-primary); margin-bottom: 0.5rem;">
+                No tienes notificaciones pendientes
+            </h2>
+            <p style="color: var(--color-text-muted); max-width: 520px; margin: 0 auto 1.5rem auto;">
+                Cuando recibas un mensaje nuevo en tus consultas técnicas 1 a 1 o alguien responda a una publicación tuya en el foro agrario, aparecerá aquí con su contador.
+            </p>
+            <div style="display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap;">
+                <a href="{% url 'foro_comunidad' %}" class="btn btn-outline btn-sm">
+                    <i data-lucide="messages-square" data-size="15"></i> Ir al Foro Agrario
+                </a>
+                {% if effective_role == 'PRODUCER' %}
+                    <a href="{% url 'bandeja_productor' %}" class="btn btn-primary btn-sm">
+                        <i data-lucide="clipboard-list" data-size="15"></i> Ver Mis Solicitudes
+                    </a>
+                {% elif effective_role == 'PROFESSIONAL' %}
+                    <a href="{% url 'bandeja_profesional' %}" class="btn btn-primary btn-sm">
+                        <i data-lucide="inbox" data-size="15"></i> Ver Bandeja de Trabajos
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
