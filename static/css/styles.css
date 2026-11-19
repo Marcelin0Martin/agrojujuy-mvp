@@ -279,7 +279,6 @@ a:hover {
 .carousel-track-wrapper {
   position: relative;
   width: 100%;
-  min-height: 380px;
 }
 
 .carousel-track {
@@ -311,43 +310,136 @@ a:hover {
   }
 }
 
-.carousel-slide-inner {
-  display: grid;
-  grid-template-columns: 1fr;
-  align-items: stretch;
-  min-height: 360px;
-}
-
-@media (min-width: 840px) {
-  .carousel-slide-inner {
-    grid-template-columns: 1.1fr 1fr;
-  }
-}
-
-.carousel-image-box {
-  background: #091713;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 260px;
-  max-height: 380px;
-  overflow: hidden;
-  position: relative;
-}
-
-.carousel-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.carousel-content {
-  padding: 2.25rem 2.5rem;
+.carousel-pillar-card {
+  padding: 2rem 2.25rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  background: linear-gradient(180deg, #FFFFFF 0%, #F9FBFA 100%);
+}
+
+.carousel-highlights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.75rem;
+}
+
+/* ==========================================================================
+   Mapa Interactivo de Regiones de Jujuy (Nosotros — Aporte luis_rama)
+   ========================================================================== */
+.mapa-regiones-section {
+  margin-top: 2.25rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--color-neutral-light);
+}
+
+.mapa-regiones-header {
+  margin-bottom: 1.5rem;
+}
+
+.mapa-regiones-header h2 {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  margin: 0 0 0.35rem 0;
+}
+
+.mapa-regiones-header p {
+  font-size: 0.96rem;
+  color: var(--color-text-muted);
+  margin: 0 0 1rem 0;
+}
+
+.region-botones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.mapa-svg-wrapper {
+  background: #F8FAF9;
+  border: 1px solid rgba(23, 63, 50, 0.12);
+  border-radius: var(--radius-2xl);
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.detalle-region-panel {
   background: #FFFFFF;
+  border: 1px solid rgba(23, 63, 50, 0.12);
+  border-top: 5px solid var(--color-primary);
+  border-radius: var(--radius-2xl);
+  padding: 1.5rem;
+  margin-bottom: 0;
+}
+
+.detalle-region-panel h3 {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  margin: 0 0 0.5rem 0;
+}
+
+.detalle-region-panel p {
+  font-size: 0.94rem;
+  color: var(--color-text-muted);
+  line-height: 1.55;
+  margin: 0 0 1.25rem 0;
+}
+
+.region-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.region-kpis > div {
+  background: var(--color-background);
+  border: 1px solid rgba(23, 63, 50, 0.08);
+  border-radius: var(--radius-xl);
+  padding: 0.85rem 0.65rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.region-kpis strong {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.region-kpis span {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--color-primary);
+}
+
+.region-rubros-box {
+  margin-bottom: 1.35rem;
+}
+
+.region-rubros-box strong {
+  display: block;
+  font-size: 0.86rem;
+  color: var(--color-primary);
+  margin-bottom: 0.5rem;
+}
+
+#detalle-region-rubros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.region-acciones {
+  display: flex;
+  justify-content: flex-start;
 }
 
 .carousel-slide-title {
