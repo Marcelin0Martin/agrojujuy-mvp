@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}AgroJujuy — Plataforma Agrícola Institucional{% endblock %}</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=4">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 <body>
     <!-- Skip Link Accesible WCAG 2.4.1 -->
@@ -14,121 +14,106 @@
     <!-- Header Global -->
     <header class="global-header" role="banner">
         <div class="header-inner">
-            <div class="brand-bar">
-                <div style="display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap;">
-                    <a href="{% url 'inicio' %}" class="brand-title" aria-label="AgroJujuy Inicio">
-                        <span class="brand-logo-mark" aria-hidden="true">
-                            <i data-lucide="sprout" data-size="20"></i>
-                        </span>
-                        <span>AgroJujuy</span>
-                        <span class="brand-badge">MVP</span>
-                    </a>
+            <div style="display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap;">
+                <a href="{% url 'inicio' %}" class="brand-title" aria-label="AgroJujuy Inicio">
+                    <span aria-hidden="true" style="font-size: 1.5rem;">🌱</span>
+                    <span>AgroJujuy</span>
+                    <span class="brand-badge">MVP</span>
+                </a>
 
-                    <!-- Selector de estado temporal para Auditoría del Administrador -->
-                    {% if is_admin_user %}
-                    <div class="role-switcher-banner" role="region" aria-label="Selector de rol temporal para auditoría">
-                        <label for="admin-role-selector" style="cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem;">
-                            <i data-lucide="microscope" data-size="15"></i> <strong>Auditoría Visual:</strong>
-                        </label>
-                        <form method="POST" action="{% url 'cambiar_rol_temporal' %}" style="display: inline-flex; align-items: center; gap: 0.35rem;">
-                            {% csrf_token %}
-                            <select id="admin-role-selector" name="rol" onchange="this.form.submit()" aria-label="Cambiar rol temporal para auditoría">
-                                <option value="ADMIN" {% if effective_role == 'ADMIN' and not simulated_role %}selected{% endif %}>Rol: Administrador (Real)</option>
-                                <option value="PRODUCER" {% if effective_role == 'PRODUCER' %}selected{% endif %}>Simular: Productor</option>
-                                <option value="PROFESSIONAL" {% if effective_role == 'PROFESSIONAL' %}selected{% endif %}>Simular: Profesional Agrario</option>
-                                {% if simulated_role %}
-                                <option value="RESET">Restablecer a Admin</option>
-                                {% endif %}
-                            </select>
-                        </form>
-                        {% if simulated_role %}
-                        <span class="badge badge-warning" style="font-size: 0.65rem;">Modo Simulado</span>
-                        {% endif %}
-                    </div>
+                <!-- Selector de estado temporal para Auditoría del Administrador -->
+                {% if is_admin_user %}
+                <div class="role-switcher-banner" role="region" aria-label="Selector de rol temporal para auditoría">
+                    <label for="admin-role-selector" style="cursor: pointer;">
+                        <span aria-hidden="true">🔬</span> <strong>Auditoría Visual:</strong>
+                    </label>
+                    <form method="POST" action="{% url 'cambiar_rol_temporal' %}" style="display: inline-flex; align-items: center; gap: 0.35rem;">
+                        {% csrf_token %}
+                        <select id="admin-role-selector" name="rol" onchange="this.form.submit()" aria-label="Cambiar rol temporal para auditoría">
+                            <option value="ADMIN" {% if effective_role == 'ADMIN' and not simulated_role %}selected{% endif %}>Rol: Administrador (Real)</option>
+                            <option value="PRODUCER" {% if effective_role == 'PRODUCER' %}selected{% endif %}>Simular: Productor</option>
+                            <option value="PROFESSIONAL" {% if effective_role == 'PROFESSIONAL' %}selected{% endif %}>Simular: Profesional Agrario</option>
+                            {% if simulated_role %}
+                            <option value="RESET">Restablecer a Admin</option>
+                            {% endif %}
+                        </select>
+                    </form>
+                    {% if simulated_role %}
+                    <span class="badge badge-warning" style="font-size: 0.65rem;">Modo Simulado</span>
                     {% endif %}
                 </div>
-
-                <!-- Botón Menú Móvil Responsive -->
-                <button type="button" id="mobile-nav-toggle" class="mobile-nav-btn" aria-expanded="false" aria-controls="primary-nav-links" aria-label="Abrir menú de navegación">
-                    <i data-lucide="menu" data-size="20"></i>
-                </button>
+                {% endif %}
             </div>
 
             <!-- Navegación Principal Accesible -->
-            <nav id="primary-nav-links" class="nav-links" aria-label="Navegación principal">
+            <nav class="nav-links" aria-label="Navegación principal">
                 {% if user.is_authenticated %}
                     {% if effective_role == 'PRODUCER' %}
                         <a href="{% url 'buscador_profesionales' %}" {% if request.resolver_match.url_name == 'buscador_profesionales' %}aria-current="page"{% endif %}>
-                            <i data-lucide="search" data-size="16"></i> Buscar Ingeniero
+                            <span aria-hidden="true">🔍</span> Buscar Ingeniero
                         </a>
                         <a href="{% url 'bandeja_productor' %}" {% if request.resolver_match.url_name == 'bandeja_productor' %}aria-current="page"{% endif %}>
-                            <i data-lucide="clipboard-list" data-size="16"></i> Mis Solicitudes
+                            <span aria-hidden="true">📋</span> Mis Solicitudes
                         </a>
                         <a href="{% url 'solicitar_asistencia_abierta' %}" {% if request.resolver_match.url_name == 'solicitar_asistencia_abierta' %}aria-current="page"{% endif %}>
-                            <i data-lucide="megaphone" data-size="16"></i> Solicitud Abierta
+                            <span aria-hidden="true">📢</span> Solicitud Abierta
                         </a>
-                        <a href="{% url 'foro_comunidad' %}" {% if request.resolver_match.url_name == 'foro_comunidad' %}aria-current="page"{% endif %}>
-                            <i data-lucide="messages-square" data-size="16"></i> Foro Agrario
+                        <a href="{% url 'foro_comunidad' %}" {% if request.resolver_match.url_name == 'foro_comunidad' or request.resolver_match.url_name == 'foro_nueva' or request.resolver_match.url_name == 'foro_nueva_consulta' %}aria-current="page"{% endif %}>
+                            <span aria-hidden="true">💬</span> Foro Agrario
                         </a>
                         <a href="{% url 'perfil_productor' %}" {% if request.resolver_match.url_name == 'perfil_productor' %}aria-current="page"{% endif %}>
-                            <i data-lucide="tractor" data-size="16"></i> Mi Finca
+                            <span aria-hidden="true">👤</span> Mi Finca
                         </a>
                         <a href="{% url 'nosotros' %}" {% if request.resolver_match.url_name == 'nosotros' %}aria-current="page"{% endif %}>
                             Nosotros
                         </a>
                     {% elif effective_role == 'PROFESSIONAL' %}
                         <a href="{% url 'bandeja_profesional' %}" {% if request.resolver_match.url_name == 'bandeja_profesional' %}aria-current="page"{% endif %}>
-                            <i data-lucide="inbox" data-size="16"></i> Bandeja de Trabajos
+                            <span aria-hidden="true">📥</span> Bandeja de Trabajos
                         </a>
-                        <a href="{% url 'foro_comunidad' %}" {% if request.resolver_match.url_name == 'foro_comunidad' %}aria-current="page"{% endif %}>
-                            <i data-lucide="messages-square" data-size="16"></i> Foro Agrario
+                        <a href="{% url 'foro_comunidad' %}" {% if request.resolver_match.url_name == 'foro_comunidad' or request.resolver_match.url_name == 'foro_nueva' or request.resolver_match.url_name == 'foro_nueva_consulta' %}aria-current="page"{% endif %}>
+                            <span aria-hidden="true">💬</span> Foro Agrario
                         </a>
                         <a href="{% url 'perfil_profesional' %}" {% if request.resolver_match.url_name == 'perfil_profesional' %}aria-current="page"{% endif %}>
-                            <i data-lucide="graduation-cap" data-size="16"></i> Mi perfil CIAPAJ
+                            <span aria-hidden="true">👤</span> Mi perfil CIAPAJ
                         </a>
                         <a href="{% url 'nosotros' %}" {% if request.resolver_match.url_name == 'nosotros' %}aria-current="page"{% endif %}>
                             Nosotros
                         </a>
                     {% elif effective_role == 'ADMIN' %}
-                        <a href="/admin/">
-                            <i data-lucide="settings" data-size="16"></i> Panel Admin CIAPAJ
+                        <a href="{% url 'panel_admin_profesionales' %}" {% if request.resolver_match.url_name == 'panel_admin_profesionales' %}aria-current="page"{% endif %}>
+                            <span aria-hidden="true">🏛️</span> Gestión Profesionales
                         </a>
                         <a href="{% url 'buscador_profesionales' %}" {% if request.resolver_match.url_name == 'buscador_profesionales' %}aria-current="page"{% endif %}>
-                            <i data-lucide="search" data-size="16"></i> Buscador
+                            <span aria-hidden="true">🔍</span> Buscador
                         </a>
-                        <a href="{% url 'foro_comunidad' %}" {% if request.resolver_match.url_name == 'foro_comunidad' %}aria-current="page"{% endif %}>
-                            <i data-lucide="messages-square" data-size="16"></i> Foro
+                        <a href="{% url 'foro_comunidad' %}" {% if request.resolver_match.url_name == 'foro_comunidad' or request.resolver_match.url_name == 'foro_nueva' %}aria-current="page"{% endif %}>
+                            <span aria-hidden="true">💬</span> Foro
                         </a>
-                        <a href="{% url 'nosotros' %}" {% if request.resolver_match.url_name == 'nosotros' %}aria-current="page"{% endif %}>
-                            Nosotros
+                        <a href="/admin/">
+                            <span aria-hidden="true">⚙️</span> Django Admin
                         </a>
                     {% endif %}
 
                     <form method="POST" action="{% url 'logout' %}" style="display:inline;">
                         {% csrf_token %}
-                        <button type="submit" class="nav-btn-logout">
-                            <i data-lucide="log-out" data-size="15"></i> Salir ({{ user.username }})
-                        </button>
+                        <button type="submit" class="nav-btn-logout">Salir ({{ user.username }})</button>
                     </form>
                 {% else %}
                     <a href="{% url 'nosotros' %}" {% if request.resolver_match.url_name == 'nosotros' %}aria-current="page"{% endif %}>
                         Nosotros
                     </a>
                     <a href="{% url 'buscador_profesionales' %}" {% if request.resolver_match.url_name == 'buscador_profesionales' %}aria-current="page"{% endif %}>
-                        <i data-lucide="search" data-size="16"></i> Buscador
+                        <span aria-hidden="true">🔍</span> Buscador
                     </a>
                     <a href="{% url 'foro_comunidad' %}" {% if request.resolver_match.url_name == 'foro_comunidad' %}aria-current="page"{% endif %}>
-                        <i data-lucide="messages-square" data-size="16"></i> Foro Agrario
+                        <span aria-hidden="true">💬</span> Foro Agrario
                     </a>
                     <a href="{% url 'login' %}" {% if request.resolver_match.url_name == 'login' %}aria-current="page"{% endif %}>
                         Iniciar Sesión
                     </a>
-                    <a href="{% url 'registro_productor' %}" class="btn btn-tertiary btn-sm">
-                        <i data-lucide="tractor" data-size="15"></i> Registro Productor
-                    </a>
-                    <a href="{% url 'registro_profesional' %}" class="btn btn-secondary btn-sm">
-                        <i data-lucide="graduation-cap" data-size="15"></i> Registro Ingeniero
-                    </a>
+                    <a href="{% url 'registro_productor' %}" class="btn btn-tertiary btn-sm">Registro Productor</a>
+                    <a href="{% url 'registro_profesional' %}" class="btn btn-secondary btn-sm">Registro Ingeniero</a>
                 {% endif %}
             </nav>
         </div>
@@ -139,9 +124,8 @@
         <div aria-live="polite" aria-atomic="true">
             {% if messages %}
                 {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }}" role="{% if 'error' in message.tags or 'danger' in message.tags %}alert{% else %}status{% endif %}" style="display: flex; align-items: center; gap: 0.65rem;">
-                        <i data-lucide="{% if 'error' in message.tags or 'danger' in message.tags %}alert-circle{% else %}check-circle{% endif %}" data-size="20"></i>
-                        <span>{{ message }}</span>
+                    <div class="alert alert-{{ message.tags }}" role="{% if 'error' in message.tags or 'danger' in message.tags %}alert{% else %}status{% endif %}">
+                        {{ message }}
                     </div>
                 {% endfor %}
             {% endif %}
@@ -160,7 +144,5 @@
             </p>
         </div>
     </footer>
-
-    <script src="{% static 'js/ui.js' %}?v=4"></script>
 </body>
 </html>

@@ -3,79 +3,118 @@
 {% block title %}Iniciar Sesión — AgroJujuy{% endblock %}
 
 {% block content %}
-<div style="max-width: 1020px; margin: 1.5rem auto;">
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1.75rem; align-items: stretch;">
-        <!-- Columna Izquierda: Bienvenida e Información de Roles (Heurística 6 y 10) -->
-        <div class="card rounded-2xl shadow-md p-6" style="margin-bottom: 0; background: linear-gradient(135deg, #173F32 0%, #0F2D23 100%); color: #FFFFFF; display: flex; flex-direction: column; justify-content: space-between;">
-            <div>
-                <span class="badge badge-warning" style="margin-bottom: 1rem;">
-                    <i data-lucide="shield-check" data-size="14"></i> Acceso Institucional Seguro
-                </span>
-                <h2 style="font-size: 1.55rem; font-weight: 800; color: #FFFFFF; line-height: 1.25; margin-bottom: 0.85rem;">
-                    Portal de Productores e Ingenieros Agrónomos de Jujuy
-                </h2>
-                <p style="font-size: 0.94rem; color: rgba(255,255,255,0.86); line-height: 1.6; margin-bottom: 1.5rem;">
-                    Ingresa con tus credenciales para gestionar tus solicitudes de asistencia técnica, responder en el canal 1 a 1 o participar en el foro agrario.
-                </p>
-            </div>
+<div style="max-width: 480px; margin: 1.5rem auto;">
+    <div class="card rounded-2xl shadow-md p-6" style="border-top: 5px solid var(--color-primary);">
+        <h1 class="card-title" style="margin-bottom: 0.75rem;">
+            <span>🔑 Iniciar Sesión en AgroJujuy</span>
+        </h1>
+        <p style="font-size: 0.92rem; color: var(--color-text-muted); margin-bottom: 1.25rem;">
+            Selecciona tu perfil de acceso. Los profesionales agrarios ingresan con su <strong>Número de Matrícula Provincial (CIAPAJ)</strong>.
+        </p>
 
-            <div style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.16); border-radius: var(--radius-xl); padding: 1.15rem;">
-                <strong style="font-size: 0.88rem; display: block; margin-bottom: 0.65rem; color: #A7F3D0;">
-                    ¿Aún no tienes una cuenta registrada?
-                </strong>
-                <div style="display: flex; gap: 0.65rem; flex-wrap: wrap;">
-                    <a href="{% url 'registro_productor' %}" class="btn btn-tertiary btn-sm">
-                        <i data-lucide="tractor" data-size="15"></i> Soy Productor
-                    </a>
-                    <a href="{% url 'registro_profesional' %}" class="btn btn-secondary btn-sm">
-                        <i data-lucide="graduation-cap" data-size="15"></i> Soy Ingeniero CIAPAJ
-                    </a>
-                </div>
-            </div>
+        <!-- Selector de Pestañas de Ingreso Accesible -->
+        <div role="tablist" aria-label="Tipo de acceso al sistema" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1.5rem; background: var(--color-background); padding: 0.35rem; border-radius: var(--radius-xl);">
+            <button type="button" id="tab-profesional" role="tab" aria-selected="true" aria-controls="login-panel"
+                    class="btn btn-primary btn-sm" style="width: 100%;">
+                🎓 Ingreso Profesional
+            </button>
+            <button type="button" id="tab-productor" role="tab" aria-selected="false" aria-controls="login-panel"
+                    class="btn btn-outline btn-sm" style="width: 100%; border-color: transparent;">
+                🚜 Productor / Admin
+            </button>
         </div>
 
-        <!-- Columna Derecha: Formulario de Inicio de Sesión -->
-        <div class="card rounded-2xl shadow-md p-6" style="margin-bottom: 0; border-top: 5px solid var(--color-primary);">
-            <h1 class="card-title" style="margin-bottom: 1.25rem;">
-                <span style="display: flex; align-items: center; gap: 0.5rem;">
-                    <i data-lucide="key-round" data-size="22"></i> Iniciar Sesión
+        <form id="login-panel" method="POST" action="{% url 'login' %}" novalidate>
+            {% csrf_token %}
+
+            {% if form.errors %}
+                <div id="login-error-alert" class="alert alert-error" role="alert" style="font-size: 0.9rem;">
+                    ⛔ Credenciales inválidas. Verifique los datos ingresados e intente nuevamente.
+                </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label class="form-label" for="id_username" id="label_identificador">
+                    Número de Matrícula Provincial (CIAPAJ) o Usuario:
+                </label>
+                <input type="text"
+                       name="username"
+                       id="id_username"
+                       required
+                       autofocus
+                       class="form-control"
+                       placeholder="Ej: MP-1001/J"
+                       autocomplete="username"
+                       {% if form.errors %}aria-invalid="true" aria-describedby="login-error-alert help_identificador"{% else %}aria-describedby="help_identificador"{% endif %}>
+                <span id="help_identificador" class="field-help">
+                    Si eres Profesional Agrario ingresa tu <strong>Número de Matrícula CIAPAJ</strong> (ej: MP-1001/J). Si eres Productor o Admin ingresa tu usuario o correo electrónico.
                 </span>
-                <span class="badge badge-soft">AgroJujuy</span>
-            </h1>
+            </div>
 
-            <form method="POST" action="{% url 'login' %}" data-loading-text="Verificando credenciales...">
-                {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label" for="id_password">Contraseña:</label>
+                <input type="password"
+                       name="password"
+                       id="id_password"
+                       required
+                       class="form-control"
+                       autocomplete="current-password"
+                       {% if form.errors %}aria-invalid="true" aria-describedby="login-error-alert"{% endif %}>
+            </div>
 
-                {% if form.errors %}
-                    <div class="alert alert-error" role="alert" style="font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;">
-                        <i data-lucide="alert-circle" data-size="18"></i>
-                        <span>Usuario o contraseña incorrectos. Por favor revisa tus credenciales.</span>
-                    </div>
-                {% endif %}
+            <button type="submit" class="btn btn-primary w-full mt-4">
+                Ingresar al Sistema
+            </button>
+        </form>
 
-                <div class="form-group">
-                    <label class="form-label" for="id_username">
-                        <i data-lucide="user" data-size="16"></i> Nombre de Usuario:
-                    </label>
-                    <input type="text" name="username" id="id_username" required autofocus class="form-control" autocomplete="username" placeholder="Ingresa tu usuario">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="id_password">
-                        <i data-lucide="lock" data-size="16"></i> Contraseña:
-                    </label>
-                    <input type="password" name="password" id="id_password" required class="form-control" autocomplete="current-password" placeholder="••••••••">
-                </div>
-
-                <button type="submit" class="btn btn-primary w-full" style="margin-top: 0.75rem;">
-                    <i data-lucide="key-round" data-size="18"></i> Ingresar al Sistema
-                </button>
-            </form>
-
-            <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--color-neutral-light); text-align: center; font-size: 0.88rem; color: var(--color-text-muted);">
-                También puedes explorar sin cuenta el <a href="{% url 'buscador_profesionales' %}">Buscador Público</a> o el <a href="{% url 'foro_comunidad' %}">Foro Agrario</a>.
+        <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--color-neutral-light); text-align: center; font-size: 0.9rem; color: var(--color-text-muted);">
+            ¿Aún no tienes cuenta en la plataforma?
+            <div style="display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap; margin-top: 0.65rem;">
+                <a href="{% url 'registro_productor' %}">Registrarme como Productor</a> &bull;
+                <a href="{% url 'registro_profesional' %}">Registrarme como Profesional CIAPAJ</a>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+(function() {
+    const tabProf = document.getElementById('tab-profesional');
+    const tabProd = document.getElementById('tab-productor');
+    const labelId = document.getElementById('label_identificador');
+    const inputId = document.getElementById('id_username');
+    const helpId = document.getElementById('help_identificador');
+
+    if (!tabProf || !tabProd || !labelId || !inputId || !helpId) return;
+
+    function activarModoProfesional() {
+        tabProf.setAttribute('aria-selected', 'true');
+        tabProf.className = 'btn btn-primary btn-sm';
+        tabProd.setAttribute('aria-selected', 'false');
+        tabProd.className = 'btn btn-outline btn-sm';
+        tabProd.style.borderColor = 'transparent';
+
+        labelId.textContent = 'Número de Matrícula Provincial (CIAPAJ):';
+        inputId.placeholder = 'Ej: MP-1001/J';
+        helpId.textContent = 'Ingresa tu Número de Matrícula Provincial habilitada por CIAPAJ.';
+        inputId.focus();
+    }
+
+    function activarModoProductor() {
+        tabProd.setAttribute('aria-selected', 'true');
+        tabProd.className = 'btn btn-primary btn-sm';
+        tabProf.setAttribute('aria-selected', 'false');
+        tabProf.className = 'btn btn-outline btn-sm';
+        tabProf.style.borderColor = 'transparent';
+
+        labelId.textContent = 'Usuario o Correo Electrónico (Productor / Admin):';
+        inputId.placeholder = 'Ej: productor_001 o correo@ejemplo.com';
+        helpId.textContent = 'Ingresa tu nombre de usuario o correo electrónico registrado.';
+        inputId.focus();
+    }
+
+    tabProf.addEventListener('click', activarModoProfesional);
+    tabProd.addEventListener('click', activarModoProductor);
+})();
+</script>
 {% endblock %}

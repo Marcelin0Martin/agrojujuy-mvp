@@ -94,11 +94,24 @@ class BandejaProductorView(LoginRequiredMixin, TemplateView):
 class BandejaProfesionalView(LoginRequiredMixin, TemplateView):
     """
     Bandeja de Trabajos del Profesional:
+    - Si el profesional fue dado de baja ('Suspendido') o está 'Pendiente', restringe el acceso
+      redirigiéndolo a la pantalla de estado/bloqueo.
     - Muestra las solicitudes dirigidas al ingeniero y las solicitudes abiertas disponibles.
     - Ordena mostrando los Pendientes primero y luego por fecha reciente.
     - Permite filtrar por 'Pendiente', 'Aceptado' o 'Finalizado'.
     """
     template_name = 'tickets/bandeja_profesional.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and not request.user.is_admin_role():
+            prof = getattr(request.user, 'perfil_profesional', None)
+            if prof and prof.estado_validacion != 'Habilitado':
+                messages.warning(
+                    request,
+                    "Acceso restringido a la Bandeja de Trabajos: tu perfil profesional no se encuentra habilitado."
+                )
+                return redirect('espera_validacion')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

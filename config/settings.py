@@ -80,6 +80,12 @@ else:
 # Modelo de Usuario Personalizado según SDD
 AUTH_USER_MODEL = 'users.CustomUser'
 
+# Backend de Autenticación Personalizado (Soporte de Matrícula CIAPAJ para Profesionales + Usuario/Email para Productor/Admin)
+AUTHENTICATION_BACKENDS = [
+    'application.users.backends.AgroJujuyAuthBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
 # Configuración de Aislamiento de Sesiones (/admin/ separado de la web principal)
 SESSION_COOKIE_NAME = 'agrojujuy_web_sessionid'
 SESSION_COOKIE_PATH = '/'

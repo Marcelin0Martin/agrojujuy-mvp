@@ -273,11 +273,44 @@ class PerfilProductorForm(AccessibleFormMixin, forms.ModelForm):
 
 class PerfilProfesionalForm(AccessibleFormMixin, forms.ModelForm):
     """
-    Formulario protegido de Profesional (Mi perfil CIAPAJ):
-    Nombre, apellido, correo electrónico, matrícula y especialidad están protegidos
-    institucionalmente y no pueden ser modificados por el profesional.
-    Solo se permite actualizar zonas de cobertura, teléfono y biografía.
+    Formulario de edición de Mi perfil CIAPAJ:
+    Permite al profesional modificar los datos personales y profesionales ingresados
+    en su registro: nombre, apellido, correo electrónico, teléfono, especialidades,
+    zonas de cobertura y resumen profesional (biografía).
+    Valida formato de teléfono, unicidad de correo y protege contra mass assignment
+    (matrícula provincial, estado_validacion y rol permanecen protegidos).
     """
+    first_name = forms.CharField(
+        max_length=30,
+        required=True,
+        label="Nombre",
+        widget=forms.TextInput(attrs={'autocomplete': 'given-name'})
+    )
+    last_name = forms.CharField(
+        max_length=30,
+        required=True,
+        label="Apellido",
+        widget=forms.TextInput(attrs={'autocomplete': 'family-name'})
+    )
+    email = forms.EmailField(
+        required=True,
+        label="Correo Electrónico",
+        help_text="Debe ser un correo electrónico válido y único en la plataforma",
+        widget=forms.EmailInput(attrs={'autocomplete': 'email'})
+    )
+    especialidades = forms.MultipleChoiceField(
+        choices=[(e, e) for e in ESPECIALIDADES_VALIDAS],
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        label="Especialidades Agronómicas",
+        help_text="Selecciona una o más especialidades agronómicas"
+    )
+    especialidad_propuesta = forms.CharField(
+        max_length=150,
+        required=False,
+        label="Especialidad Adicional / Propuesta (Opcional)",
+        help_text="Si cuentas con otra especialidad específica, indícala aquí"
+    )
     zonas = forms.MultipleChoiceField(
         choices=[(r, r) for r in REGIONES_VALIDAS],
         widget=forms.CheckboxSelectMultiple,
@@ -287,23 +320,87 @@ class PerfilProfesionalForm(AccessibleFormMixin, forms.ModelForm):
 
     class Meta:
         model = Profesional
-        fields = ['telefono', 'biografia']
+        fields = ['telefono', 'biografia', 'especialidad_propuesta']
+        widgets = {
+            'biografia': forms.Textarea(attrs={'rows': 4}),
+            'telefono': forms.TextInput(attrs={'autocomplete': 'tel'}),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['telefono'].required = True
+        self.fields['telefono'].help_text = "Formato válido entre 8 y 15 dígitos (ej: +54 388 4123456)"
         if self.instance and self.instance.pk:
+            if self.instance.usuario_id:
+                self.fields['first_name'].initial = self.instance.usuario.first_name
+                self.fields['last_name'].initial = self.instance.usuario.last_name
+                self.fields['email'].initial = self.instance.usuario.email
+
             zonas_actuales = [z.strip() for z in self.instance.zonas_cobertura.split(',') if z.strip()]
             self.fields['zonas'].initial = zonas_actuales
 
+            esp_actuales = [e.strip() for e in self.instance.especialidad.split(',') if e.strip()]
+            esp_oficiales = [e for e in esp_actuales if e in ESPECIALIDADES_VALIDAS]
+            esp_extra = [e for e in esp_actuales if e not in ESPECIALIDADES_VALIDAS]
+            self.fields['especialidades'].initial = esp_oficiales
+            if esp_extra and not self.instance.especialidad_propuesta:
+                self.fields['especialidad_propuesta'].initial = ", ".join(esp_extra)
+
+    def clean_email(self):
+        email = (self.cleaned_data.get('email') or '').strip()
+        if not email:
+            raise ValidationError("El correo electrónico es obligatorio.")
+        qs = CustomUser.objects.filter(email__iexact=email)
+        if self.instance and self.instance.usuario_id:
+            qs = qs.exclude(pk=self.instance.usuario_id)
+        if qs.exists():
+            raise ValidationError("Este correo electrónico ya se encuentra registrado por otro usuario.")
+        return email
+
     def clean_telefono(self):
-        tel = self.cleaned_data.get('telefono', '').strip()
+        tel = (self.cleaned_data.get('telefono') or '').strip()
         if not validar_telefono(tel):
             raise ValidationError("Ingrese un número de teléfono válido (entre 8 y 15 dígitos).")
         return tel
 
+    def clean(self):
+        cleaned_data = super().clean()
+        seleccionadas = list(cleaned_data.get('especialidades') or [])
+        propuesta = (cleaned_data.get('especialidad_propuesta') or '').strip()
+
+        if not seleccionadas and not propuesta:
+            # Si en un envío parcial no marcó casillas pero ya tenía especialidad válida en instancia, o si las desmarcó todas:
+            if 'especialidades' in self.data or 'especialidad_propuesta' in self.data:
+                self.add_error(
+                    'especialidades',
+                    "Debes mantener al menos una especialidad seleccionada o indicar una especialidad propuesta."
+                )
+            elif self.instance and self.instance.especialidad:
+                cleaned_data['especialidades_consolidadas'] = self.instance.especialidad
+        else:
+            cleaned_data['especialidades_consolidadas'] = ", ".join(seleccionadas) if seleccionadas else propuesta
+        return cleaned_data
+
     def save(self, commit=True):
         profesional = super().save(commit=False)
         profesional.zonas_cobertura = ", ".join(self.cleaned_data['zonas'])
+        if self.cleaned_data.get('especialidades_consolidadas'):
+            profesional.especialidad = self.cleaned_data['especialidades_consolidadas']
+        profesional.especialidad_propuesta = (self.cleaned_data.get('especialidad_propuesta') or '').strip()
+
         if commit:
-            profesional.save(update_fields=['zonas_cobertura', 'telefono', 'biografia'])
+            # Protección contra mass assignment: solo actualizamos campos permitidos
+            profesional.save(update_fields=[
+                'especialidad',
+                'especialidad_propuesta',
+                'zonas_cobertura',
+                'telefono',
+                'biografia',
+            ])
+            if profesional.usuario_id:
+                u = profesional.usuario
+                u.first_name = self.cleaned_data['first_name'].strip()
+                u.last_name = self.cleaned_data['last_name'].strip()
+                u.email = self.cleaned_data['email'].strip()
+                u.save(update_fields=['first_name', 'last_name', 'email'])
         return profesional

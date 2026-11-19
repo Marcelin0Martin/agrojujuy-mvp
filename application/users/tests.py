@@ -143,27 +143,156 @@ class AgroJujuyCleanArchitectureTests(TestCase):
         self.assertTrue(res_filtered.context['filtro_activo'])
         self.assertEqual(len(res_filtered.context['profesionales']), 1)
 
-    def test_perfil_profesional_ciapaj_no_404_and_protected_fields(self):
-        """Verifica que /perfil/profesional/ ('Mi perfil CIAPAJ') no arroje 404 y proteja nombre/especialidad."""
-        self.client.login(username='ing_habilitado', password='IngPassword123!')
+    def test_login_profesional_con_matricula_y_productor_tradicional(self):
+        """
+        Requerimiento 1:
+        - Profesional inicia sesión ingresando su Número de Matrícula Provincial (MP-1001/J) y contraseña.
+        - Productor y Admin mantienen login por usuario o correo electrónico.
+        """
+        res_prof = self.client.post(reverse('login'), {
+            'username': 'MP-1001/J',
+            'password': 'IngPassword123!',
+        })
+        self.assertEqual(res_prof.status_code, 302)
+        self.assertEqual(res_prof.url, reverse('bandeja_profesional'))
+        self.client.logout()
+
+        # Productor con username
+        res_prod = self.client.post(reverse('login'), {
+            'username': 'prod_test',
+            'password': 'ProdPassword123!',
+        })
+        self.assertEqual(res_prod.status_code, 302)
+        self.assertEqual(res_prod.url, reverse('buscador_profesionales'))
+        self.client.logout()
+
+        # Productor con email
+        res_prod_email = self.client.post(reverse('login'), {
+            'username': 'prod@test.com',
+            'password': 'ProdPassword123!',
+        })
+        self.assertEqual(res_prod_email.status_code, 302)
+
+    def test_separacion_formulario_foro_y_vista_dedicada(self):
+        """
+        Requerimiento 2:
+        - La vista principal del foro no incrusta el formulario de creación y muestra el botón a /foro/nueva/.
+        - La vista dedicada /foro/nueva/ crea la publicación y redirige al listado del foro.
+        """
+        res_foro = self.client.get(reverse('foro_comunidad'))
+        self.assertEqual(res_foro.status_code, 200)
+        self.assertContains(res_foro, reverse('foro_nueva'))
+        self.assertNotContains(res_foro, 'value="crear_post"')
+
+        self.client.login(username='prod_test', password='ProdPassword123!')
+        res_get_nueva = self.client.get(reverse('foro_nueva'))
+        self.assertEqual(res_get_nueva.status_code, 200)
+        self.assertContains(res_get_nueva, 'Cancelar / Volver al foro')
+
+        res_post_nueva = self.client.post(reverse('foro_nueva'), {
+            'titulo': 'Consulta sobre fertilización orgánica en Valles',
+            'contenido': '¿Qué dosis de compost recomiendan por hectárea?',
+        })
+        self.assertEqual(res_post_nueva.status_code, 302)
+        self.assertEqual(res_post_nueva.url, reverse('foro_comunidad'))
+        self.assertTrue(PostComunidad.objects.filter(titulo='Consulta sobre fertilización orgánica en Valles').exists())
+
+    def test_edicion_completa_perfil_profesional_y_validaciones(self):
+        """
+        Requerimiento 3:
+        - Permite al profesional editar nombre, apellido, correo, teléfono, especialidades, zonas y biografía.
+        - Valida unicidad de correo, formato de teléfono y protege matrícula/estado contra mass assignment.
+        """
+        self.client.login(username='MP-1001/J', password='IngPassword123!')
         res = self.client.get(reverse('perfil_profesional'))
         self.assertEqual(res.status_code, 200)
-        self.assertContains(res, "Mi perfil CIAPAJ")
 
-        # Intentar enviar un POST modificando first_name o especialidad (deben ignorarse)
         res_post = self.client.post(reverse('perfil_profesional'), {
-            'first_name': 'Hackeado',
-            'especialidad': 'Otra Especialidad',
+            'first_name': 'Carlos Alberto',
+            'last_name': 'Gómez Quispe',
+            'email': 'carlos.gomez.nuevo@ciapaj.org',
+            'especialidades': ['Agroecología', 'Cultivos Andinos'],
+            'especialidad_propuesta': 'Sistemas Silvopastoriles',
             'zonas': ['Puna', 'Valles'],
             'telefono': '+54 388 5556677',
-            'biografia': 'Nueva bio actualizada',
+            'biografia': 'Especialista actualizado en agroecología andina.',
+            'matricula_provincial': 'MP-HACK/J',
+            'estado_validacion': 'Suspendido',
         })
         self.assertEqual(res_post.status_code, 302)
         self.prof_user1.refresh_from_db()
         self.prof_habilitado.refresh_from_db()
-        self.assertEqual(self.prof_user1.first_name, 'Carlos')
-        self.assertIn('Sanidad Vegetal', self.prof_habilitado.especialidad)
+        self.assertEqual(self.prof_user1.first_name, 'Carlos Alberto')
+        self.assertEqual(self.prof_user1.last_name, 'Gómez Quispe')
+        self.assertEqual(self.prof_user1.email, 'carlos.gomez.nuevo@ciapaj.org')
+        self.assertEqual(self.prof_habilitado.especialidad, 'Agroecología, Cultivos Andinos')
+        self.assertEqual(self.prof_habilitado.especialidad_propuesta, 'Sistemas Silvopastoriles')
         self.assertEqual(self.prof_habilitado.zonas_cobertura, 'Puna, Valles')
+        # Protección contra mass assignment
+        self.assertEqual(self.prof_habilitado.matricula_provincial, 'MP-1001/J')
+
+        # Correo duplicado -> Debe fallar con aria-invalid="true"
+        res_dup_email = self.client.post(reverse('perfil_profesional'), {
+            'first_name': 'Carlos',
+            'last_name': 'Gómez',
+            'email': 'prod@test.com',  # Ya pertenece a prod_user
+            'especialidades': ['Agroecología'],
+            'zonas': ['Puna'],
+            'telefono': '+54 388 5556677',
+        })
+        self.assertEqual(res_dup_email.status_code, 200)
+        self.assertContains(res_dup_email, 'aria-invalid="true"')
+        self.assertContains(res_dup_email, 'error_email')
+
+    def test_panel_admin_web_alta_y_baja_profesionales(self):
+        """
+        Requerimiento 4:
+        - Dashboard web de Admin (/panel-admin/profesionales/) protegido contra usuarios no administradores.
+        - Acciones POST de Alta (Habilitar) y Baja (Suspender).
+        - Al dar de baja a un profesional, desaparece del buscador y se restringe su acceso a la bandeja de trabajos.
+        """
+        # Intento de acceso con productor -> 403 Forbidden
+        self.client.login(username='prod_test', password='ProdPassword123!')
+        res_forbidden = self.client.get(reverse('panel_admin_profesionales'))
+        self.assertEqual(res_forbidden.status_code, 403)
+        self.client.logout()
+
+        # Acceso con Admin
+        self.client.login(username='admin_test', password='AdminPassword123!')
+        res_admin = self.client.get(reverse('panel_admin_profesionales'))
+        self.assertEqual(res_admin.status_code, 200)
+        self.assertContains(res_admin, 'MP-1001/J')
+        self.assertContains(res_admin, 'MP-1002/J')
+
+        # Dar de Alta a prof_pendiente
+        res_alta = self.client.post(
+            reverse('cambiar_estado_profesional_admin', args=[self.prof_pendiente.id]),
+            {'accion': 'alta'}
+        )
+        self.assertEqual(res_alta.status_code, 302)
+        self.prof_pendiente.refresh_from_db()
+        self.assertEqual(self.prof_pendiente.estado_validacion, 'Habilitado')
+
+        # Dar de Baja a prof_habilitado
+        res_baja = self.client.post(
+            reverse('cambiar_estado_profesional_admin', args=[self.prof_habilitado.id]),
+            {'accion': 'baja'}
+        )
+        self.assertEqual(res_baja.status_code, 302)
+        self.prof_habilitado.refresh_from_db()
+        self.assertEqual(self.prof_habilitado.estado_validacion, 'Suspendido')
+        self.client.logout()
+
+        # Verificar que prof_habilitado (ahora Suspendido) ya no aparece en el buscador
+        res_buscador = self.client.get(reverse('buscador_profesionales') + '?region=Quebrada')
+        ids_en_buscador = [p.id for p in res_buscador.context['profesionales']]
+        self.assertNotIn(self.prof_habilitado.id, ids_en_buscador)
+
+        # Verificar que su acceso a la Bandeja de Trabajos quedó restringido
+        self.client.login(username='MP-1001/J', password='IngPassword123!')
+        res_bandeja = self.client.get(reverse('bandeja_profesional'))
+        self.assertEqual(res_bandeja.status_code, 302)
+        self.assertEqual(res_bandeja.url, reverse('espera_validacion'))
 
     def test_perfil_productor_protected_fields(self):
         """Verifica que el productor no pueda cambiar nombre, correo, región ni dirección de finca."""
@@ -191,22 +320,13 @@ class AgroJujuyCleanArchitectureTests(TestCase):
         res_free = self.client.get(reverse('validar_username_ajax') + '?username=usuario_nuevo_999')
         self.assertTrue(res_free.json()['disponible'])
 
-        # Enviar registro inválido y verificar aria-invalid="true"
         res_invalid = self.client.post(reverse('registro_productor'), {'username': 'prod_test'})
         self.assertContains(res_invalid, 'aria-invalid="true"')
 
     def test_solicitud_abierta_locking_and_lifecycle_finalizacion_confirmacion(self):
-        """
-        Verifica el flujo completo:
-        1. Productor publica Solicitud Abierta.
-        2. Ingeniero 1 la toma (queda bloqueada para otros ingenieros).
-        3. Ingeniero 1 marca como Finalizado con descripción y fecha.
-        4. Productor confirma recepción.
-        """
         repo_ticket = DjangoTicketRepository()
         repo_prof = DjangoProfesionalRepository()
 
-        # 1. Crear solicitud abierta
         uc_abierta = CrearSolicitudAbiertaUseCase(repo_ticket)
         res_crear = uc_abierta.ejecutar(
             productor_id=self.productor.id,
@@ -217,12 +337,10 @@ class AgroJujuyCleanArchitectureTests(TestCase):
         self.assertTrue(res_crear.exito)
         ticket_id = res_crear.datos.id
 
-        # 2. Ingeniero habilitado toma la solicitud abierta
         uc_tomar = TomarSolicitudAbiertaUseCase(repo_ticket, repo_prof)
         res_tomar1 = uc_tomar.ejecutar(ticket_id=ticket_id, profesional_id=self.prof_habilitado.id)
         self.assertTrue(res_tomar1.exito)
 
-        # Otro ingeniero habilitado intenta tomarla -> Debe estar bloqueada
         otro_user = CustomUser.objects.create_user(username='ing_otro', password='IngPassword123!', role='PROFESSIONAL')
         otro_prof = Profesional.objects.create(
             usuario=otro_user,
@@ -235,7 +353,6 @@ class AgroJujuyCleanArchitectureTests(TestCase):
         res_tomar2 = uc_tomar.ejecutar(ticket_id=ticket_id, profesional_id=otro_prof.id)
         self.assertFalse(res_tomar2.exito)
 
-        # 3. Ingeniero 1 finaliza el trabajo con descripción
         uc_finalizar = FinalizarTrabajoTicketUseCase(repo_ticket)
         res_fin = uc_finalizar.ejecutar(
             ticket_id=ticket_id,
@@ -248,7 +365,6 @@ class AgroJujuyCleanArchitectureTests(TestCase):
         self.assertEqual(ticket_db.estado, 'Finalizado')
         self.assertIsNotNone(ticket_db.fecha_finalizacion)
 
-        # 4. Productor confirma la recepción
         uc_confirmar = ConfirmarRecepcionTicketUseCase(repo_ticket)
         res_conf = uc_confirmar.ejecutar(ticket_id=ticket_id, productor_id=self.productor.id)
         self.assertTrue(res_conf.exito)

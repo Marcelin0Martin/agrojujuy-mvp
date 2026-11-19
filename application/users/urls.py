@@ -11,6 +11,8 @@ from .views import (
     VitrinaProfesionalView,
     PerfilProductorView,
     PerfilProfesionalView,
+    PanelAdminProfesionalesView,
+    CambiarEstadoProfesionalAdminView,
     validar_username_ajax,
     cambiar_rol_temporal,
 )
@@ -27,6 +29,8 @@ urlpatterns = [
     path('profesional/<int:pk>/', VitrinaProfesionalView.as_view(), name='vitrina_profesional'),
     path('perfil/productor/', PerfilProductorView.as_view(), name='perfil_productor'),
     path('perfil/profesional/', PerfilProfesionalView.as_view(), name='perfil_profesional'),
+    path('panel-admin/profesionales/', PanelAdminProfesionalesView.as_view(), name='panel_admin_profesionales'),
+    path('panel-admin/profesionales/<int:profesional_id>/estado/', CambiarEstadoProfesionalAdminView.as_view(), name='cambiar_estado_profesional_admin'),
     path('api/validar-username/', validar_username_ajax, name='validar_username_ajax'),
     path('cambiar-rol-temporal/', cambiar_rol_temporal, name='cambiar_rol_temporal'),
 ]

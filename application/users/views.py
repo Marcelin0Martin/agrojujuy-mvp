@@ -1,6 +1,7 @@
 from datetime import timedelta
 from django.core.paginator import Paginator
-from django.http import JsonResponse, HttpResponse
+from django.db.models import Q, Case, When, Value, IntegerField
+from django.http import JsonResponse, HttpResponse, HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
 from django.contrib.auth.views import LoginView as BaseLoginView
@@ -8,7 +9,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.utils import timezone
 from django.utils.html import escape
-from django.views.generic import TemplateView, CreateView, UpdateView, DetailView
+from django.views.generic import TemplateView, CreateView, UpdateView, DetailView, View
 from django.urls import reverse_lazy
 
 from .models import CustomUser, Productor, Profesional, ConfiguracionSeguridad
@@ -18,9 +19,17 @@ from .forms import (
     PerfilProductorForm,
     PerfilProfesionalForm,
 )
-from application.use_cases import BuscarProfesionalesUseCase
+from application.use_cases import BuscarProfesionalesUseCase, ValidarProfesionalAdminUseCase
 from infrastructure.adapters.repositories import DjangoProfesionalRepository
 from domain.rules import REGIONES_VALIDAS, ESPECIALIDADES_VALIDAS
+
+
+def _es_administrador(user) -> bool:
+    return bool(
+        user and user.is_authenticated and (
+            user.role == 'ADMIN' or user.is_staff or user.is_superuser
+        )
+    )
 
 
 class InicioView(TemplateView):
@@ -37,7 +46,7 @@ class InicioView(TemplateView):
             elif effective_role == 'PRODUCER':
                 return redirect('buscador_profesionales')
             elif effective_role == 'ADMIN':
-                return redirect('buscador_profesionales')
+                return redirect('panel_admin_profesionales')
         return super().dispatch(request, *args, **kwargs)
 
 
@@ -75,15 +84,27 @@ class LoginPersonalizadoView(BaseLoginView):
             return redirect('bandeja_profesional')
 
         messages.success(self.request, f"¡Bienvenido de nuevo, {user.first_name or user.username}!")
+        if user.role == 'ADMIN' or user.is_staff or user.is_superuser:
+            return redirect('panel_admin_profesionales')
         if user.role == 'PRODUCER':
             return redirect('buscador_profesionales')
         return redirect('inicio')
 
     def form_invalid(self, form):
-        username = self.request.POST.get('username', '')
-        if username:
-            try:
-                user = CustomUser.objects.get(username=username)
+        identificador = self.request.POST.get('username', '').strip()
+        if identificador:
+            user = None
+            prof = Profesional.objects.select_related('usuario').filter(
+                matricula_provincial__iexact=identificador
+            ).first()
+            if prof:
+                user = prof.usuario
+            else:
+                user = CustomUser.objects.filter(
+                    Q(username__iexact=identificador) | Q(email__iexact=identificador)
+                ).first()
+
+            if user is not None:
                 conf, _ = ConfiguracionSeguridad.objects.get_or_create(usuario=user)
                 if conf.bloqueado_hasta and conf.bloqueado_hasta > timezone.now():
                     messages.error(
@@ -97,12 +118,10 @@ class LoginPersonalizadoView(BaseLoginView):
                     conf.save()
                     messages.error(
                         self.request,
-                        'Demasiados intentos fallidos. Tu cuenta ha sido bloqueada por 15 minutos.'
+                        'Demasiados intentos fallidos. La cuenta ha sido bloqueada temporalmente por 15 minutos.'
                     )
                     return redirect('login')
                 conf.save()
-            except CustomUser.DoesNotExist:
-                pass
         return super().form_invalid(form)
 
 
@@ -224,7 +243,11 @@ class PerfilProductorView(LoginRequiredMixin, UpdateView):
 
 
 class PerfilProfesionalView(LoginRequiredMixin, UpdateView):
-    """Vista 'Mi perfil CIAPAJ' sin errores 404 y con campos institucionales protegidos."""
+    """
+    Vista 'Mi perfil CIAPAJ' (/perfil/profesional/):
+    Permite modificar nombre, apellido, correo electrónico, teléfono,
+    especialidades, zonas de cobertura y resumen profesional con validación en servidor.
+    """
     model = Profesional
     form_class = PerfilProfesionalForm
     template_name = 'users/perfil_profesional.html'
@@ -244,8 +267,106 @@ class PerfilProfesionalView(LoginRequiredMixin, UpdateView):
         return profesional
 
     def form_valid(self, form):
-        messages.success(self.request, "Tus zonas de cobertura, contacto y biografía en Mi perfil CIAPAJ han sido actualizados.")
+        messages.success(
+            self.request,
+            "Tus datos personales y profesionales en Mi perfil CIAPAJ han sido actualizados correctamente."
+        )
         return super().form_valid(form)
+
+
+class PanelAdminProfesionalesView(LoginRequiredMixin, TemplateView):
+    """
+    Panel de Administración Web (Frontend) para el rol ADMIN:
+    Permite gestionar el Alta (Habilitar) y Baja (Suspender/Desactivar) de profesionales
+    sin obligar al administrador a entrar al /admin/ nativo de Django.
+    """
+    template_name = 'users/panel_admin_profesionales.html'
+    PER_PAGE = 15
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+        if not _es_administrador(request.user):
+            messages.error(request, "Acceso denegado. Esta sección es exclusiva para Administradores Institucionales.")
+            return HttpResponseForbidden("Acceso denegado: Se requieren permisos de Administrador.")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        filtro_estado = self.request.GET.get('estado', '').strip()
+        busqueda = self.request.GET.get('q', '').strip()
+        page_number = self.request.GET.get('page', 1)
+
+        qs = Profesional.objects.select_related('usuario').annotate(
+            orden_estado=Case(
+                When(estado_validacion='Pendiente', then=Value(0)),
+                When(estado_validacion='Habilitado', then=Value(1)),
+                default=Value(2),
+                output_field=IntegerField(),
+            )
+        ).order_by('orden_estado', '-fecha_solicitud')
+
+        if filtro_estado in ['Pendiente', 'Habilitado', 'Suspendido']:
+            qs = qs.filter(estado_validacion=filtro_estado)
+
+        if busqueda:
+            qs = qs.filter(
+                Q(matricula_provincial__icontains=busqueda) |
+                Q(usuario__first_name__icontains=busqueda) |
+                Q(usuario__last_name__icontains=busqueda) |
+                Q(usuario__email__icontains=busqueda) |
+                Q(especialidad__icontains=busqueda) |
+                Q(especialidad_propuesta__icontains=busqueda)
+            )
+
+        paginator = Paginator(qs, self.PER_PAGE)
+        page_obj = paginator.get_page(page_number)
+
+        context['profesionales'] = page_obj.object_list
+        context['page_obj'] = page_obj
+        context['filtro_estado'] = filtro_estado
+        context['busqueda'] = busqueda
+        context['total_pendientes'] = Profesional.objects.filter(estado_validacion='Pendiente').count()
+        context['total_habilitados'] = Profesional.objects.filter(estado_validacion='Habilitado').count()
+        context['total_suspendidos'] = Profesional.objects.filter(estado_validacion='Suspendido').count()
+        return context
+
+
+class CambiarEstadoProfesionalAdminView(LoginRequiredMixin, View):
+    """
+    Ejecuta el Alta (Habilitar) o Baja (Suspender/Desactivar) de un profesional mediante POST
+    con token CSRF y verificación estricta de permisos de administrador en backend.
+    """
+
+    def post(self, request, profesional_id):
+        if not _es_administrador(request.user):
+            return HttpResponseForbidden("Acceso denegado: Se requieren permisos de Administrador.")
+
+        profesional = get_object_or_404(Profesional.objects.select_related('usuario'), id=profesional_id)
+        accion = request.POST.get('accion', '').strip()
+
+        repo = DjangoProfesionalRepository()
+        use_case = ValidarProfesionalAdminUseCase(repo)
+
+        if accion == 'alta':
+            res = use_case.habilitar(profesional.id)
+            Profesional.objects.filter(id=profesional.id).update(fecha_validacion=timezone.now())
+            messages.success(
+                request,
+                f"✅ Alta institucional confirmada: Ing. {profesional.usuario.get_full_name() or profesional.usuario.username} "
+                f"(Mat. {profesional.matricula_provincial}) ahora está Habilitado y visible en el buscador."
+            )
+        elif accion == 'baja':
+            res = use_case.rechazar_o_suspender(profesional.id)
+            messages.warning(
+                request,
+                f"⛔ Baja aplicada: Ing. {profesional.usuario.get_full_name() or profesional.usuario.username} "
+                f"(Mat. {profesional.matricula_provincial}) fue suspendido. Ya no aparece en el buscador y su bandeja de trabajos quedó restringida."
+            )
+        else:
+            messages.error(request, "Acción administrativa no válida.")
+
+        return redirect('panel_admin_profesionales')
 
 
 def validar_username_ajax(request):
@@ -286,9 +407,7 @@ def cambiar_rol_temporal(request):
     Permite al Administrador cambiar entre roles para auditoría y reporte de bugs visuales.
     Redirige automáticamente a la vista correspondiente al rol seleccionado.
     """
-    if not request.user.is_authenticated or not (
-        request.user.role == 'ADMIN' or request.user.is_staff or request.user.is_superuser
-    ):
+    if not _es_administrador(request.user):
         messages.error(request, "Acción exclusiva para administradores.")
         return redirect('inicio')
 
@@ -297,7 +416,7 @@ def cambiar_rol_temporal(request):
         if nuevo_rol == 'RESET':
             request.session.pop('simulated_role', None)
             messages.info(request, "Restablecido al rol real de Administrador.")
-            return redirect('buscador_profesionales')
+            return redirect('panel_admin_profesionales')
         else:
             request.session['simulated_role'] = nuevo_rol
             messages.info(request, f"Modo de auditoría visual activado: simulando rol {nuevo_rol}.")
@@ -305,5 +424,7 @@ def cambiar_rol_temporal(request):
                 return redirect('bandeja_profesional')
             elif nuevo_rol == 'PRODUCER':
                 return redirect('buscador_profesionales')
+            elif nuevo_rol == 'ADMIN':
+                return redirect('panel_admin_profesionales')
 
     return redirect('inicio')
