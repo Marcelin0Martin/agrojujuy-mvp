@@ -372,6 +372,45 @@
         startAutoplay();
     }
 
+    function initLoginTabs() {
+        const tabProf = document.getElementById('tab-profesional');
+        const tabProd = document.getElementById('tab-productor');
+        const labelId = document.getElementById('label_identificador');
+        const inputId = document.getElementById('id_username');
+        const helpId = document.getElementById('help_identificador');
+
+        if (!tabProf || !tabProd || !labelId || !inputId || !helpId) return;
+
+        function activarModoProfesional() {
+            tabProf.setAttribute('aria-selected', 'true');
+            tabProf.className = 'btn btn-primary btn-sm';
+            tabProd.setAttribute('aria-selected', 'false');
+            tabProd.className = 'btn btn-outline btn-sm';
+            tabProd.style.borderColor = 'transparent';
+
+            labelId.textContent = 'Número de Matrícula Provincial (CIAPAJ):';
+            inputId.placeholder = 'Ej: MP-1001/J';
+            helpId.textContent = 'Ingresa tu Número de Matrícula Provincial habilitada por CIAPAJ.';
+            inputId.focus();
+        }
+
+        function activarModoProductor() {
+            tabProd.setAttribute('aria-selected', 'true');
+            tabProd.className = 'btn btn-primary btn-sm';
+            tabProf.setAttribute('aria-selected', 'false');
+            tabProf.className = 'btn btn-outline btn-sm';
+            tabProf.style.borderColor = 'transparent';
+
+            labelId.textContent = 'Usuario o Correo Electrónico (Productor / Admin):';
+            inputId.placeholder = 'Ej: productor_001 o correo@ejemplo.com';
+            helpId.textContent = 'Ingresa tu nombre de usuario o correo electrónico registrado.';
+            inputId.focus();
+        }
+
+        tabProf.addEventListener('click', activarModoProfesional);
+        tabProd.addEventListener('click', activarModoProductor);
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         renderLucideIcons();
         initSearchFilters();
@@ -379,5 +418,6 @@
         initConfirmActions();
         initSidebarDrawer();
         initNosotrosCarousel();
+        initLoginTabs();
     });
 })();

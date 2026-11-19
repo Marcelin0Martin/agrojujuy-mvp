@@ -15,7 +15,7 @@
                     Portal de Productores e Ingenieros Agrónomos de Jujuy
                 </h2>
                 <p style="font-size: 0.94rem; color: rgba(255,255,255,0.86); line-height: 1.6; margin-bottom: 1.5rem;">
-                    Ingresa con tus credenciales para gestionar tus solicitudes de asistencia técnica, responder en el canal 1 a 1 o participar en el foro agrario.
+                    Ingresa con tus credenciales para gestionar tus solicitudes de asistencia técnica, responder en el canal 1 a 1 o participar en el foro agrario. Los profesionales agrarios pueden ingresar directamente con su <strong>Matrícula Provincial CIAPAJ</strong>.
                 </p>
             </div>
 
@@ -34,47 +34,71 @@
             </div>
         </div>
 
-        <!-- Columna Derecha: Formulario de Inicio de Sesión -->
+        <!-- Columna Derecha: Formulario de Inicio de Sesión con Selector de Perfil -->
         <div class="card rounded-2xl shadow-md p-6" style="margin-bottom: 0; border-top: 5px solid var(--color-primary);">
-            <h1 class="card-title" style="margin-bottom: 1.25rem;">
+            <h1 class="card-title" style="margin-bottom: 1rem;">
                 <span style="display: flex; align-items: center; gap: 0.5rem;">
                     <i data-lucide="key-round" data-size="22"></i> Iniciar Sesión
                 </span>
                 <span class="badge badge-soft">AgroJujuy</span>
             </h1>
 
-            <form method="POST" action="{% url 'login' %}" data-loading-text="Verificando credenciales...">
+            <!-- Selector de Pestañas de Ingreso Accesible -->
+            <div role="tablist" aria-label="Tipo de acceso al sistema" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1.35rem; background: var(--color-background); padding: 0.35rem; border-radius: var(--radius-xl);">
+                <button type="button" id="tab-profesional" role="tab" aria-selected="true" aria-controls="login-panel"
+                        class="btn btn-primary btn-sm" style="width: 100%;">
+                    <i data-lucide="graduation-cap" data-size="15"></i> Ingreso Profesional
+                </button>
+                <button type="button" id="tab-productor" role="tab" aria-selected="false" aria-controls="login-panel"
+                        class="btn btn-outline btn-sm" style="width: 100%; border-color: transparent;">
+                    <i data-lucide="tractor" data-size="15"></i> Productor / Admin
+                </button>
+            </div>
+
+            <form id="login-panel" method="POST" action="{% url 'login' %}" data-loading-text="Verificando credenciales..." novalidate>
                 {% csrf_token %}
 
                 {% if form.errors %}
-                    <div class="alert alert-error" role="alert" style="font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <div id="login-error-alert" class="alert alert-error" role="alert" style="font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;">
                         <i data-lucide="alert-circle" data-size="18"></i>
-                        <span>Usuario o contraseña incorrectos. Por favor revisa tus credenciales.</span>
+                        <span>Credenciales inválidas. Verifique los datos ingresados e intente nuevamente.</span>
                     </div>
                 {% endif %}
 
                 <div class="form-group">
-                    <label class="form-label" for="id_username">
-                        <i data-lucide="user" data-size="16"></i> Nombre de Usuario:
+                    <label class="form-label" for="id_username" id="label_identificador">
+                        Número de Matrícula Provincial (CIAPAJ) o Usuario:
                     </label>
-                    <input type="text" name="username" id="id_username" required autofocus class="form-control" autocomplete="username" placeholder="Ingresa tu usuario">
+                    <input type="text"
+                           name="username"
+                           id="id_username"
+                           required
+                           autofocus
+                           class="form-control"
+                           placeholder="Ej: MP-1001/J"
+                           autocomplete="username"
+                           {% if form.errors %}aria-invalid="true" aria-describedby="login-error-alert help_identificador"{% else %}aria-describedby="help_identificador"{% endif %}>
+                    <span id="help_identificador" class="field-help">
+                        Si eres Profesional Agrario ingresa tu <strong>Número de Matrícula CIAPAJ</strong> (ej: MP-1001/J). Si eres Productor o Admin ingresa tu usuario o correo electrónico.
+                    </span>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="id_password">
-                        <i data-lucide="lock" data-size="16"></i> Contraseña:
-                    </label>
-                    <input type="password" name="password" id="id_password" required class="form-control" autocomplete="current-password" placeholder="••••••••">
+                    <label class="form-label" for="id_password">Contraseña:</label>
+                    <input type="password"
+                           name="password"
+                           id="id_password"
+                           required
+                           class="form-control"
+                           placeholder="Tu contraseña"
+                           autocomplete="current-password"
+                           {% if form.errors %}aria-invalid="true" aria-describedby="login-error-alert"{% endif %}>
                 </div>
 
-                <button type="submit" class="btn btn-primary w-full" style="margin-top: 0.75rem;">
-                    <i data-lucide="key-round" data-size="18"></i> Ingresar al Sistema
+                <button type="submit" class="btn btn-primary w-full mt-4">
+                    <i data-lucide="key-round" data-size="17"></i> Ingresar al Sistema
                 </button>
             </form>
-
-            <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--color-neutral-light); text-align: center; font-size: 0.88rem; color: var(--color-text-muted);">
-                También puedes explorar sin cuenta el <a href="{% url 'buscador_profesionales' %}">Buscador Público</a> o el <a href="{% url 'foro_comunidad' %}">Foro Agrario</a>.
-            </div>
         </div>
     </div>
 </div>

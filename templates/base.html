@@ -184,11 +184,19 @@
                     {% elif effective_role == 'ADMIN' %}
                         <div class="sidebar-section-label">Administración CIAPAJ</div>
                         <div class="sidebar-nav-list">
+                            <a href="{% url 'panel_admin_profesionales' %}" class="sidebar-nav-item" {% if request.resolver_match.url_name == 'panel_admin_profesionales' %}aria-current="page"{% endif %}>
+                                <i data-lucide="shield-check" data-size="20"></i>
+                                <span class="sidebar-nav-text">
+                                    <span class="sidebar-nav-title">Gestión Profesionales</span>
+                                    <span class="sidebar-nav-desc">Altas y bajas CIAPAJ</span>
+                                </span>
+                            </a>
+
                             <a href="/admin/" class="sidebar-nav-item">
                                 <i data-lucide="settings" data-size="20"></i>
                                 <span class="sidebar-nav-text">
-                                    <span class="sidebar-nav-title">Panel Admin CIAPAJ</span>
-                                    <span class="sidebar-nav-desc">Validación de matrículas</span>
+                                    <span class="sidebar-nav-title">Django Admin</span>
+                                    <span class="sidebar-nav-desc">Auditoría técnica avanzada</span>
                                 </span>
                             </a>
 

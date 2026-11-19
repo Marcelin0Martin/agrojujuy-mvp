@@ -13,6 +13,8 @@ from .views import (
     PerfilProfesionalView,
     NotificacionesView,
     marcar_notificacion_leida,
+    PanelAdminProfesionalesView,
+    CambiarEstadoProfesionalAdminView,
     validar_username_ajax,
     cambiar_rol_temporal,
 )
@@ -31,6 +33,8 @@ urlpatterns = [
     path('perfil/profesional/', PerfilProfesionalView.as_view(), name='perfil_profesional'),
     path('notificaciones/', NotificacionesView.as_view(), name='notificaciones'),
     path('notificaciones/marcar-leida/', marcar_notificacion_leida, name='marcar_notificacion_leida'),
+    path('panel-admin/profesionales/', PanelAdminProfesionalesView.as_view(), name='panel_admin_profesionales'),
+    path('panel-admin/profesionales/<int:profesional_id>/estado/', CambiarEstadoProfesionalAdminView.as_view(), name='cambiar_estado_profesional_admin'),
     path('api/validar-username/', validar_username_ajax, name='validar_username_ajax'),
     path('cambiar-rol-temporal/', cambiar_rol_temporal, name='cambiar_rol_temporal'),
 ]

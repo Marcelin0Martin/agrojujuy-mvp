@@ -16,54 +16,98 @@
         </div>
 
         <p style="font-size: 0.95rem; color: var(--color-text-muted); margin-bottom: 1.5rem;">
-            Tu identidad y matrícula provincial CIAPAJ se encuentran protegidas. Puedes actualizar tus especialidades agronómicas, zonas de cobertura, teléfono de contacto y reseña profesional en cualquier momento.
+            Actualiza tus datos personales, correo electrónico, especialidades agronómicas, zonas de cobertura, teléfono de contacto y resumen profesional. Tu número de matrícula provincial CIAPAJ permanece vinculado institucionalmente a tu cuenta.
         </p>
 
-        <!-- Datos Institucionales Protegidos CIAPAJ (Solo Lectura) -->
-        <div style="background: var(--color-background); border-radius: var(--radius-xl); padding: 1.35rem; margin-bottom: 1.75rem; border: 1px solid rgba(23, 63, 50, 0.1);">
-            <h2 style="font-size: 0.95rem; font-weight: 700; color: var(--color-primary); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.03em; display: flex; align-items: center; gap: 0.45rem;">
-                <i data-lucide="lock" data-size="17"></i> Credenciales Institucionales CIAPAJ (Protegidas)
-            </h2>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
-                <div>
-                    <span class="form-label" style="font-size: 0.8rem; margin-bottom: 0.25rem;">Profesional Titular</span>
-                    <div class="readonly-box">
-                        <i data-lucide="user" data-size="15"></i> Ing. {{ object.usuario.first_name }} {{ object.usuario.last_name }}
-                    </div>
-                </div>
-                <div>
-                    <span class="form-label" style="font-size: 0.8rem; margin-bottom: 0.25rem;">Correo Electrónico</span>
-                    <div class="readonly-box">
-                        <i data-lucide="mail" data-size="15"></i> {{ object.usuario.email }}
-                    </div>
-                </div>
-                <div>
-                    <span class="form-label" style="font-size: 0.8rem; margin-bottom: 0.25rem;">Matrícula Provincial CIAPAJ</span>
-                    <div class="readonly-box">
-                        <i data-lucide="award" data-size="15"></i> {{ object.matricula_provincial }}
-                    </div>
-                </div>
+        <!-- Credencial de Matrícula Provincial CIAPAJ -->
+        <div style="background: var(--color-background); border-radius: var(--radius-xl); padding: 1.15rem 1.35rem; margin-bottom: 1.75rem; border: 1px solid rgba(23, 63, 50, 0.1); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <span class="form-label" style="font-size: 0.8rem; margin-bottom: 0.2rem;">
+                    <i data-lucide="lock" data-size="14"></i> Matrícula Provincial Acreditada (CIAPAJ)
+                </span>
+                <strong style="font-size: 1.15rem; color: var(--color-primary);">{{ object.matricula_provincial }}</strong>
             </div>
+            <span class="badge badge-soft">Usada para tu Inicio de Sesión Profesional</span>
         </div>
 
-        <!-- Formulario de Datos Editables (Incluye Especialidades) -->
+        <!-- Formulario de Edición Completa de Datos Personales y Profesionales -->
         <form method="POST" novalidate data-loading-text="Guardando cambios...">
             {% csrf_token %}
 
             {% if form.errors %}
-                <div class="alert alert-error" role="alert">
-                    Por favor revisa los errores indicados abajo.
+                <div id="error-summary" class="alert alert-error" role="alert" tabindex="-1">
+                    <strong>Por favor revisa y corrige los siguientes errores:</strong>
+                    <ul style="margin-top: 0.5rem; padding-left: 1.25rem; font-size: 0.9rem;">
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <li><a href="#{{ field.id_for_label }}" style="color: #991B1B;">{{ field.label }}: {{ error }}</a></li>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
                 </div>
             {% endif %}
 
-            <h2 style="font-size: 1.1rem; font-weight: 700; color: var(--color-primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.45rem;">
-                <i data-lucide="edit-3" data-size="18"></i> Especialidades, Cobertura Territorial y Contacto
+            <h2 style="font-size: 1.05rem; font-weight: 700; color: var(--color-primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.45rem;">
+                <i data-lucide="user" data-size="18"></i> Datos Personales y de Contacto
             </h2>
 
-            <!-- Especialidades Agronómicas Editables -->
-            <fieldset class="form-group" style="border: 1.5px solid #94A39B; border-radius: var(--radius-xl); padding: 1.15rem; background: var(--color-background);" {% if form.especialidades.errors %}aria-invalid="true" aria-describedby="error_especialidades"{% endif %}>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.first_name.id_for_label }}">
+                        Nombre <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
+                    </label>
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}
+                        <p id="error_first_name" class="field-error" role="alert">{{ form.first_name.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.last_name.id_for_label }}">
+                        Apellido <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
+                    </label>
+                    {{ form.last_name }}
+                    {% if form.last_name.errors %}
+                        <p id="error_last_name" class="field-error" role="alert">{{ form.last_name.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.email.id_for_label }}">
+                        <i data-lucide="mail" data-size="15"></i> Correo Electrónico <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
+                    </label>
+                    {{ form.email }}
+                    <span id="help_email" class="field-help">{{ form.email.help_text }}</span>
+                    {% if form.email.errors %}
+                        <p id="error_email" class="field-error" role="alert">{{ form.email.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.telefono.id_for_label }}">
+                        <i data-lucide="phone" data-size="15"></i> Teléfono de Contacto <span class="required-indicator" aria-hidden="true">*</span> <span class="visually-hidden">(obligatorio)</span>
+                    </label>
+                    {{ form.telefono }}
+                    <span id="help_telefono" class="field-help">{{ form.telefono.help_text }}</span>
+                    {% if form.telefono.errors %}
+                        <p id="error_telefono" class="field-error" role="alert">{{ form.telefono.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <h2 style="font-size: 1.05rem; font-weight: 700; color: var(--color-primary); margin: 1.25rem 0 1rem 0; display: flex; align-items: center; gap: 0.45rem;">
+                <i data-lucide="leaf" data-size="18"></i> Especialidades Agronómicas y Cobertura Territorial
+            </h2>
+
+            <!-- Especialidades Agronómicas -->
+            <fieldset class="form-group" style="border: 1.5px solid #94A39B; border-radius: var(--radius-xl); padding: 1.1rem; background: var(--color-background);" {% if form.especialidades.errors %}aria-invalid="true" aria-describedby="error_especialidades"{% endif %}>
                 <legend class="form-label" style="padding: 0 0.5rem;">
-                    <i data-lucide="leaf" data-size="16"></i> Especialidades Agronómicas (Puedes modificarlas) <span class="required-indicator" aria-hidden="true">*</span>
+                    Especialidades Agronómicas <span class="required-indicator" aria-hidden="true">*</span>
                 </legend>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.65rem;">
                     {{ form.especialidades }}
@@ -75,20 +119,21 @@
 
             <div class="form-group">
                 <label class="form-label" for="{{ form.especialidad_propuesta.id_for_label }}">
-                    <i data-lucide="sparkles" data-size="16"></i> Otra Especialidad / Propuesta (Opcional)
+                    <i data-lucide="sparkles" data-size="15"></i> Especialidad Adicional / Propuesta (Opcional)
                 </label>
                 {{ form.especialidad_propuesta }}
-                <span class="field-help">{{ form.especialidad_propuesta.help_text }}</span>
+                <span id="help_especialidad_propuesta" class="field-help">{{ form.especialidad_propuesta.help_text }}</span>
                 {% if form.especialidad_propuesta.errors %}
                     <p id="error_especialidad_propuesta" class="field-error" role="alert">{{ form.especialidad_propuesta.errors|join:", " }}</p>
                 {% endif %}
             </div>
 
-            <fieldset class="form-group" style="border: 1.5px solid #94A39B; border-radius: var(--radius-xl); padding: 1.15rem; background: var(--color-background);" {% if form.zonas.errors %}aria-invalid="true" aria-describedby="error_zonas"{% endif %}>
+            <!-- Zonas de Cobertura -->
+            <fieldset class="form-group" style="border: 1.5px solid #94A39B; border-radius: var(--radius-xl); padding: 1.1rem; background: var(--color-background);" {% if form.zonas.errors %}aria-invalid="true" aria-describedby="error_zonas"{% endif %}>
                 <legend class="form-label" style="padding: 0 0.5rem;">
-                    <i data-lucide="map-pin" data-size="16"></i> Zonas Geográficas de Cobertura <span class="required-indicator" aria-hidden="true">*</span>
+                    Zonas Geográficas de Cobertura <span class="required-indicator" aria-hidden="true">*</span>
                 </legend>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.65rem;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.65rem;">
                     {{ form.zonas }}
                 </div>
                 {% if form.zonas.errors %}
@@ -97,19 +142,8 @@
             </fieldset>
 
             <div class="form-group">
-                <label class="form-label" for="{{ form.telefono.id_for_label }}">
-                    <i data-lucide="phone" data-size="16"></i> Teléfono de Contacto <span class="required-indicator" aria-hidden="true">*</span>
-                </label>
-                {{ form.telefono }}
-                <span class="field-help">Formato válido entre 8 y 15 dígitos (ej: +54 388 4123456)</span>
-                {% if form.telefono.errors %}
-                    <p id="error_telefono" class="field-error" role="alert">{{ form.telefono.errors|join:", " }}</p>
-                {% endif %}
-            </div>
-
-            <div class="form-group">
                 <label class="form-label" for="{{ form.biografia.id_for_label }}">
-                    <i data-lucide="file-text" data-size="16"></i> Resumen Profesional / Trayectoria
+                    <i data-lucide="file-text" data-size="15"></i> Resumen Profesional / Trayectoria
                 </label>
                 {{ form.biografia }}
                 {% if form.biografia.errors %}

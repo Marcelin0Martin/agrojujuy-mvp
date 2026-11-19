@@ -1,27 +1,37 @@
 {% extends 'base.html' %}
 
-{% block title %}Perfil en Revisión — AgroJujuy{% endblock %}
+{% block title %}Estado de Validación Profesional — AgroJujuy{% endblock %}
 
 {% block content %}
 <div class="page-container-narrow">
-    <div class="card rounded-2xl shadow-md p-8" style="border-top: 6px solid var(--color-tertiary);">
+    <div class="card rounded-2xl shadow-md p-8" style="border-top: 6px solid {% if profesional and profesional.estado_validacion == 'Suspendido' %}var(--color-danger){% else %}var(--color-tertiary){% endif %};">
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; align-items: center;">
             <div>
-                <span class="badge badge-warning" style="margin-bottom: 0.85rem;">
-                    <i data-lucide="clock" data-size="14"></i> Auditoría Institucional en Curso
-                </span>
-
-                <h1 style="font-size: 1.65rem; font-weight: 800; color: var(--color-primary); margin-bottom: 1rem; line-height: 1.25;">
-                    Perfil en revisión. El tiempo de validación institucional es de 24 a 48 horas.
-                </h1>
-
-                <p style="font-size: 0.98rem; color: var(--color-text-muted); line-height: 1.6; margin-bottom: 1.5rem;">
-                    Estimado/a <strong>Ing. {{ profesional.usuario.get_full_name|default:request.user.username }}</strong>, su registro con Matrícula Provincial <strong>{{ profesional.matricula_provincial }}</strong> ha sido recibido por el equipo de administración institucional de CIAPAJ.
-                </p>
+                {% if profesional and profesional.estado_validacion == 'Suspendido' %}
+                    <span class="badge badge-danger" style="margin-bottom: 0.85rem;">
+                        <i data-lucide="alert-circle" data-size="14"></i> Perfil Suspendido / Baja CIAPAJ
+                    </span>
+                    <h1 style="font-size: 1.65rem; font-weight: 800; color: var(--color-primary); margin-bottom: 1rem; line-height: 1.25;">
+                        Perfil profesional dado de baja o suspendido temporalmente.
+                    </h1>
+                    <p style="font-size: 0.98rem; color: var(--color-text-muted); line-height: 1.6; margin-bottom: 1.5rem;">
+                        Estimado/a <strong>Ing. {{ profesional.usuario.get_full_name|default:request.user.username }}</strong>, su matrícula provincial <strong>{{ profesional.matricula_provincial }}</strong> se encuentra en estado <strong>Suspendido / Baja</strong>.
+                    </p>
+                {% else %}
+                    <span class="badge badge-warning" style="margin-bottom: 0.85rem;">
+                        <i data-lucide="clock" data-size="14"></i> Auditoría Institucional en Curso
+                    </span>
+                    <h1 style="font-size: 1.65rem; font-weight: 800; color: var(--color-primary); margin-bottom: 1rem; line-height: 1.25;">
+                        Perfil en revisión. El tiempo de validación institucional es de 24 a 48 horas.
+                    </h1>
+                    <p style="font-size: 0.98rem; color: var(--color-text-muted); line-height: 1.6; margin-bottom: 1.5rem;">
+                        Estimado/a <strong>Ing. {{ profesional.usuario.get_full_name|default:request.user.username }}</strong>, su registro con Matrícula Provincial <strong>{{ profesional.matricula_provincial }}</strong> ha sido recibido por el equipo de administración institucional de CIAPAJ.
+                    </p>
+                {% endif %}
 
                 <div style="display: flex; gap: 0.85rem; flex-wrap: wrap;">
-                    <a href="{% url 'inicio' %}" class="btn btn-outline btn-sm">
-                        <i data-lucide="arrow-left" data-size="15"></i> Volver al Inicio
+                    <a href="{% url 'perfil_profesional' %}" class="btn btn-outline btn-sm">
+                        <i data-lucide="user" data-size="15"></i> Revisar Mi perfil CIAPAJ
                     </a>
                     <form method="POST" action="{% url 'logout' %}" style="display:inline;">
                         {% csrf_token %}
@@ -32,14 +42,25 @@
                 </div>
             </div>
 
-            <div class="alert alert-info" style="margin-bottom: 0; padding: 1.35rem;">
-                <strong style="display: flex; align-items: center; gap: 0.45rem; font-size: 0.96rem; margin-bottom: 0.5rem;">
-                    <i data-lucide="lock" data-size="18"></i> Acceso restringido temporalmente
-                </strong>
-                <p style="margin: 0; font-size: 0.9rem; line-height: 1.55; font-weight: 500;">
-                    Por protocolo de seguridad y calidad técnica para los productores agrícolas de Jujuy, su vitrina digital y canal de atención directa se habilitarán una vez contrastados sus datos de matrícula activa en el padrón oficial CIAPAJ.
-                </p>
-            </div>
+            {% if profesional and profesional.estado_validacion == 'Suspendido' %}
+                <div class="alert alert-error" role="alert" style="margin-bottom: 0; padding: 1.35rem;">
+                    <strong style="display: flex; align-items: center; gap: 0.45rem; font-size: 0.96rem; margin-bottom: 0.5rem;">
+                        <i data-lucide="lock" data-size="18"></i> Acceso restringido
+                    </strong>
+                    <p style="margin: 0; font-size: 0.9rem; line-height: 1.55; font-weight: 500;">
+                        Su perfil ha sido retirado del buscador público de productores y el acceso a la Bandeja de Trabajos se encuentra deshabilitado hasta regularizar su situación ante la administración de CIAPAJ.
+                    </p>
+                </div>
+            {% else %}
+                <div class="alert alert-info" role="status" style="margin-bottom: 0; padding: 1.35rem;">
+                    <strong style="display: flex; align-items: center; gap: 0.45rem; font-size: 0.96rem; margin-bottom: 0.5rem;">
+                        <i data-lucide="lock" data-size="18"></i> Acceso restringido temporalmente
+                    </strong>
+                    <p style="margin: 0; font-size: 0.9rem; line-height: 1.55; font-weight: 500;">
+                        Por protocolo de seguridad y calidad técnica para los productores agrícolas de Jujuy, su vitrina digital y canal de atención directa se habilitarán una vez contrastados sus datos de matrícula activa en el padrón oficial CIAPAJ.
+                    </p>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>
