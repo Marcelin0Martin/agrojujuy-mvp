@@ -234,13 +234,13 @@
         const carousel = document.getElementById('nosotros-carousel');
         if (!carousel) return;
 
-        const track = document.getElementById('carousel-track');
         const slides = carousel.querySelectorAll('.carousel-slide');
         const prevBtn = document.getElementById('carousel-prev');
         const nextBtn = document.getElementById('carousel-next');
         const playPauseBtn = document.getElementById('carousel-play-pause');
+        const counterEl = document.getElementById('carousel-counter');
         const dots = carousel.querySelectorAll('.carousel-dot');
-        if (!track || slides.length === 0) return;
+        if (slides.length === 0) return;
 
         let currentIndex = 0;
         let isPlaying = true;
@@ -253,17 +253,27 @@
                 index = 0;
             }
             currentIndex = index;
-            track.style.transform = 'translateX(-' + (currentIndex * 100) + '%)';
 
             slides.forEach(function (s, idx) {
-                s.classList.toggle('active', idx === currentIndex);
-                s.setAttribute('aria-hidden', idx === currentIndex ? 'false' : 'true');
+                const isActive = (idx === currentIndex);
+                if (isActive) {
+                    s.classList.add('active');
+                    s.setAttribute('aria-hidden', 'false');
+                } else {
+                    s.classList.remove('active');
+                    s.setAttribute('aria-hidden', 'true');
+                }
             });
 
             dots.forEach(function (d, idx) {
-                d.classList.toggle('active', idx === currentIndex);
-                d.setAttribute('aria-selected', idx === currentIndex ? 'true' : 'false');
+                const isActive = (idx === currentIndex);
+                d.classList.toggle('active', isActive);
+                d.setAttribute('aria-selected', isActive ? 'true' : 'false');
             });
+
+            if (counterEl) {
+                counterEl.textContent = (currentIndex + 1) + ' / ' + slides.length;
+            }
         }
 
         function nextSlide() {
@@ -278,14 +288,20 @@
             if (timer) clearInterval(timer);
             timer = setInterval(nextSlide, 6000);
             isPlaying = true;
-            if (playPauseBtn) playPauseBtn.setAttribute('aria-label', 'Pausar rotación automática');
+            if (playPauseBtn) {
+                playPauseBtn.setAttribute('aria-label', 'Pausar rotación automática');
+                playPauseBtn.title = 'Pausar rotación automática';
+            }
         }
 
         function stopAutoplay() {
             if (timer) clearInterval(timer);
             timer = null;
             isPlaying = false;
-            if (playPauseBtn) playPauseBtn.setAttribute('aria-label', 'Reanudar rotación automática');
+            if (playPauseBtn) {
+                playPauseBtn.setAttribute('aria-label', 'Reanudar rotación automática');
+                playPauseBtn.title = 'Reanudar rotación automática';
+            }
         }
 
         if (nextBtn) {
@@ -351,6 +367,8 @@
             }
         }, { passive: true });
 
+        // Inicializar exactamente en diapositiva 0
+        goToSlide(0);
         startAutoplay();
     }
 

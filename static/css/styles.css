@@ -263,7 +263,7 @@ a:hover {
 
 /* ==========================================================================
    Carrusel de Imágenes Institucional (Nosotros)
-   Accesible (WCAG 2.1 AA / Heurísticas de Nielsen #1 y #7)
+   Accesible y Robusto (WCAG 2.1 AA / Heurísticas de Nielsen #1 y #7)
    ========================================================================== */
 .carousel-container {
   position: relative;
@@ -278,30 +278,49 @@ a:hover {
 
 .carousel-track-wrapper {
   position: relative;
-  overflow: hidden;
   width: 100%;
+  min-height: 380px;
 }
 
 .carousel-track {
-  display: flex;
-  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
   width: 100%;
+  position: relative;
 }
 
+/* Solo la diapositiva activa se muestra, ocupando el 100% del contenedor */
 .carousel-slide {
-  min-width: 100%;
-  box-sizing: border-box;
+  display: none;
+  width: 100%;
+  opacity: 0;
+}
+
+.carousel-slide.active {
+  display: block;
+  opacity: 1;
+  animation: carouselFadeIn 0.35s var(--ease-out-expo) forwards;
+}
+
+@keyframes carouselFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .carousel-slide-inner {
   display: grid;
   grid-template-columns: 1fr;
   align-items: stretch;
+  min-height: 360px;
 }
 
-@media (min-width: 820px) {
+@media (min-width: 840px) {
   .carousel-slide-inner {
-    grid-template-columns: 1.15fr 1fr;
+    grid-template-columns: 1.1fr 1fr;
   }
 }
 
@@ -324,7 +343,7 @@ a:hover {
 }
 
 .carousel-content {
-  padding: 2rem 2.25rem;
+  padding: 2.25rem 2.5rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -370,15 +389,16 @@ a:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
+  gap: 1.25rem;
   padding: 0.9rem 1.5rem;
   background: #F8FAF9;
   border-top: 1px solid rgba(23, 63, 50, 0.08);
+  flex-wrap: wrap;
 }
 
 .carousel-btn {
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   border: 1.5px solid var(--color-primary);
   background: #FFFFFF;
@@ -419,11 +439,18 @@ a:hover {
   box-shadow: 0 2px 6px rgba(16, 185, 129, 0.35);
 }
 
+.carousel-counter {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  min-width: 45px;
+  text-align: center;
+}
+
 .carousel-play-pause {
-  margin-left: 0.5rem;
   font-size: 0.78rem;
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-color: rgba(23, 63, 50, 0.3);
   color: var(--color-text-muted);
 }
