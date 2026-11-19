@@ -3,7 +3,7 @@
 {% block title %}Solicitar Asistencia Técnica — AgroJujuy{% endblock %}
 
 {% block content %}
-<div style="max-width: 960px; margin: 1rem auto;">
+<div class="page-container-narrow">
     <div style="margin-bottom: 1rem;">
         <a href="{% url 'buscador_profesionales' %}" class="btn btn-outline btn-sm">
             <i data-lucide="arrow-left" data-size="16"></i> Volver al Buscador
@@ -11,12 +11,13 @@
     </div>
 
     <div class="card rounded-2xl shadow-md p-8" style="background: #FFFFFF; border-top: 6px solid var(--color-primary);">
-        <h1 class="card-title" style="font-size: 1.55rem;">
-            <span style="display: flex; align-items: center; gap: 0.55rem;">
-                <i data-lucide="send" data-size="24"></i> Solicitar Asistencia Técnica
-            </span>
-            <span class="badge badge-soft">Modalidad Dirigida</span>
-        </h1>
+        <div class="card-title" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.25rem;">
+            <h1 style="font-size: 1.55rem; font-weight: 800; color: var(--color-primary); margin: 0; display: inline-flex; align-items: center; gap: 0.55rem;">
+                <i data-lucide="send" data-size="24"></i>
+                <span>Solicitar Asistencia Técnica</span>
+            </h1>
+            <span class="badge badge-soft" style="padding: 0.45rem 0.85rem; font-size: 0.82rem;">Modalidad Dirigida</span>
+        </div>
 
         <div style="background: var(--color-background); padding: 1.15rem 1.35rem; border-radius: var(--radius-xl); border-left: 4px solid var(--color-primary); margin-bottom: 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.75rem;">
             <div>

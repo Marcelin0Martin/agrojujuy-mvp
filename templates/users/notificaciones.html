@@ -3,30 +3,32 @@
 {% block title %}Notificaciones — AgroJujuy{% endblock %}
 
 {% block content %}
-<div style="max-width: 1120px; margin: 0.5rem auto;">
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
-        <div>
-            <h1 style="font-size: 1.9rem; font-weight: 800; color: var(--color-primary); display: flex; align-items: center; gap: 0.55rem;">
-                <i data-lucide="bell" data-size="26"></i> Centro de Notificaciones
+<div class="page-container">
+    <header class="page-header">
+        <div class="page-header-row">
+            <h1 class="page-header-title">
+                <i data-lucide="bell" data-size="26"></i>
+                <span>Centro de Notificaciones</span>
                 {% if unread_count > 0 %}
                     <span class="badge badge-danger" style="font-size: 0.78rem;">{{ unread_count }} sin leer</span>
                 {% endif %}
             </h1>
-            <p style="color: var(--color-text-muted); font-size: 0.96rem;">
-                Avisos de nuevos mensajes en tus conversaciones técnicas 1 a 1 y comentarios en tus hilos del foro comunitario.
-            </p>
+            <div class="page-header-actions">
+                {% if unread_count > 0 %}
+                    <form method="POST" action="{% url 'marcar_notificacion_leida' %}" style="margin: 0;">
+                        {% csrf_token %}
+                        <input type="hidden" name="notif_id" value="ALL">
+                        <button type="submit" class="btn btn-outline btn-sm">
+                            <i data-lucide="check-circle" data-size="15"></i> Marcar todas como leídas
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
         </div>
-
-        {% if unread_count > 0 %}
-            <form method="POST" action="{% url 'marcar_notificacion_leida' %}">
-                {% csrf_token %}
-                <input type="hidden" name="notif_id" value="ALL">
-                <button type="submit" class="btn btn-outline btn-sm">
-                    <i data-lucide="check-circle" data-size="16"></i> Marcar todas como leídas
-                </button>
-            </form>
-        {% endif %}
-    </div>
+        <p class="page-header-subtitle">
+            Avisos de nuevos mensajes en tus conversaciones técnicas 1 a 1 y comentarios en tus hilos del foro comunitario.
+        </p>
+    </header>
 
     <!-- Filtros rápidos de notificaciones -->
     <div class="filter-pills" role="group" aria-label="Filtrar notificaciones" style="margin-bottom: 1.5rem;">
@@ -117,23 +119,37 @@
             <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--color-primary); margin-bottom: 0.5rem;">
                 No tienes notificaciones pendientes
             </h2>
-            <p style="color: var(--color-text-muted); max-width: 520px; margin: 0 auto 1.5rem auto;">
-                Cuando recibas un mensaje nuevo en tus consultas técnicas 1 a 1 o alguien responda a una publicación tuya en el foro agrario, aparecerá aquí con su contador.
-            </p>
-            <div style="display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap;">
-                <a href="{% url 'foro_comunidad' %}" class="btn btn-outline btn-sm">
-                    <i data-lucide="messages-square" data-size="15"></i> Ir al Foro Agrario
-                </a>
-                {% if effective_role == 'PRODUCER' %}
-                    <a href="{% url 'bandeja_productor' %}" class="btn btn-primary btn-sm">
-                        <i data-lucide="clipboard-list" data-size="15"></i> Ver Mis Solicitudes
+            {% if is_admin_user and effective_role == 'ADMIN' %}
+                <p style="color: var(--color-text-muted); max-width: 580px; margin: 0 auto 1.5rem auto; line-height: 1.55;">
+                    Como Administrador institucional CIAPAJ, las notificaciones de consultas técnicas y debates corresponden de forma personal y privada a cada productor e ingeniero asignado.
+                </p>
+                <div style="display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap;">
+                    <a href="/admin/" class="btn btn-primary btn-sm">
+                        <i data-lucide="settings" data-size="15"></i> Panel Admin CIAPAJ
                     </a>
-                {% elif effective_role == 'PROFESSIONAL' %}
-                    <a href="{% url 'bandeja_profesional' %}" class="btn btn-primary btn-sm">
-                        <i data-lucide="inbox" data-size="15"></i> Ver Bandeja de Trabajos
+                    <a href="{% url 'buscador_profesionales' %}" class="btn btn-outline btn-sm">
+                        <i data-lucide="search" data-size="15"></i> Explorar Directorio
                     </a>
-                {% endif %}
-            </div>
+                </div>
+            {% else %}
+                <p style="color: var(--color-text-muted); max-width: 520px; margin: 0 auto 1.5rem auto;">
+                    Cuando recibas un mensaje nuevo en tus consultas técnicas 1 a 1 o alguien responda a una publicación tuya en el foro agrario, aparecerá aquí con su contador.
+                </p>
+                <div style="display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap;">
+                    <a href="{% url 'foro_comunidad' %}" class="btn btn-outline btn-sm">
+                        <i data-lucide="messages-square" data-size="15"></i> Ir al Foro Agrario
+                    </a>
+                    {% if effective_role == 'PRODUCER' %}
+                        <a href="{% url 'bandeja_productor' %}" class="btn btn-primary btn-sm">
+                            <i data-lucide="clipboard-list" data-size="15"></i> Ver Mis Solicitudes
+                        </a>
+                    {% elif effective_role == 'PROFESSIONAL' %}
+                        <a href="{% url 'bandeja_profesional' %}" class="btn btn-primary btn-sm">
+                            <i data-lucide="inbox" data-size="15"></i> Ver Bandeja de Trabajos
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
         </div>
     {% endif %}
 </div>

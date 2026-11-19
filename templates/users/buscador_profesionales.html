@@ -3,29 +3,29 @@
 {% block title %}Buscador Inteligente de Profesionales — AgroJujuy{% endblock %}
 
 {% block content %}
-<div style="max-width: 1200px; margin: 0.5rem auto;">
+<div class="page-container">
     <!-- Encabezado del Buscador -->
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
-        <div>
-            <h1 style="font-size: 1.9rem; font-weight: 800; color: var(--color-primary); letter-spacing: -0.02em; display: flex; align-items: center; gap: 0.55rem;">
-                <i data-lucide="search" data-size="26"></i> Buscador Inteligente de Profesionales Agrarios
+    <header class="page-header">
+        <div class="page-header-row">
+            <h1 class="page-header-title">
+                <i data-lucide="search" data-size="26"></i>
+                <span>Buscador Inteligente de Profesionales Agrarios</span>
             </h1>
-            <p style="color: var(--color-text-muted); font-size: 0.98rem;">
-                Selecciona una zona geográfica o especialidad para filtrar a los ingenieros habilitados por CIAPAJ.
-            </p>
-        </div>
-
-        <div style="display: flex; gap: 0.65rem; flex-wrap: wrap;">
-            <a href="{% url 'solicitar_asistencia_abierta' %}" class="btn btn-secondary btn-sm">
-                <i data-lucide="megaphone" data-size="16"></i> Publicar Solicitud Abierta
-            </a>
-            {% if user.is_authenticated and effective_role == 'PRODUCER' %}
-                <a href="{% url 'bandeja_productor' %}" class="btn btn-tertiary btn-sm">
-                    <i data-lucide="clipboard-list" data-size="16"></i> Mis Solicitudes
+            <div class="page-header-actions">
+                <a href="{% url 'solicitar_asistencia_abierta' %}" class="btn btn-secondary btn-sm">
+                    <i data-lucide="megaphone" data-size="15"></i> Publicar Solicitud Abierta
                 </a>
-            {% endif %}
+                {% if user.is_authenticated and effective_role == 'PRODUCER' %}
+                    <a href="{% url 'bandeja_productor' %}" class="btn btn-tertiary btn-sm">
+                        <i data-lucide="clipboard-list" data-size="15"></i> Mis Solicitudes
+                    </a>
+                {% endif %}
+            </div>
         </div>
-    </div>
+        <p class="page-header-subtitle">
+            Selecciona una zona geográfica o especialidad para filtrar a los ingenieros habilitados por CIAPAJ.
+        </p>
+    </header>
 
     <!-- Panel de Filtros Claro, Directo y Funcional -->
     <section class="card rounded-2xl shadow-md p-6" aria-label="Filtros territoriales y de especialidad" style="background: #FFFFFF; border-top: 5px solid var(--color-primary);">

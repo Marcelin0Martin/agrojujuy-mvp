@@ -3,25 +3,26 @@
 {% block title %}Mis Solicitudes — Productor — AgroJujuy{% endblock %}
 
 {% block content %}
-<div style="max-width: 1160px; margin: 1rem auto;">
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
-        <div>
-            <h1 style="font-size: 1.9rem; font-weight: 800; color: var(--color-primary); display: flex; align-items: center; gap: 0.55rem;">
-                <i data-lucide="clipboard-list" data-size="26"></i> Bandeja de Solicitudes Enviadas
+<div class="page-container">
+    <header class="page-header">
+        <div class="page-header-row">
+            <h1 class="page-header-title">
+                <i data-lucide="clipboard-list" data-size="26"></i>
+                <span>Bandeja de Solicitudes Enviadas</span>
             </h1>
-            <p style="color: var(--color-text-muted); font-size: 0.96rem;">
-                Seguimiento de tus consultas técnicas dirigidas y abiertas, ordenadas priorizando las pendientes.
-            </p>
+            <div class="page-header-actions">
+                <a href="{% url 'solicitar_asistencia_abierta' %}" class="btn btn-secondary btn-sm">
+                    <i data-lucide="megaphone" data-size="15"></i> Solicitud Abierta
+                </a>
+                <a href="{% url 'buscador_profesionales' %}" class="btn btn-primary btn-sm">
+                    <i data-lucide="search" data-size="15"></i> Solicitud Dirigida
+                </a>
+            </div>
         </div>
-        <div style="display: flex; gap: 0.65rem; flex-wrap: wrap;">
-            <a href="{% url 'solicitar_asistencia_abierta' %}" class="btn btn-secondary btn-sm">
-                <i data-lucide="megaphone" data-size="16"></i> Solicitud Abierta
-            </a>
-            <a href="{% url 'buscador_profesionales' %}" class="btn btn-primary btn-sm">
-                <i data-lucide="search" data-size="16"></i> Solicitud Dirigida
-            </a>
-        </div>
-    </div>
+        <p class="page-header-subtitle">
+            Seguimiento de tus consultas técnicas dirigidas y abiertas, ordenadas priorizando las pendientes.
+        </p>
+    </header>
 
     <!-- Filtros por Estado -->
     <div class="filter-pills" role="group" aria-label="Filtrar solicitudes por estado" style="margin-bottom: 1.5rem;">
@@ -40,7 +41,7 @@
     </div>
 
     {% if tickets %}
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap: 1.25rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); gap: 1.25rem;">
             {% for ticket in tickets %}
                 <article class="card rounded-2xl shadow-sm p-6" style="background: #FFFFFF; margin-bottom: 0; border-left: 5px solid {% if ticket.estado == 'Aceptado' or ticket.estado == 'Finalizado' %}var(--color-secondary){% else %}var(--color-tertiary){% endif %}; display: flex; flex-direction: column; justify-content: space-between;">
                     <div>

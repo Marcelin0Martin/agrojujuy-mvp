@@ -3,25 +3,26 @@
 {% block title %}Bandeja de Trabajos — Profesional CIAPAJ — AgroJujuy{% endblock %}
 
 {% block content %}
-<div style="max-width: 1160px; margin: 1rem auto;">
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
-        <div>
-            <h1 style="font-size: 1.9rem; font-weight: 800; color: var(--color-primary); display: flex; align-items: center; gap: 0.55rem;">
-                <i data-lucide="inbox" data-size="26"></i> Bandeja de Trabajos y Solicitudes Recibidas
+<div class="page-container">
+    <header class="page-header">
+        <div class="page-header-row">
+            <h1 class="page-header-title">
+                <i data-lucide="inbox" data-size="26"></i>
+                <span>Bandeja de Trabajos y Solicitudes Recibidas</span>
             </h1>
-            <p style="color: var(--color-text-muted); font-size: 0.96rem;">
-                Solicitudes dirigidas a tu perfil y solicitudes abiertas de la red CIAPAJ (ordenadas priorizando pendientes).
-            </p>
+            <div class="page-header-actions">
+                <span class="badge badge-success">
+                    <i data-lucide="shield-check" data-size="14"></i> Ingeniero Habilitado CIAPAJ
+                </span>
+                <a href="{% url 'perfil_profesional' %}" class="btn btn-outline btn-sm">
+                    <i data-lucide="user" data-size="15"></i> Mi perfil CIAPAJ
+                </a>
+            </div>
         </div>
-        <div style="display: flex; gap: 0.65rem; align-items: center;">
-            <span class="badge badge-success">
-                <i data-lucide="shield-check" data-size="13"></i> Ingeniero Habilitado CIAPAJ
-            </span>
-            <a href="{% url 'perfil_profesional' %}" class="btn btn-outline btn-sm">
-                <i data-lucide="user" data-size="15"></i> Mi perfil CIAPAJ
-            </a>
-        </div>
-    </div>
+        <p class="page-header-subtitle">
+            Solicitudes dirigidas a tu perfil y solicitudes abiertas de la red CIAPAJ (ordenadas priorizando pendientes).
+        </p>
+    </header>
 
     <!-- Barra de Filtros por Estado -->
     <div class="filter-pills" role="group" aria-label="Filtrar trabajos por estado" style="margin-bottom: 1.5rem;">
@@ -40,7 +41,7 @@
     </div>
 
     {% if tickets %}
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap: 1.25rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); gap: 1.25rem;">
             {% for ticket in tickets %}
                 <article class="card rounded-2xl shadow-sm p-6" style="background: #FFFFFF; margin-bottom: 0; border-left: 5px solid {% if ticket.estado == 'Aceptado' or ticket.estado == 'Finalizado' %}var(--color-secondary){% else %}var(--color-tertiary){% endif %}; display: flex; flex-direction: column; justify-content: space-between;">
                     <div>

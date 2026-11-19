@@ -3,36 +3,20 @@
 {% block title %}Chat Técnico 1 a 1 — Ticket #{{ ticket.id }} — AgroJujuy{% endblock %}
 
 {% block content %}
-<div style="max-width: 1080px; margin: 1rem auto;">
+<div class="page-container">
     <!-- Encabezado del Ticket -->
     <div class="card rounded-2xl shadow-sm p-6" style="background: #FFFFFF; margin-bottom: 1.25rem; border-left: 5px solid {% if ticket.estado == 'Aceptado' or ticket.estado == 'Finalizado' %}var(--color-secondary){% else %}var(--color-tertiary){% endif %};">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.75rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 0.75rem;">
             <div>
-                <span style="font-size: 0.8rem; font-weight: 700; color: var(--color-text-muted);">
+                <span style="font-size: 0.8rem; font-weight: 700; color: var(--color-text-muted); display: block; margin-bottom: 0.2rem;">
                     Canal Directo de Asistencia &bull; Ticket #{{ ticket.id }} ({{ ticket.modalidad }})
                 </span>
-                <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-primary); margin: 0.25rem 0;">
+                <h1 style="font-size: 1.55rem; font-weight: 800; color: var(--color-primary); margin: 0; line-height: 1.2;">
                     {{ ticket.titulo }}
                 </h1>
-                <p style="font-size: 0.9rem; color: var(--color-text-muted); margin: 0; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-                    <span style="display: inline-flex; align-items: center; gap: 0.3rem;">
-                        <i data-lucide="tractor" data-size="15"></i>
-                        <strong>Productor:</strong> {{ ticket.productor.usuario.get_full_name|default:ticket.productor.usuario.username }} ({{ ticket.productor.region }} — {{ ticket.productor.rubro_productivo }})
-                    </span>
-                    <span>|</span>
-                    <span style="display: inline-flex; align-items: center; gap: 0.3rem;">
-                        <i data-lucide="graduation-cap" data-size="15"></i>
-                        <strong>Ingeniero:</strong>
-                        {% if ticket.profesional %}
-                            Ing. {{ ticket.profesional.usuario.get_full_name|default:ticket.profesional.usuario.username }} (CIAPAJ: {{ ticket.profesional.matricula_provincial }})
-                        {% else %}
-                            <em>Pendiente de asignación (Solicitud Abierta)</em>
-                        {% endif %}
-                    </span>
-                </p>
             </div>
 
-            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; flex-shrink: 0;">
                 <span class="badge {% if ticket.estado == 'Aceptado' or ticket.estado == 'Finalizado' %}badge-success{% elif ticket.estado == 'Pendiente' %}badge-warning{% else %}badge-neutral{% endif %}">
                     {{ ticket.estado }}
                 </span>
@@ -42,7 +26,7 @@
                     </span>
                 {% endif %}
                 {% if ticket.estado == 'Pendiente' and not es_productor %}
-                    <form method="POST" action="{% url 'aceptar_ticket' ticket.id %}" style="display: inline;">
+                    <form method="POST" action="{% url 'aceptar_ticket' ticket.id %}" style="display: inline; margin: 0;">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-secondary btn-sm">
                             <i data-lucide="check-circle" data-size="15"></i> Aceptar / Tomar Solicitud
@@ -50,6 +34,23 @@
                     </form>
                 {% endif %}
             </div>
+        </div>
+
+        <div style="font-size: 0.9rem; color: var(--color-text-muted); margin: 0; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; padding-top: 0.65rem; border-top: 1px solid var(--color-neutral-light);">
+            <span style="display: inline-flex; align-items: center; gap: 0.3rem;">
+                <i data-lucide="tractor" data-size="15"></i>
+                <strong>Productor:</strong> {{ ticket.productor.usuario.get_full_name|default:ticket.productor.usuario.username }} ({{ ticket.productor.region }} — {{ ticket.productor.rubro_productivo }})
+            </span>
+            <span>|</span>
+            <span style="display: inline-flex; align-items: center; gap: 0.3rem;">
+                <i data-lucide="graduation-cap" data-size="15"></i>
+                <strong>Ingeniero:</strong>
+                {% if ticket.profesional %}
+                    Ing. {{ ticket.profesional.usuario.get_full_name|default:ticket.profesional.usuario.username }} (CIAPAJ: {{ ticket.profesional.matricula_provincial }})
+                {% else %}
+                    <em>Pendiente de asignación (Solicitud Abierta)</em>
+                {% endif %}
+            </span>
         </div>
 
         <div style="margin-top: 0.85rem; padding-top: 0.85rem; border-top: 1px solid var(--color-neutral-light); font-size: 0.94rem; color: var(--color-text-main);">

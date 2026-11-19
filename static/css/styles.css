@@ -196,6 +196,72 @@ a:hover {
 }
 
 /* ==========================================================================
+   Page Containers & Page Header Component (Unificado y Responsivo)
+   Garantiza que el título y las acciones/badges estén a la misma altura en desktop
+   y se adapten limpiamente en pantallas pequeñas.
+   ========================================================================== */
+.page-container {
+  width: 100%;
+  max-width: 1260px;
+  margin: 0.5rem auto 1.5rem auto;
+}
+
+.page-container-narrow {
+  width: 100%;
+  max-width: 1020px;
+  margin: 0.5rem auto 1.5rem auto;
+}
+
+.page-header {
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.page-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.page-header-title {
+  font-size: clamp(1.4rem, 2.2vw, 1.85rem);
+  font-weight: 800;
+  color: var(--color-primary);
+  letter-spacing: -0.02em;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  line-height: 1.25;
+}
+
+.page-header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.page-header-actions .badge {
+  padding: 0.45rem 0.85rem;
+  font-size: 0.8rem;
+  line-height: 1.2;
+}
+
+.page-header-subtitle {
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+  margin: 0;
+  line-height: 1.5;
+  max-width: 920px;
+}
+
+/* ==========================================================================
    Header Global Moderno y Responsive
    ========================================================================== */
 .global-header {

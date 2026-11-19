@@ -3,7 +3,7 @@
 {% block title %}Perfil Profesional — Ing. {{ profesional.usuario.get_full_name|default:profesional.usuario.username }}{% endblock %}
 
 {% block content %}
-<div style="max-width: 980px; margin: 1.25rem auto;">
+<div class="page-container-narrow">
     <div style="margin-bottom: 1rem;">
         <a href="{% url 'buscador_profesionales' %}" class="btn btn-outline btn-sm">
             <i data-lucide="arrow-left" data-size="16"></i> Volver al Buscador
@@ -11,19 +11,19 @@
     </div>
 
     <div class="card rounded-2xl shadow-md p-8" style="background: #FFFFFF; border-top: 6px solid var(--color-primary);">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;">
             <div style="display: flex; align-items: center; gap: 1rem;">
                 <div class="avatar-circle" style="width: 60px; height: 60px; font-size: 1.35rem;" aria-hidden="true">
                     {{ profesional.usuario.get_full_name|default:profesional.usuario.username|slice:":1"|upper }}
                 </div>
                 <div>
-                    <span class="badge badge-success" style="margin-bottom: 0.4rem;">
+                    <span class="badge badge-success" style="margin-bottom: 0.35rem;">
                         <i data-lucide="shield-check" data-size="13"></i> Validado CIAPAJ Jujuy
                     </span>
-                    <h1 style="font-size: 1.8rem; font-weight: 800; color: var(--color-primary); line-height: 1.2;">
+                    <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--color-primary); line-height: 1.2; margin: 0;">
                         Ing. {{ profesional.usuario.get_full_name|default:profesional.usuario.username }}
                     </h1>
-                    <p style="font-size: 1rem; font-weight: 700; color: var(--color-tertiary-dark); margin: 0;">
+                    <p style="font-size: 0.95rem; font-weight: 700; color: var(--color-tertiary-dark); margin: 0.2rem 0 0 0;">
                         Matrícula Provincial: {{ profesional.matricula_provincial }}
                     </p>
                 </div>
