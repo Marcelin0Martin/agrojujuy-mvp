@@ -11,6 +11,18 @@
                 <span>Muro Comunitario e Intercambio Agrario</span>
             </h1>
             <div class="page-header-actions">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'foro_comunidad' %}?mis_publicaciones=1"
+                       class="btn {% if mis_publicaciones %}btn-tertiary{% else %}btn-outline{% endif %} btn-sm"
+                       {% if mis_publicaciones %}aria-current="page"{% endif %}>
+                        <i data-lucide="user-check" data-size="15"></i> Mis publicaciones
+                    </a>
+                    {% if mis_publicaciones %}
+                        <a href="{% url 'foro_comunidad' %}" class="btn btn-outline btn-sm">
+                            <i data-lucide="globe" data-size="15"></i> Ver Todas
+                        </a>
+                    {% endif %}
+                {% endif %}
                 <span class="badge badge-success">
                     <i data-lucide="users" data-size="14"></i> Comunidad CIAPAJ Jujuy
                 </span>
@@ -24,23 +36,29 @@
         </p>
     </header>
 
-    <!-- Barra de Búsqueda por Temas o Palabras Clave -->
-    <section class="card rounded-2xl shadow-sm p-6" aria-label="Buscador de temas del foro" style="background: #FFFFFF; margin-bottom: 1.5rem;">
-        <form method="GET" action="{% url 'foro_comunidad' %}" style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: flex-end;">
+    <!-- Barra de Búsqueda por Temas o Palabras Clave (responde a tecla Enter y botón) -->
+    <section class="card rounded-2xl shadow-sm p-6" aria-label="Buscador de temas del foro" style="margin-bottom: 1.5rem;">
+        <form id="foro-search-form" method="GET" action="{% url 'foro_comunidad' %}" role="search" style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: flex-end;">
+            {% if mis_publicaciones %}
+                <input type="hidden" name="mis_publicaciones" value="1">
+            {% endif %}
             <div style="flex: 1; min-width: 240px;">
                 <label class="form-label" for="id_q_foro">
-                    <i data-lucide="search" data-size="16"></i> Buscar por tema, cultivo o palabra clave:
+                    <span aria-hidden="true">🔎</span> Buscar por tema, cultivo o palabra clave:
                 </label>
-                <input type="search" name="q" id="id_q_foro" value="{{ query }}" placeholder="Ej: heladas, papa, riego, biofertilizantes, mildiu..." class="form-control">
+                <input type="search"
+                       name="q"
+                       id="id_q_foro"
+                       value="{{ query }}"
+                       placeholder="Escribe una palabra clave y presiona Enter o Buscar..."
+                       class="form-control">
             </div>
             <div style="display: flex; gap: 0.5rem;">
                 <button type="submit" class="btn btn-primary">
-                    <i data-lucide="search" data-size="16"></i> Buscar Temas
+                    Buscar Temas
                 </button>
-                {% if query %}
-                    <a href="{% url 'foro_comunidad' %}" class="btn btn-outline">
-                        <i data-lucide="x" data-size="16"></i> Limpiar
-                    </a>
+                {% if query or mis_publicaciones %}
+                    <a href="{% url 'foro_comunidad' %}" class="btn btn-outline">Limpiar</a>
                 {% endif %}
             </div>
         </form>
@@ -61,11 +79,11 @@
     </aside>
 
     <!-- Carrusel Accesible de Temas Destacados -->
-    {% if destacados and not query %}
-        <section class="carousel-wrapper" aria-label="Temas destacados de la comunidad" style="background: #FFFFFF;">
+    {% if destacados and not query and not mis_publicaciones %}
+        <section class="carousel-wrapper" aria-label="Temas destacados de la comunidad">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
-                <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--color-primary); margin: 0; display: flex; align-items: center; gap: 0.45rem;">
-                    <i data-lucide="sparkles" data-size="19"></i> Temas Recientes Destacados
+                <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--color-primary); margin: 0;">
+                    ✨ Temas Recientes Destacados
                 </h2>
                 <div style="display: flex; gap: 0.5rem;">
                     <button type="button" id="carousel-prev" class="btn btn-outline btn-sm" aria-label="Tema destacado anterior">&larr;</button>
@@ -77,7 +95,7 @@
                 {% for d in destacados %}
                     <div class="carousel-slide card rounded-xl p-4" style="margin-bottom: 0; background: var(--color-background); border: 1px solid rgba(23, 63, 50, 0.12);">
                         <span class="badge badge-soft" style="font-size: 0.7rem; margin-bottom: 0.4rem;">
-                            <i data-lucide="message-square" data-size="12"></i> {{ d.respuestas.count }} respuesta(s)
+                            💬 {{ d.respuestas.count }} respuesta(s)
                         </span>
                         <h3 style="font-size: 1rem; font-weight: 700; color: var(--color-primary); margin-bottom: 0.35rem;">
                             <a href="#post-{{ d.id }}" style="text-decoration: none;">{{ d.titulo|truncatewords:10 }}</a>
@@ -104,38 +122,44 @@
         </div>
     {% endif %}
 
-    <!-- Listado Paginado de Publicaciones -->
-    <section style="margin-top: 1.75rem;" aria-label="Publicaciones del foro">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+    <!-- Listado Paginado de Publicaciones (Vista Compacta con Encabezado y Resumen Breve) -->
+    <section id="resultados-foro" style="margin-top: 1.75rem;" aria-label="Publicaciones del foro" aria-live="polite">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem;">
             <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--color-primary);">
-                {% if query %}Resultados para «{{ query }}» ({{ total_posts }}){% else %}Publicaciones de la Comunidad ({{ total_posts }}){% endif %}
+                {% if mis_publicaciones and query %}
+                    Mis publicaciones para «{{ query }}» ({{ total_posts }})
+                {% elif mis_publicaciones %}
+                    👤 Mis Publicaciones en el Foro ({{ total_posts }})
+                {% elif query %}
+                    Resultados para «{{ query }}» ({{ total_posts }})
+                {% else %}
+                    Publicaciones de la Comunidad ({{ total_posts }})
+                {% endif %}
             </h2>
+            <a href="{% url 'foro_nueva' %}" class="btn btn-secondary btn-sm">
+                <span aria-hidden="true">✍️</span> Crear Publicación
+            </a>
         </div>
 
         {% for post in posts %}
-            <article id="post-{{ post.id }}" class="card rounded-2xl shadow-sm p-6" style="background: #FFFFFF; margin-bottom: 1.25rem;">
+            <article id="post-{{ post.id }}" class="card rounded-2xl shadow-sm p-6" style="margin-bottom: 1.25rem;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.5rem;">
-                    <div style="display: flex; align-items: center; gap: 0.75rem;">
-                        <div class="avatar-circle" style="width: 42px; height: 42px; font-size: 1rem;" aria-hidden="true">
-                            {{ post.autor.get_full_name|default:post.autor.username|slice:":1"|upper }}
-                        </div>
-                        <div>
-                            <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--color-primary); margin: 0 0 0.25rem 0;">
-                                {{ post.titulo }}
-                            </h3>
-                            <span style="font-size: 0.82rem; color: var(--color-text-muted);">
-                                Por <strong>{{ post.autor.get_full_name|default:post.autor.username }}</strong>
-                                {% if post.autor.role == 'PROFESSIONAL' %}
-                                    <span class="badge badge-success" style="font-size: 0.65rem; padding: 2px 6px;">Ingeniero CIAPAJ</span>
-                                {% elif post.autor.role == 'PRODUCER' %}
-                                    <span class="badge badge-warning" style="font-size: 0.65rem; padding: 2px 6px;">Productor</span>
-                                {% endif %}
-                                &bull; {{ post.fecha_creacion|date:"d/m/Y H:i" }}
-                            </span>
-                        </div>
+                    <div>
+                        <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--color-primary); margin: 0 0 0.25rem 0;">
+                            {{ post.titulo }}
+                        </h3>
+                        <span style="font-size: 0.82rem; color: var(--color-text-muted);">
+                            Por <strong>{{ post.autor.get_full_name|default:post.autor.username }}</strong>
+                            {% if post.autor.role == 'PROFESSIONAL' %}
+                                <span class="badge badge-success" style="font-size: 0.65rem; padding: 2px 6px;">Ingeniero CIAPAJ</span>
+                            {% elif post.autor.role == 'PRODUCER' %}
+                                <span class="badge badge-warning" style="font-size: 0.65rem; padding: 2px 6px;">Productor</span>
+                            {% endif %}
+                            &bull; {{ post.fecha_creacion|date:"d/m/Y H:i" }}
+                        </span>
                     </div>
                     <span class="badge badge-soft">
-                        <i data-lucide="message-square" data-size="13"></i> {{ post.respuestas.count }} respuesta(s)
+                        💬 {{ post.respuestas.count }} respuesta(s)
                     </span>
                 </div>
 
@@ -196,7 +220,7 @@
                                 <label for="resp-input-{{ post.id }}" class="visually-hidden">Escribe una respuesta</label>
                                 <input type="text" id="resp-input-{{ post.id }}" name="contenido" placeholder="Escribe un aporte o respuesta anidada..." required class="form-control" autocomplete="off" style="flex: 1; font-size: 0.88rem; padding: 0.55rem 0.85rem;">
                                 <button type="submit" class="btn btn-secondary btn-sm">
-                                    <i data-lucide="send" data-size="14"></i> Responder
+                                    Responder
                                 </button>
                             </form>
                         {% endif %}
@@ -204,10 +228,11 @@
                 </details>
             </article>
         {% empty %}
-            <div class="card rounded-2xl shadow-sm p-8" style="background: #FFFFFF; text-align: center;">
-                <p style="font-size: 1.1rem; color: var(--color-text-muted);">
-                    No se encontraron publicaciones que coincidan con tu búsqueda.
+            <div class="card rounded-2xl shadow-sm p-8" style="text-align: center;">
+                <p style="font-size: 1.1rem; color: var(--color-text-muted); margin-bottom: 1rem;">
+                    No se encontraron publicaciones que coincidan con tu búsqueda o filtro.
                 </p>
+                <a href="{% url 'foro_nueva' %}" class="btn btn-primary btn-sm">Crear una nueva consulta</a>
             </div>
         {% endfor %}
 
@@ -215,7 +240,7 @@
         {% if page_obj and page_obj.paginator.num_pages > 1 %}
             <nav class="pagination-nav" aria-label="Paginación del foro">
                 {% if page_obj.has_previous %}
-                    <a href="?q={{ query|urlencode }}&amp;page={{ page_obj.previous_page_number }}" class="btn btn-outline btn-sm">
+                    <a href="?q={{ query|urlencode }}{% if mis_publicaciones %}&amp;mis_publicaciones=1{% endif %}&amp;page={{ page_obj.previous_page_number }}" class="btn btn-outline btn-sm">
                         &larr; Anterior
                     </a>
                 {% endif %}
@@ -225,7 +250,7 @@
                 </span>
 
                 {% if page_obj.has_next %}
-                    <a href="?q={{ query|urlencode }}&amp;page={{ page_obj.next_page_number }}" class="btn btn-outline btn-sm">
+                    <a href="?q={{ query|urlencode }}{% if mis_publicaciones %}&amp;mis_publicaciones=1{% endif %}&amp;page={{ page_obj.next_page_number }}" class="btn btn-outline btn-sm">
                         Siguiente &rarr;
                     </a>
                 {% endif %}

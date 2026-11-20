@@ -182,7 +182,7 @@ class RegistroProductorView(CreateView):
 
     def form_valid(self, form):
         user = form.save()
-        login(self.request, user)
+        login(self.request, user, backend='application.users.backends.AgroJujuyAuthBackend')
         messages.success(
             self.request,
             f"¡Bienvenido {user.first_name}! Tu cuenta de productor agrícola fue creada con éxito."
@@ -197,7 +197,7 @@ class RegistroProfesionalView(CreateView):
 
     def form_valid(self, form):
         user = form.save()
-        login(self.request, user)
+        login(self.request, user, backend='application.users.backends.AgroJujuyAuthBackend')
         return redirect(self.success_url)
 
 
@@ -296,7 +296,7 @@ class PerfilProfesionalView(LoginRequiredMixin, UpdateView):
     """
     Vista 'Mi perfil CIAPAJ' (/perfil/profesional/):
     Permite modificar nombre, apellido, correo electrónico, teléfono,
-    especialidades, zonas de cobertura y resumen profesional con validación en servidor.
+    especialidades, zonas de cobertura y resumen profesional con validación de matrícula en servidor.
     """
     model = Profesional
     form_class = PerfilProfesionalForm
@@ -399,7 +399,7 @@ class CambiarEstadoProfesionalAdminView(LoginRequiredMixin, View):
         use_case = ValidarProfesionalAdminUseCase(repo)
 
         if accion == 'alta':
-            res = use_case.habilitar(profesional.id)
+            use_case.habilitar(profesional.id)
             Profesional.objects.filter(id=profesional.id).update(fecha_validacion=timezone.now())
             messages.success(
                 request,
@@ -407,7 +407,7 @@ class CambiarEstadoProfesionalAdminView(LoginRequiredMixin, View):
                 f"(Mat. {profesional.matricula_provincial}) ahora está Habilitado y visible en el buscador."
             )
         elif accion == 'baja':
-            res = use_case.rechazar_o_suspender(profesional.id)
+            use_case.rechazar_o_suspender(profesional.id)
             messages.warning(
                 request,
                 f"⛔ Baja aplicada: Ing. {profesional.usuario.get_full_name() or profesional.usuario.username} "

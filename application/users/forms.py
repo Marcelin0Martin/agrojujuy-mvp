@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, PasswordResetForm, SetPasswordForm
 from django.core.exceptions import ValidationError
 from .models import (
     CustomUser, Productor, Profesional,
@@ -29,6 +29,31 @@ class AccessibleFormMixin:
                 described_by.append(f'help_{name}')
             if described_by:
                 widget_attrs['aria-describedby'] = ' '.join(described_by)
+
+
+class AccessiblePasswordResetForm(AccessibleFormMixin, PasswordResetForm):
+    email = forms.EmailField(
+        label="Correo Electrónico Registrado",
+        max_length=254,
+        widget=forms.EmailInput(attrs={
+            'autocomplete': 'email',
+            'class': 'form-control',
+            'placeholder': 'ejemplo@correo.com',
+        })
+    )
+
+
+class AccessibleSetPasswordForm(AccessibleFormMixin, SetPasswordForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['new_password1'].widget.attrs.update({
+            'autocomplete': 'new-password',
+            'class': 'form-control',
+        })
+        self.fields['new_password2'].widget.attrs.update({
+            'autocomplete': 'new-password',
+            'class': 'form-control',
+        })
 
 
 class RegistroProductorForm(AccessibleFormMixin, UserCreationForm):
@@ -92,6 +117,12 @@ class RegistroProductorForm(AccessibleFormMixin, UserCreationForm):
     class Meta:
         model = CustomUser
         fields = ('username', 'first_name', 'last_name', 'email')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].widget.attrs.update({'autocomplete': 'username'})
+        self.fields['password1'].widget.attrs.update({'autocomplete': 'new-password'})
+        self.fields['password2'].widget.attrs.update({'autocomplete': 'new-password'})
 
     def clean_dni(self):
         dni = self.cleaned_data.get('dni', '').strip()
@@ -197,6 +228,12 @@ class RegistroProfesionalForm(AccessibleFormMixin, UserCreationForm):
         model = CustomUser
         fields = ('username', 'first_name', 'last_name', 'email')
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].widget.attrs.update({'autocomplete': 'username'})
+        self.fields['password1'].widget.attrs.update({'autocomplete': 'new-password'})
+        self.fields['password2'].widget.attrs.update({'autocomplete': 'new-password'})
+
     def clean_matricula_provincial(self):
         mat = self.cleaned_data.get('matricula_provincial', '').strip()
         if not validar_matricula_ciapa(mat):
@@ -263,6 +300,9 @@ class PerfilProductorForm(AccessibleFormMixin, forms.ModelForm):
     class Meta:
         model = Productor
         fields = ['rubro_productivo', 'telefono']
+        widgets = {
+            'telefono': forms.TextInput(attrs={'autocomplete': 'tel'}),
+        }
 
     def clean_telefono(self):
         tel = self.cleaned_data.get('telefono', '').strip()
@@ -277,8 +317,8 @@ class PerfilProfesionalForm(AccessibleFormMixin, forms.ModelForm):
     Permite al profesional modificar los datos personales y profesionales ingresados
     en su registro: nombre, apellido, correo electrónico, teléfono, especialidades,
     zonas de cobertura y resumen profesional (biografía).
-    Valida formato de teléfono, unicidad de correo y protege contra mass assignment
-    (matrícula provincial, estado_validacion y rol permanecen protegidos).
+    Exige confirmar el Número de Matrícula Provincial en servidor antes de guardar
+    cambios en nombre, apellido o correo electrónico.
     """
     first_name = forms.CharField(
         max_length=30,
@@ -297,6 +337,13 @@ class PerfilProfesionalForm(AccessibleFormMixin, forms.ModelForm):
         label="Correo Electrónico",
         help_text="Debe ser un correo electrónico válido y único en la plataforma",
         widget=forms.EmailInput(attrs={'autocomplete': 'email'})
+    )
+    confirmar_matricula = forms.CharField(
+        max_length=50,
+        required=False,
+        label="Confirmar Número de Matrícula Provincial (CIAPAJ)",
+        help_text="Obligatorio por seguridad para confirmar cambios en tu nombre, apellido o correo electrónico",
+        widget=forms.TextInput(attrs={'placeholder': 'Ingresa tu matrícula exacta para confirmar cambios personales'})
     )
     especialidades = forms.MultipleChoiceField(
         choices=[(e, e) for e in ESPECIALIDADES_VALIDAS],
@@ -369,7 +416,6 @@ class PerfilProfesionalForm(AccessibleFormMixin, forms.ModelForm):
         propuesta = (cleaned_data.get('especialidad_propuesta') or '').strip()
 
         if not seleccionadas and not propuesta:
-            # Si en un envío parcial no marcó casillas pero ya tenía especialidad válida en instancia, o si las desmarcó todas:
             if 'especialidades' in self.data or 'especialidad_propuesta' in self.data:
                 self.add_error(
                     'especialidades',
@@ -379,6 +425,29 @@ class PerfilProfesionalForm(AccessibleFormMixin, forms.ModelForm):
                 cleaned_data['especialidades_consolidadas'] = self.instance.especialidad
         else:
             cleaned_data['especialidades_consolidadas'] = ", ".join(seleccionadas) if seleccionadas else propuesta
+
+        # Validación de seguridad en servidor: exigir confirmación de Matrícula al modificar nombre, apellido o correo
+        if self.instance and self.instance.usuario_id:
+            u = self.instance.usuario
+            nuevo_nombre = (cleaned_data.get('first_name') or '').strip()
+            nuevo_apellido = (cleaned_data.get('last_name') or '').strip()
+            nuevo_email = (cleaned_data.get('email') or '').strip()
+            matricula_confirmada = (cleaned_data.get('confirmar_matricula') or '').strip()
+
+            cambio_datos_personales = (
+                (nuevo_nombre and nuevo_nombre != u.first_name) or
+                (nuevo_apellido and nuevo_apellido != u.last_name) or
+                (nuevo_email and nuevo_email.lower() != (u.email or '').lower())
+            )
+
+            if cambio_datos_personales or matricula_confirmada:
+                matricula_real = (self.instance.matricula_provincial or '').strip()
+                if not matricula_confirmada or matricula_confirmada.upper() != matricula_real.upper():
+                    self.add_error(
+                        'confirmar_matricula',
+                        "Para modificar tu nombre, apellido o correo electrónico debes ingresar y confirmar tu Número de Matrícula Provincial (CIAPAJ) exacto."
+                    )
+
         return cleaned_data
 
     def save(self, commit=True):
@@ -389,7 +458,6 @@ class PerfilProfesionalForm(AccessibleFormMixin, forms.ModelForm):
         profesional.especialidad_propuesta = (self.cleaned_data.get('especialidad_propuesta') or '').strip()
 
         if commit:
-            # Protección contra mass assignment: solo actualizamos campos permitidos
             profesional.save(update_fields=[
                 'especialidad',
                 'especialidad_propuesta',

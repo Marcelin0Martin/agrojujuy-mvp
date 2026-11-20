@@ -100,6 +100,18 @@
                 </div>
             </div>
 
+            <!-- Confirmación de Matrícula exigida al cambiar Nombre, Apellido o Correo -->
+            <div class="form-group" style="background: #FFFBEB; border: 1.5px solid var(--color-tertiary); border-radius: var(--radius-xl); padding: 1.1rem;">
+                <label class="form-label" for="{{ form.confirmar_matricula.id_for_label }}">
+                    <i data-lucide="shield-check" data-size="16"></i> {{ form.confirmar_matricula.label }}
+                </label>
+                {{ form.confirmar_matricula }}
+                <span id="help_confirmar_matricula" class="field-help">{{ form.confirmar_matricula.help_text }}</span>
+                {% if form.confirmar_matricula.errors %}
+                    <p id="error_confirmar_matricula" class="field-error" role="alert">{{ form.confirmar_matricula.errors|join:", " }}</p>
+                {% endif %}
+            </div>
+
             <h2 style="font-size: 1.05rem; font-weight: 700; color: var(--color-primary); margin: 1.25rem 0 1rem 0; display: flex; align-items: center; gap: 0.45rem;">
                 <i data-lucide="leaf" data-size="18"></i> Especialidades Agronómicas y Cobertura Territorial
             </h2>

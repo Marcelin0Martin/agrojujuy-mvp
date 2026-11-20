@@ -1,8 +1,11 @@
 from django.db.models import Case, When, Value, IntegerField, Q
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView, View
 from django.contrib import messages
+from django.urls import reverse
+from django.utils import timezone
 
 from .models import TicketAsistencia, MensajeTicket
 from .forms import (
@@ -15,6 +18,8 @@ from application.users.models import Productor, Profesional
 from application.use_cases import (
     CrearTicketAsistenciaUseCase,
     CrearSolicitudAbiertaUseCase,
+    ConvertirSolicitudAbiertaUseCase,
+    CancelarTicketPendienteUseCase,
     TomarSolicitudAbiertaUseCase,
     CambiarEstadoTicketUseCase,
     FinalizarTrabajoTicketUseCase,
@@ -220,6 +225,54 @@ class SolicitarAsistenciaAbiertaView(LoginRequiredMixin, View):
         return render(request, self.template_name, {'form': form})
 
 
+class ConvertirTicketAbiertoView(LoginRequiredMixin, View):
+    """
+    Permite al productor convertir una solicitud DIRIGIDA que sigue Pendiente en una solicitud ABIERTA,
+    liberándola del profesional asignado para que cualquier ingeniero habilitado pueda tomarla.
+    """
+
+    def post(self, request, ticket_id):
+        productor = _obtener_o_crear_productor_para_usuario(request.user)
+        if not productor:
+            messages.error(request, "Solo el productor titular puede modificar esta solicitud.")
+            return redirect('inicio')
+
+        repo_ticket = DjangoTicketRepository()
+        use_case = ConvertirSolicitudAbiertaUseCase(repo_ticket)
+        res = use_case.ejecutar(ticket_id=ticket_id, productor_id=productor.id)
+
+        if res.exito:
+            messages.success(request, res.mensaje)
+        else:
+            messages.error(request, res.mensaje)
+
+        return redirect('bandeja_productor')
+
+
+class EliminarTicketPendienteView(LoginRequiredMixin, View):
+    """
+    Permite al productor eliminar / dar de baja una solicitud en estado Pendiente,
+    con validación estricta de propiedad del recurso en backend.
+    """
+
+    def post(self, request, ticket_id):
+        productor = _obtener_o_crear_productor_para_usuario(request.user)
+        if not productor:
+            messages.error(request, "Solo el productor titular puede cancelar o eliminar esta solicitud.")
+            return redirect('inicio')
+
+        repo_ticket = DjangoTicketRepository()
+        use_case = CancelarTicketPendienteUseCase(repo_ticket)
+        res = use_case.ejecutar(ticket_id=ticket_id, productor_id=productor.id)
+
+        if res.exito:
+            messages.success(request, res.mensaje)
+        else:
+            messages.error(request, res.mensaje)
+
+        return redirect('bandeja_productor')
+
+
 class ChatTicketView(LoginRequiredMixin, View):
     template_name = 'tickets/chat_ticket.html'
 
@@ -267,6 +320,8 @@ class ChatTicketView(LoginRequiredMixin, View):
     def post(self, request, ticket_id):
         ticket_valido, ticket = self.get_ticket_y_validar(request, ticket_id)
         if not ticket_valido:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'exito': False, 'mensaje': 'Acceso denegado.'}, status=403)
             messages.error(request, "No tienes permiso para acceder a este canal privado.")
             return redirect('inicio')
 
@@ -285,9 +340,23 @@ class ChatTicketView(LoginRequiredMixin, View):
                 prod_uid=ticket.productor.usuario_id,
                 prof_uid=prof_uid
             )
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                if res.exito:
+                    ahora_local = timezone.localtime(res.datos.fecha_envio or timezone.now())
+                    return JsonResponse({
+                        'exito': True,
+                        'id': res.datos.id,
+                        'contenido': res.datos.contenido,
+                        'emisor_nombre': f"Tú ({request.user.first_name or request.user.username})",
+                        'fecha_envio': ahora_local.strftime('%H:%M — %d/%m/%Y'),
+                    })
+                return JsonResponse({'exito': False, 'mensaje': res.mensaje}, status=400)
+
             if not res.exito:
                 messages.error(request, res.mensaje)
-        return redirect('chat_ticket', ticket_id=ticket.id)
+
+        url_chat = reverse('chat_ticket', kwargs={'ticket_id': ticket.id})
+        return redirect(f"{url_chat}#ultimo-mensaje")
 
 
 class AceptarTicketView(LoginRequiredMixin, View):

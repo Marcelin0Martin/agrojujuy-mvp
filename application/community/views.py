@@ -16,28 +16,35 @@ class MuroComunidadView(View):
     Foro / Muro Comunitario de AgroJujuy:
     - Accesible para lectura pública sin necesidad de iniciar sesión.
     - No incrusta el formulario de creación de consultas; redirige a la vista dedicada (/foro/nueva/).
-    - Incluye barra de búsqueda por temas o palabras clave (?q=...), resumen breve y paginación.
+    - Incluye barra de búsqueda por temas o palabras clave (?q=...) que responde a Enter y al botón.
+    - Incluye filtro directo "Mis publicaciones" (?mis_publicaciones=1) para usuarios autenticados.
+    - Resumen breve y paginación.
     """
     template_name = 'community/foro.html'
     PER_PAGE = 6
 
     def get(self, request):
         query = request.GET.get('q', '').strip()
+        mis_publicaciones = request.GET.get('mis_publicaciones', '').strip() == '1'
         page_number = request.GET.get('page', 1)
 
         qs = PostComunidad.objects.select_related('autor').prefetch_related(
             'respuestas', 'respuestas__autor'
         ).order_by('-fecha_creacion')
 
+        if mis_publicaciones and request.user.is_authenticated:
+            qs = qs.filter(autor=request.user)
+
         if query:
             qs = qs.filter(
                 Q(titulo__icontains=query) |
                 Q(contenido__icontains=query) |
                 Q(autor__first_name__icontains=query) |
-                Q(autor__last_name__icontains=query)
+                Q(autor__last_name__icontains=query) |
+                Q(autor__username__icontains=query)
             )
 
-        destacados = list(qs[:4])
+        destacados = [] if (query or mis_publicaciones) else list(qs[:4])
         paginator = Paginator(qs, self.PER_PAGE)
         page_obj = paginator.get_page(page_number)
 
@@ -48,6 +55,7 @@ class MuroComunidadView(View):
             'total_posts': paginator.count,
             'destacados': destacados,
             'query': query,
+            'mis_publicaciones': mis_publicaciones,
             'respuesta_form': respuesta_form,
         })
 

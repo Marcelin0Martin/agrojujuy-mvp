@@ -84,7 +84,10 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="id_password">Contraseña:</label>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                        <label class="form-label" for="id_password" style="margin-bottom: 0;">Contraseña:</label>
+                        <a href="{% url 'password_reset' %}" style="font-size: 0.85rem;">¿Olvidaste tu contraseña?</a>
+                    </div>
                     <input type="password"
                            name="password"
                            id="id_password"
