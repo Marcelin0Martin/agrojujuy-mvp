@@ -3,84 +3,170 @@
 {% block title %}Acceso Administrador — AgroJujuy{% endblock %}
 
 {% block content %}
-<div class="page-container-narrow">
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1.75rem; align-items: stretch;">
-        <!-- Columna Izquierda: Información Institucional de Administración -->
-        <div class="card rounded-2xl shadow-md p-6" style="margin-bottom: 0; background: linear-gradient(135deg, #173F32 0%, #0F2D23 100%); color: #FFFFFF; display: flex; flex-direction: column; justify-content: space-between;">
-            <div>
-                <span class="badge badge-warning" style="margin-bottom: 1rem;">
-                    <i data-lucide="shield-check" data-size="14"></i> Control Institucional CIAPAJ
+
+<div class="admin-access">
+    <div class="admin-grid">
+
+        <!-- Panel institucional -->
+        <section class="admin-brand">
+
+            <div class="admin-brand-content">
+
+                <div class="admin-icon">
+                    <i data-lucide="shield-check"></i>
+                </div>
+
+                <span class="admin-label">
+                    <i data-lucide="badge-check" data-size="14"></i>
+                    Control Institucional CIAPAJ
                 </span>
-                <h2 style="font-size: 1.55rem; font-weight: 800; color: #FFFFFF; line-height: 1.25; margin-bottom: 0.85rem;">
-                    Acceso Exclusivo para Administradores
+
+                <h2>
+                    Gestión y Control Administrativo
                 </h2>
-                <p style="font-size: 0.94rem; color: rgba(255,255,255,0.86); line-height: 1.6; margin-bottom: 1.5rem;">
-                    Ingreso reservado al personal autorizado para validar matrículas provinciales CIAPAJ, gestionar altas y bajas de profesionales y realizar auditoría del sistema.
+
+                <p>
+                    Plataforma de acceso exclusivo para personal autorizado
+                    de CIAPAJ. Administra matrículas provinciales, gestiona
+                    profesionales y supervisa las operaciones del sistema
+                    AgroJujuy desde un entorno centralizado.
                 </p>
+
             </div>
 
-            <div style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.16); border-radius: var(--radius-xl); padding: 1.15rem;">
-                <strong style="font-size: 0.88rem; display: block; margin-bottom: 0.5rem; color: #A7F3D0;">
-                    ¿Eres Productor o Profesional Agrario?
-                </strong>
-                <a href="{% url 'login' %}" class="btn btn-outline btn-sm" style="background: #00d848;; color: rgb(128, 0, 0); border-color: rgba(255,255,255,0.45);">
-                    <i data-lucide="key-round" data-size="15"></i> Ir al Inicio de Sesión de Productores y Profesionales
+            <div class="admin-brand-footer">
+
+                <strong>¿Eres Productor o Profesional Agrario?</strong>
+
+                <a href="{% url 'login' %}">
+                    <i data-lucide="log-in" data-size="17"></i>
+                    Acceder como Productor o Profesional
                 </a>
+
             </div>
-        </div>
 
-        <!-- Columna Derecha: Formulario Exclusivo de Administrador -->
-        <div class="card rounded-2xl shadow-md p-6" style="margin-bottom: 0; border-top: 5px solid var(--color-primary);">
-            <h1 class="card-title" style="margin-bottom: 1.25rem;">
-                <span style="display: flex; align-items: center; gap: 0.5rem;">
-                    <i data-lucide="shield-check" data-size="22"></i> Iniciar Sesión Administrador
+        </section>
+
+        <!-- Formulario administrativo -->
+        <section class="admin-form-card">
+
+            <div class="admin-form-header">
+
+                <div class="header-icon">
+                    <i data-lucide="shield-check" data-size="27"></i>
+                </div>
+
+                <h1>Bienvenido nuevamente</h1>
+
+                <p>
+                    Ingresa tus credenciales institucionales
+                    para acceder al panel de administración.
+                </p>
+
+                <span class="admin-badge">
+                    Acceso Administrativo
                 </span>
-                <span class="badge badge-warning">Admin</span>
-            </h1>
 
-            <form method="POST" action="{% url 'login_admin' %}" data-loading-text="Verificando acceso administrativo..." novalidate>
+            </div>
+
+            <form method="POST"
+                  action="{% url 'login_admin' %}"
+                  data-loading-text="Verificando acceso administrativo..."
+                  novalidate>
+
                 {% csrf_token %}
 
                 {% if form.errors %}
-                    <div id="login-admin-error-alert" class="alert alert-error" role="alert" style="font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <div id="login-admin-error-alert"
+                         class="alert alert-error"
+                         role="alert"
+                         style="font-size:.88rem; margin-bottom:1.4rem;">
+
                         <i data-lucide="alert-circle" data-size="18"></i>
-                        <span>Credenciales de administrador inválidas. Verifique sus datos e intente nuevamente.</span>
+
+                        <span>
+                            Credenciales inválidas. Verifica tu usuario
+                            y contraseña e intenta nuevamente.
+                        </span>
+
                     </div>
                 {% endif %}
 
-                <div class="form-group">
-                    <label class="form-label" for="id_username">Usuario o Correo Institucional:</label>
-                    <input type="text"
-                           name="username"
-                           id="id_username"
-                           required
-                           autofocus
-                           class="form-control"
-                           placeholder="Ej: admin_ciapaj"
-                           autocomplete="username"
-                           {% if form.errors %}aria-invalid="true" aria-describedby="login-admin-error-alert help_admin_id"{% else %}aria-describedby="help_admin_id"{% endif %}>
-                    <span id="help_admin_id" class="field-help">
-                        Ingresa el nombre de usuario o correo electrónico de tu cuenta administrativa.
+                <div class="admin-field">
+
+                    <label for="id_username">
+                        Usuario o Correo Institucional
+                    </label>
+
+                    <div class="admin-input-wrapper">
+
+                        <i data-lucide="user-round"></i>
+
+                        <input type="text"
+                               name="username"
+                               id="id_username"
+                               required
+                               autofocus
+                               placeholder="Ej: admin_ciapaj"
+                               autocomplete="username"
+                               {% if form.errors %}
+                                   aria-invalid="true"
+                                   aria-describedby="login-admin-error-alert help_admin_id"
+                               {% else %}
+                                   aria-describedby="help_admin_id"
+                               {% endif %}>
+
+                    </div>
+
+                    <span id="help_admin_id" class="admin-help">
+                        Ingresa tu nombre de usuario o correo electrónico institucional.
                     </span>
+
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label" for="id_password">Contraseña:</label>
-                    <input type="password"
-                           name="password"
-                           id="id_password"
-                           required
-                           class="form-control"
-                           placeholder="Tu contraseña"
-                           autocomplete="current-password"
-                           {% if form.errors %}aria-invalid="true" aria-describedby="login-admin-error-alert"{% endif %}>
+                <div class="admin-field">
+
+                    <label for="id_password">
+                        Contraseña
+                    </label>
+
+                    <div class="admin-input-wrapper">
+
+                        <i data-lucide="lock-keyhole"></i>
+
+                        <input type="password"
+                               name="password"
+                               id="id_password"
+                               required
+                               placeholder="Ingresa tu contraseña"
+                               autocomplete="current-password"
+                               {% if form.errors %}
+                                   aria-invalid="true"
+                                   aria-describedby="login-admin-error-alert"
+                               {% endif %}>
+
+                    </div>
+
                 </div>
 
-                <button type="submit" class="btn btn-primary w-full mt-4">
-                    <i data-lucide="shield-check" data-size="17"></i> Ingresar al Panel de Administración
+                <button type="submit" class="admin-submit">
+
+                    <i data-lucide="shield-check" data-size="19"></i>
+
+                    Ingresar al Panel Administrativo
+
                 </button>
+
             </form>
-        </div>
+
+            <div class="admin-security">
+                <i data-lucide="lock" data-size="15"></i>
+                Acceso restringido al personal autorizado
+            </div>
+
+        </section>
+
     </div>
 </div>
+
 {% endblock %}
