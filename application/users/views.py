@@ -464,6 +464,22 @@ class PanelAdminProfesionalesView(LoginRequiredMixin, TemplateView):
         context['total_pendientes'] = Profesional.objects.filter(estado_validacion='Pendiente').count()
         context['total_habilitados'] = Profesional.objects.filter(estado_validacion='Habilitado').count()
         context['total_suspendidos'] = Profesional.objects.filter(estado_validacion='Suspendido').count()
+        
+        productores_all = list(Productor.objects.all())
+        profesionales_habilitados = list(Profesional.objects.filter(estado_validacion='Habilitado'))
+
+        metricas_regiones = []
+        for region in REGIONES_VALIDAS:
+            cant_productores = sum(1 for p in productores_all if p.region == region)
+            cant_profesionales = sum(1 for pr in profesionales_habilitados if region in pr.get_zonas_list())
+            metricas_regiones.append({
+                'region': region,
+                'productores': cant_productores,
+                'profesionales': cant_profesionales,
+            })
+
+        context['metricas_regiones'] = metricas_regiones
+        
         return context
 
 

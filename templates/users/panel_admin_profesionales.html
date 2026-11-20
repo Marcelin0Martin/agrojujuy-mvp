@@ -36,6 +36,43 @@
         </div>
     </div>
 
+    <!-- Métricas Territoriales: Productores y Profesionales por Región -->
+    <section class="card rounded-2xl shadow-sm p-6" aria-label="Gráfico de barras de productores y profesionales por región" style="background: #FFFFFF; margin-bottom: 1.5rem; border-top: 5px solid var(--color-secondary);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+            <div>
+                <span class="badge badge-soft" style="margin-bottom: 0.35rem;">Distribución Territorial</span>
+                <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--color-primary); margin: 0;">
+                    Productores y Profesionales Habilitados por Región de Jujuy
+                </h2>
+                <p style="font-size: 0.9rem; color: var(--color-text-muted); margin: 0.25rem 0 0 0;">
+                    Comparativa en Puna, Quebrada, Valles y Yungas.
+                </p>
+            </div>
+
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; font-size: 0.86rem; font-weight: 700; color: var(--color-primary);">
+                <span style="display: inline-flex; align-items: center; gap: 0.4rem;">
+                    <span aria-hidden="true" style="width: 13px; height: 13px; border-radius: 3px; background: #D97706; display: inline-block;"></span>
+                    <span>Productores</span>
+                </span>
+                <span style="display: inline-flex; align-items: center; gap: 0.4rem;">
+                    <span aria-hidden="true" style="width: 13px; height: 13px; border-radius: 3px; background: #059669; display: inline-block;"></span>
+                    <span>Profesionales Habilitados</span>
+                </span>
+            </div>
+        </div>
+
+        <div style="width: 100%; overflow-x: auto;">
+            <svg id="grafico-regiones-admin"
+                 viewBox="0 0 720 300"
+                 role="img"
+                 aria-label="Gráfico de barras comparando cantidad de productores y profesionales habilitados en Puna, Quebrada, Valles y Yungas"
+                 style="width: 100%; min-width: 480px; max-height: 320px; display: block;">
+            </svg>
+        </div>
+
+        {{ metricas_regiones|json_script:"metricas-regiones-admin" }}
+    </section>
+
     <!-- Filtros por Estado y Buscador de Profesionales -->
     <section class="card rounded-2xl shadow-sm p-6" aria-label="Filtros y búsqueda de profesionales" style="margin-bottom: 1.5rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">

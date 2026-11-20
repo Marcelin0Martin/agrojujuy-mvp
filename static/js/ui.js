@@ -506,8 +506,159 @@
         seleccionarRegion('Puna');
     }
 
+    function initGraficoRegionesAdmin() {
+        const dataEl = document.getElementById('metricas-regiones-admin');
+        const svg = document.getElementById('grafico-regiones-admin');
+        if (!dataEl || !svg) return;
+
+        let metricas = [];
+        try {
+            metricas = JSON.parse(dataEl.textContent);
+        } catch (e) {
+            return;
+        }
+        if (!Array.isArray(metricas) || metricas.length === 0) return;
+
+        const svgNS = 'http://www.w3.org/2000/svg';
+        while (svg.firstChild) {
+            svg.removeChild(svg.firstChild);
+        }
+
+        const width = 720;
+        const height = 300;
+        const padTop = 28;
+        const padBottom = 46;
+        const padLeft = 48;
+        const padRight = 24;
+        const plotW = width - padLeft - padRight;
+        const plotH = height - padTop - padBottom;
+        const baseY = padTop + plotH;
+
+        let maxVal = 0;
+        metricas.forEach(function (item) {
+            const p = Number(item.productores) || 0;
+            const pr = Number(item.profesionales) || 0;
+            if (p > maxVal) maxVal = p;
+            if (pr > maxVal) maxVal = pr;
+        });
+        const yMax = maxVal > 0 ? maxVal : 5;
+        const ticks = 5;
+
+        function createSvgEl(tag, attrs) {
+            const el = document.createElementNS(svgNS, tag);
+            Object.keys(attrs).forEach(function (k) {
+                el.setAttribute(k, String(attrs[k]));
+            });
+            return el;
+        }
+
+        // Líneas horizontales y etiquetas del eje Y
+        for (let t = 0; t <= ticks; t++) {
+            const ratio = t / ticks;
+            const yPos = baseY - ratio * plotH;
+            const valLabel = Math.round((yMax * ratio * 10)) / 10;
+
+            svg.appendChild(createSvgEl('line', {
+                x1: padLeft,
+                y1: yPos,
+                x2: width - padRight,
+                y2: yPos,
+                stroke: t === 0 ? '#94A39B' : '#E2E8F0',
+                'stroke-width': t === 0 ? '1.5' : '1',
+                'stroke-dasharray': t === 0 ? 'none' : '4 4'
+            }));
+
+            const yText = createSvgEl('text', {
+                x: padLeft - 10,
+                y: yPos + 4,
+                'text-anchor': 'end',
+                'font-size': '11',
+                'font-weight': '600',
+                fill: '#64748B'
+            });
+            yText.textContent = String(valLabel);
+            svg.appendChild(yText);
+        }
+
+        // Barras por región
+        const groupW = plotW / metricas.length;
+        const barW = Math.min(34, Math.max(16, groupW * 0.24));
+        const barGap = 8;
+
+        metricas.forEach(function (item, idx) {
+            const productores = Number(item.productores) || 0;
+            const profesionales = Number(item.profesionales) || 0;
+            const regionLabel = item.region || ('Región ' + (idx + 1));
+
+            const centerX = padLeft + groupW * idx + groupW / 2;
+            const xProd = centerX - barGap / 2 - barW;
+            const xProf = centerX + barGap / 2;
+
+            const hProd = (productores / yMax) * plotH;
+            const hProf = (profesionales / yMax) * plotH;
+
+            const yProd = baseY - hProd;
+            const yProf = baseY - hProf;
+
+            // Barra Productores
+            svg.appendChild(createSvgEl('rect', {
+                x: xProd,
+                y: yProd,
+                width: barW,
+                height: hProd,
+                rx: '5',
+                fill: '#D97706'
+            }));
+
+            const lblProd = createSvgEl('text', {
+                x: xProd + barW / 2,
+                y: yProd - 6,
+                'text-anchor': 'middle',
+                'font-size': '11.5',
+                'font-weight': '700',
+                fill: '#92400E'
+            });
+            lblProd.textContent = String(productores);
+            svg.appendChild(lblProd);
+
+            // Barra Profesionales Habilitados
+            svg.appendChild(createSvgEl('rect', {
+                x: xProf,
+                y: yProf,
+                width: barW,
+                height: hProf,
+                rx: '5',
+                fill: '#059669'
+            }));
+
+            const lblProf = createSvgEl('text', {
+                x: xProf + barW / 2,
+                y: yProf - 6,
+                'text-anchor': 'middle',
+                'font-size': '11.5',
+                'font-weight': '700',
+                fill: '#065F46'
+            });
+            lblProf.textContent = String(profesionales);
+            svg.appendChild(lblProf);
+
+            // Etiqueta de Región en eje X
+            const xText = createSvgEl('text', {
+                x: centerX,
+                y: baseY + 22,
+                'text-anchor': 'middle',
+                'font-size': '12.5',
+                'font-weight': '700',
+                fill: '#173F32'
+            });
+            xText.textContent = regionLabel;
+            svg.appendChild(xText);
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         initMapaJujuy();
+        initGraficoRegionesAdmin();
         renderLucideIcons();
         initSearchFilters();
         initFormLoadingStates();

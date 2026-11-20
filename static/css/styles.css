@@ -2091,3 +2091,52 @@ footer {
             font-size: 1.5rem;
         }
     }
+
+/* Mapa de Jujuy ampliado */
+.mapa-regiones-section {
+    width: 100%;
+}
+
+.mapa-regiones-grid {
+    grid-template-columns: minmax(0, 1.8fr) minmax(300px, 0.85fr);
+    gap: 1.5rem;
+}
+
+.mapa-svg-wrapper {
+    width: 100%;
+    min-width: 0;
+}
+
+#mapa-jujuy-svg {
+    width: 100%;
+    min-height: 750px;
+    height: auto;
+    display: block;
+}
+
+/* Pantallas medianas */
+@media (max-width: 1000px) {
+    .mapa-regiones-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    #mapa-jujuy-svg {
+        min-height: 650px;
+        max-height: none;
+    }
+}
+
+/* Celulares */
+@media (max-width: 600px) {
+    .mapa-regiones-section {
+        padding: 0.85rem !important;
+    }
+
+    .mapa-svg-wrapper {
+        padding: 0.65rem !important;
+    }
+
+    #mapa-jujuy-svg {
+        min-height: 480px;
+    }
+}
