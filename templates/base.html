@@ -281,7 +281,7 @@
                             <i data-lucide="key-round" data-size="20"></i>
                             <span class="sidebar-nav-text">
                                 <span class="sidebar-nav-title">Iniciar Sesión</span>
-                                <span class="sidebar-nav-desc">Ingresar a mi cuenta</span>
+                                <span class="sidebar-nav-desc">Productores e Ingenieros</span>
                             </span>
                         </a>
 
@@ -301,9 +301,20 @@
                             </span>
                         </a>
                     </div>
+
+                    <div class="sidebar-section-label">Administración</div>
+                    <div class="sidebar-nav-list">
+                        <a href="{% url 'login_admin' %}" class="sidebar-nav-item" {% if request.resolver_match.url_name == 'login_admin' %}aria-current="page"{% endif %}>
+                            <i data-lucide="shield-check" data-size="20"></i>
+                            <span class="sidebar-nav-text">
+                                <span class="sidebar-nav-title">Acceso Administrador</span>
+                                <span class="sidebar-nav-desc">Gestión institucional CIAPAJ</span>
+                            </span>
+                        </a>
+                    </div>
                 {% endif %}
             </div>
-
+            
             <!-- Pie de Sidebar: Usuario Actual + Botón Salir + Estado Online -->
             <div class="sidebar-footer">
                 {% if user.is_authenticated %}
