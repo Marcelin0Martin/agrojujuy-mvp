@@ -12,10 +12,11 @@ __pycache__/
 *$py.class
 *.so
 
-# Bases de datos locales SQLite
+# Bases de datos locales SQLite y estado local de notificaciones
 *.sqlite3
 db.sqlite3
 agrojujuy_db.sqlite3
+.agrojujuy_notif_reads.json
 
 # Variables de entorno y secretos
 .env

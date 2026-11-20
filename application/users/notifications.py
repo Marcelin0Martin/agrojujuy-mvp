@@ -1,7 +1,43 @@
+import json
+import os
+import tempfile
+import threading
+from pathlib import Path
+from django.conf import settings
 from django.db.models import Q
 from django.urls import reverse
 from application.tickets.models import MensajeTicket
 from application.community.models import RespuestaComunidad
+
+_NOTIF_LOCK = threading.Lock()
+_NOTIF_STORE_PATH = Path(settings.BASE_DIR) / '.agrojujuy_notif_reads.json'
+
+
+def _load_notif_store():
+    if not _NOTIF_STORE_PATH.exists():
+        return {}
+    try:
+        with _NOTIF_STORE_PATH.open('r', encoding='utf-8') as f:
+            data = json.load(f)
+            return data if isinstance(data, dict) else {}
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+def _save_notif_store(data):
+    try:
+        _NOTIF_STORE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        fd, tmp_path = tempfile.mkstemp(dir=str(_NOTIF_STORE_PATH.parent), suffix='.tmp')
+        try:
+            with os.fdopen(fd, 'w', encoding='utf-8') as f:
+                json.dump(data, f, ensure_ascii=False)
+            os.replace(tmp_path, _NOTIF_STORE_PATH)
+        except Exception:
+            if os.path.exists(tmp_path):
+                os.unlink(tmp_path)
+            raise
+    except OSError:
+        pass
 
 
 def get_user_session_key(user):
@@ -11,21 +47,33 @@ def get_user_session_key(user):
 def get_read_notification_ids(request):
     if not request.user.is_authenticated:
         return set()
-    key = get_user_session_key(request.user)
-    return set(request.session.get(key, []))
+    user_key = str(request.user.id)
+    with _NOTIF_LOCK:
+        store = _load_notif_store()
+        persisted = set(store.get(user_key, []))
+    session_ids = set(request.session.get(get_user_session_key(request.user), []))
+    return persisted | session_ids
 
 
 def mark_notifications_as_read(request, notif_ids):
-    if not request.user.is_authenticated:
+    if not request.user.is_authenticated or not notif_ids:
         return
+    user_key = str(request.user.id)
+    with _NOTIF_LOCK:
+        store = _load_notif_store()
+        current = list(store.get(user_key, []))
+        current_set = set(current)
+        changed = False
+        for nid in notif_ids:
+            if nid not in current_set:
+                current.append(nid)
+                current_set.add(nid)
+                changed = True
+        if changed:
+            store[user_key] = current[-500:]
+            _save_notif_store(store)
+
     key = get_user_session_key(request.user)
-    current = list(request.session.get(key, []))
-    current_set = set(current)
-    for nid in notif_ids:
-        if nid not in current_set:
-            current.append(nid)
-            current_set.add(nid)
-    # Mantener un tamaño liviano en sesión por usuario
     request.session[key] = current[-500:]
     request.session.modified = True
 
