@@ -86,6 +86,18 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
+# Caché del Servidor para estado de interfaz y notificaciones (conserva intacto el DER relacional)
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': BASE_DIR / '.server_cache',
+        'TIMEOUT': 60 * 60 * 24 * 30,  # 30 días de persistencia en servidor
+        'OPTIONS': {
+            'MAX_ENTRIES': 2000,
+        }
+    }
+}
+
 # Configuración de Aislamiento de Sesiones (/admin/ separado de la web principal)
 SESSION_COOKIE_NAME = 'agrojujuy_web_sessionid'
 SESSION_COOKIE_PATH = '/'
