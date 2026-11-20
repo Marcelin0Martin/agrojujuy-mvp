@@ -1,5 +1,12 @@
-from django.urls import path
-from django.contrib.auth.views import LogoutView
+from django.urls import path, reverse_lazy
+from django.contrib.auth.views import (
+    LogoutView,
+    PasswordResetView,
+    PasswordResetDoneView,
+    PasswordResetConfirmView,
+    PasswordResetCompleteView,
+)
+from .forms import AccessiblePasswordResetForm, AccessibleSetPasswordForm
 from .views import (
     InicioView,
     NosotrosView,
@@ -11,6 +18,8 @@ from .views import (
     VitrinaProfesionalView,
     PerfilProductorView,
     PerfilProfesionalView,
+    PanelAdminProfesionalesView,
+    CambiarEstadoProfesionalAdminView,
     validar_username_ajax,
     cambiar_rol_temporal,
 )
@@ -27,6 +36,43 @@ urlpatterns = [
     path('profesional/<int:pk>/', VitrinaProfesionalView.as_view(), name='vitrina_profesional'),
     path('perfil/productor/', PerfilProductorView.as_view(), name='perfil_productor'),
     path('perfil/profesional/', PerfilProfesionalView.as_view(), name='perfil_profesional'),
+    path('panel-admin/profesionales/', PanelAdminProfesionalesView.as_view(), name='panel_admin_profesionales'),
+    path('panel-admin/profesionales/<int:profesional_id>/estado/', CambiarEstadoProfesionalAdminView.as_view(), name='cambiar_estado_profesional_admin'),
     path('api/validar-username/', validar_username_ajax, name='validar_username_ajax'),
     path('cambiar-rol-temporal/', cambiar_rol_temporal, name='cambiar_rol_temporal'),
+
+    # Flujo de Recuperación de Contraseña con Tokens de Un Solo Uso (OWASP ASVS L2)
+    path(
+        'password-reset/',
+        PasswordResetView.as_view(
+            template_name='users/password_reset_form.html',
+            email_template_name='users/password_reset_email.html',
+            form_class=AccessiblePasswordResetForm,
+            success_url=reverse_lazy('password_reset_done'),
+        ),
+        name='password_reset',
+    ),
+    path(
+        'password-reset/enviado/',
+        PasswordResetDoneView.as_view(
+            template_name='users/password_reset_done.html',
+        ),
+        name='password_reset_done',
+    ),
+    path(
+        'password-reset/<uidb64>/<token>/',
+        PasswordResetConfirmView.as_view(
+            template_name='users/password_reset_confirm.html',
+            form_class=AccessibleSetPasswordForm,
+            success_url=reverse_lazy('password_reset_complete'),
+        ),
+        name='password_reset_confirm',
+    ),
+    path(
+        'password-reset/completado/',
+        PasswordResetCompleteView.as_view(
+            template_name='users/password_reset_complete.html',
+        ),
+        name='password_reset_complete',
+    ),
 ]

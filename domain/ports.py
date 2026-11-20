@@ -70,6 +70,14 @@ class RepositorioTicket(ABC):
         ...
 
     @abstractmethod
+    def convertir_a_abierta(self, ticket_id: int) -> None:
+        ...
+
+    @abstractmethod
+    def eliminar_pendiente(self, ticket_id: int) -> None:
+        ...
+
+    @abstractmethod
     def finalizar_trabajo(self, ticket_id: int, descripcion_finalizacion: str) -> None:
         ...
 

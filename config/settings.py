@@ -80,6 +80,11 @@ else:
 # Modelo de Usuario Personalizado según SDD
 AUTH_USER_MODEL = 'users.CustomUser'
 
+# Backend de Autenticación Personalizado (Unifica Matrícula CIAPAJ para Profesionales + Usuario/Email para Productor/Admin)
+AUTHENTICATION_BACKENDS = [
+    'application.users.backends.AgroJujuyAuthBackend',
+]
+
 # Configuración de Aislamiento de Sesiones (/admin/ separado de la web principal)
 SESSION_COOKIE_NAME = 'agrojujuy_web_sessionid'
 SESSION_COOKIE_PATH = '/'
@@ -122,3 +127,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'inicio'
 LOGOUT_REDIRECT_URL = 'inicio'
+
+# Configuración de Correo para Recuperación de Contraseña con Tokens de Un Solo Uso
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+DEFAULT_FROM_EMAIL = 'no-reply@agrojujuy.gob.ar'
+PASSWORD_RESET_TIMEOUT = 3600  # 1 hora de validez para tokens de un solo uso (OWASP ASVS L2)

@@ -101,6 +101,63 @@ class CrearSolicitudAbiertaUseCase:
         )
 
 
+class ConvertirSolicitudAbiertaUseCase:
+    """
+    Convierte una solicitud DIRIGIDA que sigue en estado Pendiente en una solicitud ABIERTA,
+    liberándola del profesional asignado para que cualquier ingeniero habilitado pueda tomarla.
+    Valida estrictamente la propiedad del recurso por parte del productor.
+    """
+
+    def __init__(self, repo_ticket: RepositorioTicket):
+        self._repo_ticket = repo_ticket
+
+    def ejecutar(self, ticket_id: int, productor_id: int) -> ResultadoOperacion:
+        ticket = self._repo_ticket.buscar_por_id(ticket_id)
+        if not ticket:
+            return ResultadoOperacion(exito=False, mensaje="La solicitud no existe.")
+        if ticket.productor_id != productor_id:
+            return ResultadoOperacion(exito=False, mensaje="No tienes permiso para modificar esta solicitud.")
+        if ticket.estado != "Pendiente":
+            return ResultadoOperacion(
+                exito=False,
+                mensaje="Solo las solicitudes pendientes pueden convertirse en solicitudes abiertas."
+            )
+
+        self._repo_ticket.convertir_a_abierta(ticket_id)
+        return ResultadoOperacion(
+            exito=True,
+            mensaje="Tu solicitud ahora es Abierta. Cualquier ingeniero habilitado de la red CIAPAJ podrá tomar el caso."
+        )
+
+
+class CancelarTicketPendienteUseCase:
+    """
+    Permite al productor eliminar/cancelar una solicitud que aún se encuentra en estado Pendiente.
+    Valida estrictamente la propiedad del recurso en backend.
+    """
+
+    def __init__(self, repo_ticket: RepositorioTicket):
+        self._repo_ticket = repo_ticket
+
+    def ejecutar(self, ticket_id: int, productor_id: int) -> ResultadoOperacion:
+        ticket = self._repo_ticket.buscar_por_id(ticket_id)
+        if not ticket:
+            return ResultadoOperacion(exito=False, mensaje="La solicitud no existe.")
+        if ticket.productor_id != productor_id:
+            return ResultadoOperacion(exito=False, mensaje="No tienes permiso para eliminar esta solicitud.")
+        if ticket.estado != "Pendiente":
+            return ResultadoOperacion(
+                exito=False,
+                mensaje="Solo puedes cancelar o eliminar solicitudes que aún estén en estado Pendiente."
+            )
+
+        self._repo_ticket.eliminar_pendiente(ticket_id)
+        return ResultadoOperacion(
+            exito=True,
+            mensaje="La solicitud pendiente ha sido cancelada y eliminada correctamente."
+        )
+
+
 class TomarSolicitudAbiertaUseCase:
     def __init__(self, repo_ticket: RepositorioTicket, repo_profesional: RepositorioProfesional):
         self._repo_ticket = repo_ticket

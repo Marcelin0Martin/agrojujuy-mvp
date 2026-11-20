@@ -200,6 +200,16 @@ class DjangoTicketRepository(RepositorioTicket):
             except TicketAsistencia.DoesNotExist:
                 return False
 
+    def convertir_a_abierta(self, ticket_id: int) -> None:
+        TicketAsistencia.objects.filter(id=ticket_id, estado='Pendiente').update(
+            modalidad='ABIERTA',
+            profesional=None,
+            fecha_actualizacion=timezone.now()
+        )
+
+    def eliminar_pendiente(self, ticket_id: int) -> None:
+        TicketAsistencia.objects.filter(id=ticket_id, estado='Pendiente').delete()
+
     def finalizar_trabajo(self, ticket_id: int, descripcion_finalizacion: str) -> None:
         TicketAsistencia.objects.filter(id=ticket_id).update(
             estado='Finalizado',
