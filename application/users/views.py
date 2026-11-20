@@ -104,12 +104,48 @@ class NosotrosView(TemplateView):
         context['total_profesionales'] = len(profesionales)
         return context
 
-
 class LoginPersonalizadoView(BaseLoginView):
     template_name = 'users/login.html'
 
     def form_valid(self, form):
         user = form.get_user()
+        tipo_acceso = (self.request.POST.get('tipo_acceso') or 'profesional').strip().lower()
+
+        es_admin = user.role == 'ADMIN' or user.is_staff or user.is_superuser
+        es_profesional = user.role == 'PROFESSIONAL'
+        es_productor = user.role == 'PRODUCER'
+
+        if tipo_acceso == 'profesional' and not es_profesional:
+            if es_admin:
+                messages.error(
+                    self.request,
+                    'Las cuentas de administrador deben ingresar por el apartado exclusivo «Acceso Administrador».'
+                )
+            else:
+                messages.error(
+                    self.request,
+                    'Esta cuenta no corresponde a Ingreso Profesional. Seleccioná la pestaña «Productor» para ingresar.'
+                )
+            return redirect('login')
+
+        if tipo_acceso == 'productor' and not es_productor:
+            if es_admin:
+                messages.error(
+                    self.request,
+                    'Las cuentas de administrador deben ingresar por el apartado exclusivo «Acceso Administrador».'
+                )
+            elif es_profesional:
+                messages.error(
+                    self.request,
+                    'Esta cuenta corresponde a un Profesional Agrario. Seleccioná la pestaña «Ingreso Profesional» para ingresar.'
+                )
+            else:
+                messages.error(
+                    self.request,
+                    'Esta cuenta no corresponde al perfil de Productor.'
+                )
+            return redirect('login')
+
         try:
             conf = ConfiguracionSeguridad.objects.get(usuario=user)
             if conf.bloqueado_hasta and conf.bloqueado_hasta > timezone.now():
@@ -126,7 +162,7 @@ class LoginPersonalizadoView(BaseLoginView):
 
         login(self.request, user)
 
-        if user.role == 'PROFESSIONAL':
+        if es_profesional:
             prof = getattr(user, 'perfil_profesional', None)
             if prof and prof.estado_validacion != 'Habilitado':
                 return redirect('espera_validacion')
@@ -134,46 +170,95 @@ class LoginPersonalizadoView(BaseLoginView):
             return redirect('bandeja_profesional')
 
         messages.success(self.request, f"¡Bienvenido de nuevo, {user.first_name or user.username}!")
-        if user.role == 'ADMIN' or user.is_staff or user.is_superuser:
+        return redirect('buscador_profesionales')
+
+
+class LoginAdminView(BaseLoginView):
+    template_name = 'users/login_admin.html'
+
+    def form_valid(self, form):
+        user = form.get_user()
+        es_admin = user.role == 'ADMIN' or user.is_staff or user.is_superuser
+
+        if not es_admin:
+            messages.error(
+                self.request,
+                'Acceso denegado. Esta pantalla es exclusiva para personal Administrador CIAPAJ.'
+            )
+            return redirect('login_admin')
+
+        try:
+            conf = ConfiguracionSeguridad.objects.get(usuario=user)
+            if conf.bloqueado_hasta and conf.bloqueado_hasta > timezone.now():
+                messages.error(
+                    self.request,
+                    'Cuenta bloqueada temporalmente por demasiados intentos fallidos. Intente más tarde.'
+                )
+                return redirect('login_admin')
+            conf.intentos_fallidos_login = 0
+            conf.bloqueado_hasta = None
+            conf.save()
+        except ConfiguracionSeguridad.DoesNotExist:
+            pass
+
+        login(self.request, user)
+        messages.success(self.request, f"¡Bienvenido Administrador, {user.first_name or user.username}!")
+        return redirect('panel_admin_profesionales')
+
+class LoginPersonalizadoView(BaseLoginView):
+    template_name = 'users/login.html'
+
+    def form_valid(self, form):
+        user = form.get_user()
+        tipo_acceso = (self.request.POST.get('tipo_acceso') or 'profesional').strip().lower()
+
+        es_admin = user.role == 'ADMIN' or user.is_staff or user.is_superuser
+        es_profesional = user.role == 'PROFESSIONAL'
+        es_productor = user.role == 'PRODUCER'
+
+        if tipo_acceso == 'profesional' and not es_profesional:
+            messages.error(
+                self.request,
+                'Esta cuenta no corresponde a Ingreso Profesional. Seleccioná la pestaña «Productor / Admin» para ingresar.'
+            )
+            return redirect('login')
+
+        if tipo_acceso == 'productor' and not (es_productor or es_admin):
+            messages.error(
+                self.request,
+                'Esta cuenta corresponde a un Profesional Agrario. Seleccioná la pestaña «Ingreso Profesional» para ingresar.'
+            )
+            return redirect('login')
+
+        try:
+            conf = ConfiguracionSeguridad.objects.get(usuario=user)
+            if conf.bloqueado_hasta and conf.bloqueado_hasta > timezone.now():
+                messages.error(
+                    self.request,
+                    'Cuenta bloqueada temporalmente por demasiados intentos fallidos. Intente más tarde.'
+                )
+                return redirect('login')
+            conf.intentos_fallidos_login = 0
+            conf.bloqueado_hasta = None
+            conf.save()
+        except ConfiguracionSeguridad.DoesNotExist:
+            pass
+
+        login(self.request, user)
+
+        if es_profesional:
+            prof = getattr(user, 'perfil_profesional', None)
+            if prof and prof.estado_validacion != 'Habilitado':
+                return redirect('espera_validacion')
+            messages.success(self.request, f"¡Bienvenido Ing. {user.first_name or user.username}!")
+            return redirect('bandeja_profesional')
+
+        messages.success(self.request, f"¡Bienvenido de nuevo, {user.first_name or user.username}!")
+        if es_admin:
             return redirect('panel_admin_profesionales')
-        if user.role == 'PRODUCER':
+        if es_productor:
             return redirect('buscador_profesionales')
         return redirect('inicio')
-
-    def form_invalid(self, form):
-        identificador = self.request.POST.get('username', '').strip()
-        if identificador:
-            user = None
-            prof = Profesional.objects.select_related('usuario').filter(
-                matricula_provincial__iexact=identificador
-            ).first()
-            if prof:
-                user = prof.usuario
-            else:
-                user = CustomUser.objects.filter(
-                    Q(username__iexact=identificador) | Q(email__iexact=identificador)
-                ).first()
-
-            if user is not None:
-                conf, _ = ConfiguracionSeguridad.objects.get_or_create(usuario=user)
-                if conf.bloqueado_hasta and conf.bloqueado_hasta > timezone.now():
-                    messages.error(
-                        self.request,
-                        'Cuenta bloqueada por 15 minutos por exceso de intentos fallidos.'
-                    )
-                    return redirect('login')
-                conf.intentos_fallidos_login += 1
-                if conf.intentos_fallidos_login >= 3:
-                    conf.bloqueado_hasta = timezone.now() + timedelta(minutes=15)
-                    conf.save()
-                    messages.error(
-                        self.request,
-                        'Demasiados intentos fallidos. La cuenta ha sido bloqueada temporalmente por 15 minutos.'
-                    )
-                    return redirect('login')
-                conf.save()
-        return super().form_invalid(form)
-
 
 class RegistroProductorView(CreateView):
     form_class = RegistroProductorForm

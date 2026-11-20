@@ -43,20 +43,27 @@
                 <span class="badge badge-soft">AgroJujuy</span>
             </h1>
 
-            <!-- Selector de Pestañas de Ingreso Accesible -->
+           <!-- Selector de Pestañas de Ingreso Accesible -->
             <div role="tablist" aria-label="Tipo de acceso al sistema" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1.35rem; background: var(--color-background); padding: 0.35rem; border-radius: var(--radius-xl);">
-                <button type="button" id="tab-profesional" role="tab" aria-selected="true" aria-controls="login-panel"
-                        class="btn btn-primary btn-sm" style="width: 100%;">
+                <button type="button" id="tab-profesional" role="tab"
+                        aria-selected="{% if request.POST.tipo_acceso != 'productor' %}true{% else %}false{% endif %}"
+                        aria-controls="login-panel"
+                        class="btn {% if request.POST.tipo_acceso != 'productor' %}btn-primary{% else %}btn-outline{% endif %} btn-sm"
+                        style="width: 100%; {% if request.POST.tipo_acceso == 'productor' %} border-color:transparent; {% endif %}">
                     <i data-lucide="graduation-cap" data-size="15"></i> Ingreso Profesional
                 </button>
-                <button type="button" id="tab-productor" role="tab" aria-selected="false" aria-controls="login-panel"
-                        class="btn btn-outline btn-sm" style="width: 100%; border-color: transparent;">
-                    <i data-lucide="tractor" data-size="15"></i> Productor / Admin
+                <button type="button" id="tab-productor" role="tab"
+                        aria-selected="{% if request.POST.tipo_acceso == 'productor' %}true{% else %}false{% endif %}"
+                        aria-controls="login-panel"
+                        class="btn {% if request.POST.tipo_acceso == 'productor' %}btn-primary{% else %}btn-outline{% endif %} btn-sm"
+                        style="width: 100%;{% if request.POST.tipo_acceso != 'productor' %} border-color:transparent;{% endif %}">
+                    <i data-lucide="tractor" data-size="15"></i> Productor
                 </button>
             </div>
 
             <form id="login-panel" method="POST" action="{% url 'login' %}" data-loading-text="Verificando credenciales..." novalidate>
                 {% csrf_token %}
+                <input type="hidden" name="tipo_acceso" id="id_tipo_acceso" value="{% if request.POST.tipo_acceso == 'productor' %}productor{% else %}profesional{% endif %}">
 
                 {% if form.errors %}
                     <div id="login-error-alert" class="alert alert-error" role="alert" style="font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;">
@@ -67,7 +74,11 @@
 
                 <div class="form-group">
                     <label class="form-label" for="id_username" id="label_identificador">
-                        Número de Matrícula Provincial (CIAPAJ) o Usuario:
+                        {% if request.POST.tipo_acceso == 'productor' %}
+                            Usuario o Correo Electrónico (Productor):
+                        {% else %}
+                            Número de Matrícula Provincial (CIAPAJ) o Usuario:
+                        {% endif %}
                     </label>
                     <input type="text"
                            name="username"
@@ -75,11 +86,15 @@
                            required
                            autofocus
                            class="form-control"
-                           placeholder="Ej: MP-1001/J"
+                           placeholder="{% if request.POST.tipo_acceso == 'productor' %}Ej: productor_001 o correo@ejemplo.com{% else %}Ej: MP-1001/J{% endif %}"
                            autocomplete="username"
                            {% if form.errors %}aria-invalid="true" aria-describedby="login-error-alert help_identificador"{% else %}aria-describedby="help_identificador"{% endif %}>
                     <span id="help_identificador" class="field-help">
-                        Si eres Profesional Agrario ingresa tu <strong>Número de Matrícula CIAPAJ</strong> (ej: MP-1001/J). Si eres Productor o Admin ingresa tu usuario o correo electrónico.
+                        {% if request.POST.tipo_acceso == 'productor' %}
+                            Ingresa tu nombre de usuario o correo electrónico de productor registrado.
+                        {% else %}
+                            Ingresa tu Número de Matrícula Provincial (CIAPAJ) o nombre de usuario profesional.
+                        {% endif %}
                     </span>
                 </div>
 

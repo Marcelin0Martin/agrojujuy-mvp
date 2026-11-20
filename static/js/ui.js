@@ -380,6 +380,7 @@
         const labelId = document.getElementById('label_identificador');
         const inputId = document.getElementById('id_username');
         const helpId = document.getElementById('help_identificador');
+        const tipoAccesoInput = document.getElementById('id_tipo_acceso');
 
         if (!tabProf || !tabProd || !labelId || !inputId || !helpId) return;
 
@@ -389,6 +390,7 @@
             tabProd.setAttribute('aria-selected', 'false');
             tabProd.className = 'btn btn-outline btn-sm';
             tabProd.style.borderColor = 'transparent';
+            if (tipoAccesoInput) tipoAccesoInput.value = 'profesional';
 
             labelId.textContent = 'Número de Matrícula Provincial (CIAPAJ):';
             inputId.placeholder = 'Ej: MP-1001/J';
@@ -402,10 +404,11 @@
             tabProf.setAttribute('aria-selected', 'false');
             tabProf.className = 'btn btn-outline btn-sm';
             tabProf.style.borderColor = 'transparent';
+            if (tipoAccesoInput) tipoAccesoInput.value = 'productor';
 
-            labelId.textContent = 'Usuario o Correo Electrónico (Productor / Admin):';
+            labelId.textContent = 'Usuario o Correo Electrónico (Productor):';
             inputId.placeholder = 'Ej: productor_001 o correo@ejemplo.com';
-            helpId.textContent = 'Ingresa tu nombre de usuario o correo electrónico registrado.';
+            helpId.textContent = 'Ingresa tu nombre de usuario o correo electrónico de productor registrado.';
             inputId.focus();
         }
 
