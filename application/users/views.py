@@ -12,6 +12,9 @@ from django.utils.html import escape
 from django.views.generic import TemplateView, CreateView, UpdateView, DetailView, View
 from django.urls import reverse_lazy
 
+from django.db.models import Q, Case, When, Value, IntegerField, Count
+from django.db.models.functions import TruncMonth
+
 import json
 from collections import Counter
 from django.views.generic import TemplateView
@@ -480,6 +483,52 @@ class PanelAdminProfesionalesView(LoginRequiredMixin, TemplateView):
 
         context['metricas_regiones'] = metricas_regiones
         
+       # Evolución mensual (últimos 6 meses): altas de productores y profesionales habilitados
+        ahora = timezone.localtime(timezone.now())
+        meses_nombres = [
+            'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
+            'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'
+        ]
+
+        ultimos_meses = []
+        anio_cursor = ahora.year
+        mes_cursor = ahora.month
+        for _ in range(6):
+            clave = f"{anio_cursor:04d}-{mes_cursor:02d}"
+            etiqueta = f"{meses_nombres[mes_cursor - 1]} {anio_cursor}"
+            ultimos_meses.append({'clave': clave, 'etiqueta': etiqueta})
+            mes_cursor -= 1
+            if mes_cursor == 0:
+                mes_cursor = 12
+                anio_cursor -= 1
+        ultimos_meses.reverse()
+
+        prods_por_mes = {
+            row['mes'].strftime('%Y-%m'): row['total']
+            for row in Productor.objects.annotate(mes=TruncMonth('fecha_registro'))
+            .values('mes')
+            .annotate(total=Count('id'))
+            if row['mes']
+        }
+        profs_por_mes = {
+            row['mes'].strftime('%Y-%m'): row['total']
+            for row in Profesional.objects.filter(estado_validacion='Habilitado')
+            .annotate(mes=TruncMonth('fecha_solicitud'))
+            .values('mes')
+            .annotate(total=Count('id'))
+            if row['mes']
+        }
+
+        evolucion_mensual = []
+        for item in ultimos_meses:
+            clave = item['clave']
+            evolucion_mensual.append({
+                'mes': item['etiqueta'],
+                'productores': prods_por_mes.get(clave, 0),
+                'profesionales': profs_por_mes.get(clave, 0),
+            })
+
+        context['evolucion_mensual'] = evolucion_mensual
         return context
 
 

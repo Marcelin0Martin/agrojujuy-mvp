@@ -732,9 +732,167 @@ function initPasswordToggles() {
         });
     }
 
+    function initGraficoEvolucionMensual() {
+        const dataEl = document.getElementById('evolucion-mensual-admin');
+        const svgProd = document.getElementById('grafico-evolucion-productores');
+        const svgProf = document.getElementById('grafico-evolucion-profesionales');
+        if (!dataEl || (!svgProd && !svgProf)) return;
+
+        let datos = [];
+        try {
+            datos = JSON.parse(dataEl.textContent);
+        } catch (e) {
+            return;
+        }
+        if (!Array.isArray(datos) || datos.length === 0) return;
+
+        const svgNS = 'http://www.w3.org/2000/svg';
+
+        function createSvgEl(tag, attrs) {
+            const el = document.createElementNS(svgNS, tag);
+            Object.keys(attrs).forEach(function (k) {
+                el.setAttribute(k, String(attrs[k]));
+            });
+            return el;
+        }
+
+        function dibujarSerieEnSvg(svg, serieKey, strokeColor, labelColor) {
+            if (!svg) return;
+
+            while (svg.firstChild) {
+                svg.removeChild(svg.firstChild);
+            }
+
+            const width = 540;
+            const height = 260;
+            const padTop = 28;
+            const padBottom = 46;
+            const padLeft = 48;
+            const padRight = 34;
+            const plotW = width - padLeft - padRight;
+            const plotH = height - padTop - padBottom;
+            const baseY = padTop + plotH;
+
+            let maxVal = 0;
+            const valores = datos.map(function (d) {
+                const v = Math.round(Number(d[serieKey]) || 0);
+                if (v > maxVal) maxVal = v;
+                return v;
+            });
+
+            const ticks = 5;
+            const rawMax = maxVal > 0 ? Math.ceil(maxVal) : ticks;
+            const yMax = Math.ceil(rawMax / ticks) * ticks;
+
+            // Líneas horizontales y etiquetas del eje Y en valores enteros
+            for (let t = 0; t <= ticks; t++) {
+                const ratio = t / ticks;
+                const yPos = baseY - ratio * plotH;
+                const valLabel = Math.round(yMax * ratio);
+
+                svg.appendChild(createSvgEl('line', {
+                    x1: padLeft,
+                    y1: yPos,
+                    x2: width - padRight,
+                    y2: yPos,
+                    stroke: t === 0 ? '#94A39B' : '#E2E8F0',
+                    'stroke-width': t === 0 ? '1.5' : '1',
+                    'stroke-dasharray': t === 0 ? 'none' : '4 4'
+                }));
+
+                const yText = createSvgEl('text', {
+                    x: padLeft - 10,
+                    y: yPos + 4.5,
+                    'text-anchor': 'end',
+                    'font-size': '12.5',
+                    'font-weight': '700',
+                    fill: '#64748B'
+                });
+                yText.textContent = String(valLabel);
+                svg.appendChild(yText);
+            }
+
+            const count = datos.length;
+            const stepX = count > 1 ? plotW / (count - 1) : 0;
+
+            const coords = datos.map(function (d, idx) {
+                const val = valores[idx];
+                const xPos = count > 1 ? padLeft + stepX * idx : padLeft + plotW / 2;
+                const yPos = baseY - (val / yMax) * plotH;
+
+                svg.appendChild(createSvgEl('line', {
+                    x1: xPos,
+                    y1: padTop,
+                    x2: xPos,
+                    y2: baseY,
+                    stroke: '#F1F5F9',
+                    'stroke-width': '1'
+                }));
+
+                const xText = createSvgEl('text', {
+                    x: xPos,
+                    y: baseY + 24,
+                    'text-anchor': 'middle',
+                    'font-size': '12.5',
+                    'font-weight': '700',
+                    fill: '#173F32'
+                });
+                xText.textContent = d.mes || ('Mes ' + (idx + 1));
+                svg.appendChild(xText);
+
+                return { x: xPos, y: yPos, val: val };
+            });
+
+            if (coords.length > 1) {
+                const pointsAttr = coords.map(function (pt) {
+                    return pt.x.toFixed(1) + ',' + pt.y.toFixed(1);
+                }).join(' ');
+
+                svg.appendChild(createSvgEl('polyline', {
+                    fill: 'none',
+                    points: pointsAttr,
+                    stroke: strokeColor,
+                    'stroke-width': '2.8',
+                    'stroke-linejoin': 'round',
+                    'stroke-linecap': 'round'
+                }));
+            }
+
+            coords.forEach(function (pt, idx) {
+                svg.appendChild(createSvgEl('circle', {
+                    cx: pt.x,
+                    cy: pt.y,
+                    r: '5',
+                    fill: strokeColor,
+                    stroke: '#FFFFFF',
+                    'stroke-width': '1.8'
+                }));
+
+                const esUltimo = idx === coords.length - 1;
+                const labelX = esUltimo ? Math.min(width - 6, pt.x + 8) : pt.x + 8;
+                const labelY = Math.max(padTop + 10, Math.min(baseY - 4, pt.y + 4.5));
+
+                const valText = createSvgEl('text', {
+                    x: esUltimo ? pt.x - 8 : labelX,
+                    y: labelY,
+                    'text-anchor': esUltimo ? 'end' : 'start',
+                    'font-size': '12.5',
+                    'font-weight': '800',
+                    fill: labelColor
+                });
+                valText.textContent = String(pt.val);
+                svg.appendChild(valText);
+            });
+        }
+
+        dibujarSerieEnSvg(svgProd, 'productores', '#D97706', '#92400E');
+        dibujarSerieEnSvg(svgProf, 'profesionales', '#059669', '#065F46');
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         initMapaJujuy();
         initGraficoRegionesAdmin();
+        initGraficoEvolucionMensual();
         renderLucideIcons();
         initPasswordToggles();
         initSearchFilters();

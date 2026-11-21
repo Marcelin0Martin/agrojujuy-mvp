@@ -73,6 +73,57 @@
         {{ metricas_regiones|json_script:"metricas-regiones-admin" }}
     </section>
 
+<!-- Métricas en el Tiempo: Gráficos Separados de Productores y Profesionales por Mes -->
+    <section aria-label="Gráficos de evolución mensual de altas" style="margin-bottom: 1.5rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 1.25rem;">
+            <!-- Gráfico 1: Evolución Mensual de Productores -->
+            <article class="card rounded-2xl shadow-sm p-6" style="background: #FFFFFF; margin-bottom: 0; border-top: 5px solid #D97706;">
+                <div style="margin-bottom: 1rem;">
+                    <span class="badge badge-warning" style="margin-bottom: 0.35rem;">Productores Agrícolas</span>
+                    <h2 style="font-size: 1.15rem; font-weight: 800; color: var(--color-primary); margin: 0;">
+                        Altas de Productores (Últimos 6 Meses)
+                    </h2>
+                    <p style="font-size: 0.88rem; color: var(--color-text-muted); margin: 0.25rem 0 0 0;">
+                        Registro mensual de nuevas fincas y productores en la plataforma.
+                    </p>
+                </div>
+
+                <div style="width: 100%; overflow-x: auto;">
+                    <svg id="grafico-evolucion-productores"
+                         viewBox="0 0 540 260"
+                         role="img"
+                         aria-label="Gráfico de evolución mensual de altas de productores en los últimos 6 meses"
+                         style="width: 100%; min-width: 360px; max-height: 270px; display: block;">
+                    </svg>
+                </div>
+            </article>
+
+            <!-- Gráfico 2: Evolución Mensual de Profesionales Habilitados -->
+            <article class="card rounded-2xl shadow-sm p-6" style="background: #FFFFFF; margin-bottom: 0; border-top: 5px solid #059669;">
+                <div style="margin-bottom: 1rem;">
+                    <span class="badge badge-success" style="margin-bottom: 0.35rem;">Ingenieros CIAPAJ</span>
+                    <h2 style="font-size: 1.15rem; font-weight: 800; color: var(--color-primary); margin: 0;">
+                        Altas de Profesionales Habilitados (Últimos 6 Meses)
+                    </h2>
+                    <p style="font-size: 0.88rem; color: var(--color-text-muted); margin: 0.25rem 0 0 0;">
+                        Incorporación mensual de profesionales habilitados por CIAPAJ.
+                    </p>
+                </div>
+
+                <div style="width: 100%; overflow-x: auto;">
+                    <svg id="grafico-evolucion-profesionales"
+                         viewBox="0 0 540 260"
+                         role="img"
+                         aria-label="Gráfico de evolución mensual de altas de profesionales habilitados en los últimos 6 meses"
+                         style="width: 100%; min-width: 360px; max-height: 270px; display: block;">
+                    </svg>
+                </div>
+            </article>
+        </div>
+
+        {{ evolucion_mensual|json_script:"evolucion-mensual-admin" }}
+    </section>
+
     <!-- Filtros por Estado y Buscador de Profesionales -->
     <section class="card rounded-2xl shadow-sm p-6" aria-label="Filtros y búsqueda de profesionales" style="margin-bottom: 1.5rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
