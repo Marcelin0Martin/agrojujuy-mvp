@@ -2140,3 +2140,610 @@ footer {
         min-height: 480px;
     }
 }
+
+
+/* ========================================
+   PANEL DE DETALLE REGIONAL
+======================================== */
+
+.regional-panel {
+    --regional-primary: var(--color-primary);
+    --regional-muted: var(--color-text-muted);
+    --regional-bg: var(--color-background);
+
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-top: 5px solid var(--regional-primary);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.045);
+    margin-bottom: 0;
+}
+
+/* Encabezado */
+
+.regional-panel__header {
+    margin-bottom: 1.5rem;
+}
+
+.regional-panel__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.8rem;
+    padding: 0.4rem 0.7rem;
+    border-radius: 50px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.regional-panel__title {
+    color: var(--regional-primary);
+    font-size: 1.4rem;
+    font-weight: 800;
+    line-height: 1.25;
+    margin: 0 0 0.5rem;
+}
+
+.regional-panel__description {
+    color: var(--regional-muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Indicadores */
+
+.regional-panel__metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.regional-metric {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    padding: 1rem 0.5rem;
+    background: var(--regional-bg);
+    border: 1px solid rgba(0, 0, 0, 0.035);
+    border-radius: 0.85rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.regional-metric:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.06);
+}
+
+.regional-metric__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    margin-bottom: 0.55rem;
+    border-radius: 0.65rem;
+    background: rgba(0, 0, 0, 0.045);
+    color: var(--regional-primary);
+    font-size: 0.95rem;
+}
+
+.regional-metric__label {
+    color: var(--regional-muted);
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.regional-metric__value {
+    color: var(--regional-primary);
+    font-size: 1.55rem;
+    font-weight: 850;
+    line-height: 1.4;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Rubros */
+
+.regional-panel__sectors {
+    margin-bottom: 1.5rem;
+}
+
+.regional-panel__section-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    color: var(--regional-primary);
+    font-size: 0.77rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.regional-panel__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    min-height: 30px;
+}
+
+/* Etiquetas dinámicas */
+
+.regional-panel__tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.4rem 0.75rem;
+    border-radius: 50px;
+    background: var(--regional-bg);
+    border: 1px solid rgba(0, 0, 0, 0.07);
+    color: var(--regional-primary);
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+/* Botón */
+
+.regional-panel__footer {
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+.regional-panel__button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    width: 100%;
+    min-height: 44px;
+    padding: 0.75rem 1rem;
+    border-radius: 0.7rem;
+    font-size: 0.85rem;
+    font-weight: 750;
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.regional-panel__button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 14px rgba(0, 0, 0, 0.12);
+}
+
+.regional-panel__arrow {
+    margin-left: auto;
+    transition: transform 0.2s ease;
+}
+
+.regional-panel__button:hover .regional-panel__arrow {
+    transform: translateX(4px);
+}
+
+/* Responsive */
+
+@media (max-width: 480px) {
+    .regional-panel {
+        padding: 1.1rem;
+    }
+
+    .regional-panel__metrics {
+        gap: 0.45rem;
+    }
+
+    .regional-metric {
+        padding: 0.8rem 0.3rem;
+    }
+
+    .regional-metric__label {
+        font-size: 0.61rem;
+    }
+
+    .regional-metric__value {
+        font-size: 1.3rem;
+    }
+}
+
+/* Accesibilidad */
+
+@media (prefers-reduced-motion: reduce) {
+    .regional-metric,
+    .regional-panel__button,
+    .regional-panel__arrow {
+        transition: none;
+    }
+}
+
+
+/* =========================================
+   EXPLORADOR TERRITORIAL - JUJUY
+========================================= */
+
+.mapa-regiones-section {
+    padding: 1.75rem !important;
+}
+
+/* ENCABEZADO */
+
+.mapa-regiones-header {
+    margin-bottom: 1.5rem;
+}
+
+.mapa-regiones-header h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--color-primary);
+    margin: 0.5rem 0;
+}
+
+.mapa-regiones-header p {
+    color: var(--color-text-muted);
+    font-size: 0.93rem;
+    line-height: 1.6;
+    max-width: 750px;
+    margin: 0;
+}
+
+/* DISTRIBUCIÓN GENERAL */
+
+.mapa-regiones-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.8fr) minmax(290px, 0.85fr);
+    gap: 1.5rem;
+    align-items: stretch;
+}
+
+/* COLUMNA MAPA */
+
+.mapa-columna {
+    min-width: 0;
+}
+
+.mapa-card {
+    height: 100%;
+    background: #fff;
+    border: 1px solid rgba(23, 63, 50, 0.12);
+    border-radius: 18px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.mapa-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #edf0ed;
+}
+
+.mapa-overline {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: #789084;
+    margin-bottom: 0.3rem;
+}
+
+.mapa-card-header h3 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--color-primary);
+    margin: 0;
+}
+
+.mapa-card-header p {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    margin: 0.2rem 0 0;
+}
+
+.mapa-instruccion {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: #f1f6f2;
+    color: var(--color-primary);
+    padding: 0.55rem 0.75rem;
+    border-radius: 9px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* MAPA SVG */
+
+.mapa-svg-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 480px;
+    padding: 0.75rem 0;
+}
+
+#mapa-jujuy-svg {
+    display: block;
+    width: 100%;
+    max-width: 570px;
+    height: auto;
+    max-height: 590px;
+}
+
+/* LEYENDA */
+
+.mapa-leyenda {
+    border-top: 1px solid #edf0ed;
+    padding-top: 1rem;
+    margin-top: auto;
+}
+
+.leyenda-titulo {
+    color: var(--color-primary);
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 0.75rem;
+}
+
+.leyenda-items {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+}
+
+.leyenda-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #44574c;
+    font-size: 0.82rem;
+    font-weight: 650;
+    white-space: nowrap;
+}
+
+.leyenda-color {
+    width: 15px;
+    height: 15px;
+    min-width: 15px;
+    border-radius: 4px;
+}
+
+.leyenda-color.puna {
+    background: #9C7A54;
+}
+
+.leyenda-color.quebrada {
+    background: #F3A683;
+}
+
+.leyenda-color.valles {
+    background: #C5D88D;
+}
+
+.leyenda-color.yungas {
+    background: #55A677;
+}
+
+/* PANEL REGIONAL */
+
+.detalle-columna {
+    min-width: 0;
+    display: flex;
+}
+
+.detalle-card {
+    width: 100%;
+    background: #fff;
+    border: 1px solid rgba(23, 63, 50, 0.12);
+    border-top: 5px solid var(--color-primary);
+    border-radius: 18px;
+    padding: 1.4rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.detalle-etiqueta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: #54836b;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.7px;
+    margin-bottom: 0.9rem;
+}
+
+.detalle-etiqueta svg {
+    width: 15px;
+    height: 15px;
+}
+
+.detalle-header h3 {
+    color: var(--color-primary);
+    font-size: 1.4rem;
+    font-weight: 850;
+    margin: 0 0 0.65rem;
+}
+
+.detalle-header p {
+    color: var(--color-text-muted);
+    font-size: 0.87rem;
+    line-height: 1.65;
+    margin: 0;
+}
+
+/* INDICADORES */
+
+.detalle-estadisticas {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.55rem;
+    margin: 1.5rem 0;
+}
+
+.estadistica {
+    background: #f4f7f4;
+    border: 1px solid #e8eee9;
+    border-radius: 12px;
+    padding: 0.85rem 0.35rem;
+    text-align: center;
+    min-width: 0;
+}
+
+.estadistica-icono {
+    display: flex;
+    justify-content: center;
+    color: #54836b;
+    margin-bottom: 0.45rem;
+}
+
+.estadistica-icono svg {
+    width: 19px;
+    height: 19px;
+}
+
+.estadistica-label {
+    display: block;
+    color: #64766b;
+    font-size: 0.65rem;
+    font-weight: 750;
+    text-transform: uppercase;
+    line-height: 1.3;
+}
+
+.estadistica strong {
+    display: block;
+    color: var(--color-primary);
+    font-size: 1.5rem;
+    font-weight: 850;
+    margin-top: 0.25rem;
+}
+
+/* RUBROS */
+
+.detalle-rubros {
+    padding-top: 1rem;
+    border-top: 1px solid #edf0ed;
+    margin-bottom: 1.5rem;
+}
+
+.detalle-rubros h4 {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: var(--color-primary);
+    text-transform: uppercase;
+    margin: 0 0 0.85rem;
+}
+
+.detalle-rubros h4 svg {
+    width: 17px;
+    height: 17px;
+}
+
+.rubros-lista {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.rubros-lista > * {
+    font-size: 0.78rem;
+}
+
+/* BOTÓN */
+
+.detalle-accion {
+    margin-top: auto;
+}
+
+.detalle-accion .btn {
+    min-height: 44px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 10px;
+    font-weight: 750;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 900px) {
+    .mapa-regiones-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .mapa-svg-container {
+        min-height: 400px;
+    }
+
+    #mapa-jujuy-svg {
+        max-width: 520px;
+    }
+
+    .detalle-card {
+        min-height: auto;
+    }
+}
+
+@media (max-width: 550px) {
+    .mapa-regiones-section {
+        padding: 1rem !important;
+    }
+
+    .mapa-card,
+    .detalle-card {
+        padding: 1rem;
+    }
+
+    .mapa-card-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .mapa-svg-container {
+        min-height: 300px;
+    }
+
+    #mapa-jujuy-svg {
+        min-height: 300px;
+    }
+
+    .leyenda-items {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.8rem;
+    }
+
+    .leyenda-item {
+        font-size: 0.78rem;
+    }
+
+    .detalle-estadisticas {
+        gap: 0.4rem;
+    }
+
+    .estadistica {
+        padding: 0.7rem 0.2rem;
+    }
+
+    .estadistica-label {
+        font-size: 0.59rem;
+    }
+
+    .estadistica strong {
+        font-size: 1.3rem;
+    }
+}

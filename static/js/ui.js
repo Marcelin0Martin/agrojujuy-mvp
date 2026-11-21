@@ -55,6 +55,8 @@
     };
 
     const LUCIDE_ICONS = {
+        'eye': '<path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" fill="currentColor" fill-opacity="0.14"/><circle cx="12" cy="12" r="3"/>',
+        'eye-off': '<path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/>',
         'sprout': '<path d="M7 20h10"/><path d="M10 20c5.5-2.5.8-6.4 3-10"/><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z" fill="currentColor" fill-opacity="0.22"/><path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z" fill="currentColor" fill-opacity="0.22"/>',
         'search': '<circle cx="11" cy="11" r="8" fill="currentColor" fill-opacity="0.15"/><path d="m21 21-4.3-4.3"/>',
         'clipboard-list': '<rect width="8" height="4" x="8" y="2" rx="1" ry="1" fill="currentColor" fill-opacity="0.2"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" fill="currentColor" fill-opacity="0.12"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>',
@@ -416,7 +418,6 @@
         tabProd.addEventListener('click', activarModoProductor);
     }
 
-
     function initMapaJujuy() {
         const dataScript = document.getElementById('datos-regiones-jujuy');
         const svgMap = document.getElementById('mapa-jujuy-svg');
@@ -656,10 +657,86 @@
         });
     }
 
+function initPasswordToggles() {
+        const passwordInputs = document.querySelectorAll('input[type="password"]');
+        if (!passwordInputs.length) return;
+
+        function createEyeSvg(iconName) {
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+            svg.setAttribute('width', '18');
+            svg.setAttribute('height', '18');
+            svg.setAttribute('viewBox', '0 0 24 24');
+            svg.setAttribute('fill', 'none');
+            svg.setAttribute('stroke', 'currentColor');
+            svg.setAttribute('stroke-width', '2.1');
+            svg.setAttribute('stroke-linecap', 'round');
+            svg.setAttribute('stroke-linejoin', 'round');
+            svg.setAttribute('aria-hidden', 'true');
+            svg.innerHTML = LUCIDE_ICONS[iconName] || '';
+            return svg;
+        }
+
+        passwordInputs.forEach(function (input) {
+            if (input.dataset.passwordToggleInit === 'true') return;
+            input.dataset.passwordToggleInit = 'true';
+
+            const wrapper = document.createElement('div');
+            wrapper.style.position = 'relative';
+            wrapper.style.display = 'flex';
+            wrapper.style.alignItems = 'center';
+            wrapper.style.width = '100%';
+
+            input.parentNode.insertBefore(wrapper, input);
+            wrapper.appendChild(input);
+
+            input.style.paddingRight = '2.65rem';
+
+            const toggleBtn = document.createElement('button');
+            toggleBtn.type = 'button';
+            toggleBtn.setAttribute('aria-label', 'Mostrar contraseña');
+            toggleBtn.setAttribute('aria-pressed', 'false');
+            toggleBtn.title = 'Mostrar contraseña';
+            toggleBtn.style.position = 'absolute';
+            toggleBtn.style.right = '0.6rem';
+            toggleBtn.style.top = '50%';
+            toggleBtn.style.transform = 'translateY(-50%)';
+            toggleBtn.style.background = 'transparent';
+            toggleBtn.style.border = 'none';
+            toggleBtn.style.padding = '0.3rem';
+            toggleBtn.style.cursor = 'pointer';
+            toggleBtn.style.display = 'inline-flex';
+            toggleBtn.style.alignItems = 'center';
+            toggleBtn.style.justifyContent = 'center';
+            toggleBtn.style.color = '#475569';
+            toggleBtn.style.borderRadius = '6px';
+
+            toggleBtn.appendChild(createEyeSvg('eye'));
+
+            toggleBtn.addEventListener('click', function () {
+                const isHidden = input.type === 'password';
+                input.type = isHidden ? 'text' : 'password';
+
+                toggleBtn.setAttribute('aria-label', isHidden ? 'Ocultar contraseña' : 'Mostrar contraseña');
+                toggleBtn.setAttribute('aria-pressed', isHidden ? 'true' : 'false');
+                toggleBtn.title = isHidden ? 'Ocultar contraseña' : 'Mostrar contraseña';
+                toggleBtn.style.color = isHidden ? '#173F32' : '#475569';
+
+                while (toggleBtn.firstChild) {
+                    toggleBtn.removeChild(toggleBtn.firstChild);
+                }
+                toggleBtn.appendChild(createEyeSvg(isHidden ? 'eye-off' : 'eye'));
+            });
+
+            wrapper.appendChild(toggleBtn);
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         initMapaJujuy();
         initGraficoRegionesAdmin();
         renderLucideIcons();
+        initPasswordToggles();
         initSearchFilters();
         initFormLoadingStates();
         initConfirmActions();
